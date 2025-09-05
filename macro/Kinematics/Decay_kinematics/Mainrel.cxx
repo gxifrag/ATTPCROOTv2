@@ -29,7 +29,8 @@ int Mainrel()
 {
 
    std::ofstream kineStr;
-   kineStr.open("Kine.txt");
+   kineStr.open("C16_pd_C15_1st_Ebeam11_5.txt");
+   //kineStr.open("C15_dt_gs_Ebeam11_5.txt");;
 
    Int_t a = 1;
    int A1 = 16.; // mass0 of the incident particle
@@ -64,21 +65,23 @@ int Mainrel()
 
    // cout<<El4<<endl;
 
-   int AD1 = 12; // mass0 of the daughter 1
+   /*int AD1 = 12; // mass0 of the daughter 1
    int ZD1 = 2;  // charge of the daugther 2
    char *ElD1 = new char[2];
 
    int AD2 = 4; // mass0 of the daughter 1
    int ZD2 = 2; // charge of the daugther 2
-   char *ElD2 = new char[2];
+   char *ElD2 = new char[2];*/
 
    double ex1 = 0;    // excitation energy of the incident particle
    double ex2 = 0;    // excitation energy of the target
-   double ex3 = 0.0;  // excitation energy of the scattered particle
-   double ex4 = 0.0;  // excitation energy of the recoil
+  // double ex3 = 6.0938;  // excitation energy of the scattered particle MeV
+  //double ex3 = 7.012;
+  //double ex3 = 8.3179;
+   double ex3 = 0.740;
+   double ex4 = 0;  // excitation energy of the recoil
 
-   double tbt = 11.0; // incident energy (total Lab energy in MeV)
-
+   double tbt = 184.0/16.; // incident energy (total Lab energy in MeV) 184/16 = 11.5 MeV per nucleon
    double Energyrdec, Anglerdec;
 
    //  cout<<" Mass of the incident particle A1"<<endl;
