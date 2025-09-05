@@ -11,6 +11,7 @@
 #include <TStyle.h>
 #include <TXMLDocument.h>
 #include <TXMLNode.h>
+#include <TString.h>
 
 #include <boost/multi_array/base.hpp>
 #include <boost/multi_array/extent_gen.hpp>
@@ -291,6 +292,19 @@ void AtMap::drawPadPlane()
    fPadPlaneCanvas = new TCanvas("padPlaneCanvas", "Pad Plane", 1000, 1000);
    gStyle->SetPalette(1);
    fPadPlane->Draw("col");
+}
+
+void AtMap::SetPadPlanePlane(TString plane)
+{
+   if (plane == "XY" || plane == "YX") {
+      fPadPlanePlane = "XY";
+   } else if (plane == "XZ" || plane == "ZX") {
+      fPadPlanePlane = "XZ";
+   } else if (plane == "YZ" || plane == "ZY") {
+      fPadPlanePlane = "YZ";
+   } else {
+      LOG(error) << " AtMap::SetPadPlanePlane Error : " << plane.Data() << " is not a valid input. Leaving the PadPlane plane as " << fPadPlanePlane.Data() << ".";
+   }
 }
 
 ClassImp(AtMap)

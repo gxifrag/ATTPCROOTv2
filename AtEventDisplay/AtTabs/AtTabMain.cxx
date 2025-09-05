@@ -21,7 +21,6 @@
 #include <TEveBrowser.h>         // for TEveBrowser
 #include <TEveEventManager.h>    // for TEveEventManager
 #include <TEveGeoNode.h>         // for TEveGeoTopNode
-#include <TEveLine.h>            // for TEveLine
 #include <TEveManager.h>         // for TEveManager, gEve
 #include <TEvePointSet.h>        // for TEvePointSet
 #include <TEveViewer.h>          // for TEveViewer
@@ -125,8 +124,6 @@ void AtTabMain::ExpandNumPatterns(int num)
 
       fPatternHitSets.push_back(std::move(trackSet));
    }
-
-   fPatternLines.resize(num);
 }
 
 Color_t AtTabMain::GetTrackColor(int i)
@@ -170,7 +167,7 @@ void AtTabMain::DrawPadPlane()
    fPadPlane = AtViewerManager::Instance()->GetMap()->GetPadPlane();
    fPadPlane->SetBit(TH1::kNoTitle);
    fCvsPadPlane->cd();
-   fPadPlane->Draw("COL L0");
+   fPadPlane->Draw("COL L");
    fPadPlane->SetMinimum(1.0);
    gStyle->SetOptStat(0);
    gStyle->SetPalette(103);
@@ -219,7 +216,7 @@ void AtTabMain::UpdatePatternEventElements()
 
    auto fPatternEvent = GetFairRootInfo<AtPatternEvent>();
    if (fPatternEvent == nullptr) {
-      LOG(debug) << "Cannot update AtPatternEvent elements: no event availible";
+      LOG(debug) << "Cannot update AtPatternEvent elements: no event available";
       return;
    }
 
@@ -229,7 +226,6 @@ void AtTabMain::UpdatePatternEventElements()
 
    // Remove all the elements, and re-add them
    fEvePatternEvent->RemoveElements();
-   fPatternLines.clear();
    for (int i = 0; i < tracks.size(); ++i) {
       if (tracks[i].GetPattern() == nullptr)
          continue;
@@ -246,20 +242,6 @@ void AtTabMain::UpdatePatternEventElements()
       pattern->SetDestroyOnZeroRefCnt(false);
       pattern->SetMainColor(GetTrackColor(i));
       fEvePatternEvent->AddElement(pattern);
-
-      // Get the projection of the pattern on the pad plane
-      auto projection = tracks[i].GetPattern()->GetPadPlaneProjection();
-      if (projection != nullptr) {
-         projection->SetLineColor(GetTrackColor(i));
-         projection->SetFillStyle(0);
-         if (fDrawProjection) {
-            fCvsPadPlane->cd();
-            projection->Draw();
-            fCvsPadPlane->Update();
-            fCvsPadPlane->Modified();
-         }
-         fPatternLines.push_back(std::move(projection));
-      }
    }
 }
 
@@ -267,7 +249,7 @@ void AtTabMain::UpdateEventElements()
 {
    auto fEvent = GetFairRootInfo<AtEvent>();
    if (fEvent == nullptr) {
-      LOG(debug) << "Cannot update AtEvent elements: no event availible";
+      LOG(debug) << "Cannot update AtEvent elements: no event available";
       return;
    }
 
@@ -289,17 +271,26 @@ void AtTabMain::UpdatePadPlane()
 
    auto fEvent = GetFairRootInfo<AtEvent>();
    if (fEvent == nullptr) {
-      LOG(debug) << "Cannot fill pad plane histogram: no event availible";
+      LOG(debug) << "Cannot fill pad plane histogram: no event available";
       return;
    }
    auto &hits = fEvent->GetHits();
+
+   TString plane = AtViewerManager::Instance()->GetMap()->GetPadPlanePlane();
 
    for (auto &hit : hits) {
       int padMultiHit = GetFairRootInfo<AtEvent>()->GetHitPadMult(hit->GetPadNum());
       if (hit->GetCharge() < fThreshold || padMultiHit > fMaxHitMulti)
          continue;
       auto position = hit->GetPosition();
-      fPadPlane->Fill(position.X(), position.Y(), hit->GetCharge());
+
+      if (plane == "XY") {
+         fPadPlane->Fill(position.X(), position.Y(), hit->GetCharge());
+      } else if (plane == "XZ") {
+         fPadPlane->Fill(position.X(), position.Z(), hit->GetCharge());
+      } else if (plane == "YZ") {
+         fPadPlane->Fill(position.Y(), position.Z(), hit->GetCharge());
+      }
    }
 
    fCvsPadPlane->Modified();

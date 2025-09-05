@@ -8,6 +8,16 @@
 #include <algorithm> // for max
 #include <array>     // for array
 
+std::unique_ptr<AtHit> AtHitClusterFull::Clone()
+{
+   return std::make_unique<AtHitClusterFull>(*this);
+}
+
+std::unique_ptr<AtHitClusterFull> AtHitClusterFull::CloneCluster()
+{
+   return std::make_unique<AtHitClusterFull>(*this);
+}
+
 void AtHitClusterFull::AddHit(const AtHit &hit)
 {
    AtHitCluster::AddHit(hit);

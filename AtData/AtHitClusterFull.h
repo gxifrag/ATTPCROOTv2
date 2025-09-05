@@ -44,8 +44,11 @@ public:
    AtHitClusterFull(const AtHitClusterFull &cluster) = default;
    virtual ~AtHitClusterFull() = default;
    virtual std::unique_ptr<AtHit> Clone() override; //< Create a copy of sub-type
+   std::unique_ptr<AtHitClusterFull> CloneCluster();
 
    virtual void AddHit(const AtHit &hit) override;
+
+   const std::vector<AtHit> &GetHits() const { return fHits; }
 
    XYZPoint GetPositionUnWeighted() const;
    TMatrixDSym GetCovMatrixFull() const;

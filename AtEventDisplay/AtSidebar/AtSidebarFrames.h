@@ -143,7 +143,7 @@ private:
 
 public:
    AtSidebarBranchControl(DataHandling::AtBranch &rawEvent, DataHandling::AtBranch &event,
-                          DataHandling::AtBranch &patternEvent, const TGWindow *p = nullptr, UInt_t w = 1, UInt_t h = 1,
+                          DataHandling::AtBranch &patternEvent, DataHandling::AtBranch &hitClusterEvent, const TGWindow *p = nullptr, UInt_t w = 1, UInt_t h = 1,
                           UInt_t options = 0, Pixel_t back = GetDefaultFrameBackground());
 
    ~AtSidebarBranchControl();
@@ -153,6 +153,7 @@ public:
    void SelectedAtRawEvent(Int_t);
    void SelectedAtEvent(Int_t);
    void SelectedAtPatternEvent(Int_t);
+   void SelectedAtHitClusterEvent(Int_t);
 
    void SelectEvent(Int_t ind, TString className);
 

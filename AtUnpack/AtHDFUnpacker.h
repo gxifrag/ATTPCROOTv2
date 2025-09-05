@@ -59,28 +59,14 @@ protected:
    virtual void processPad(std::size_t padIndex);
    virtual std::size_t n_pads(std::string i_raw_event);
    virtual std::vector<int16_t> pad_raw_data(std::size_t i_pad);
-
-   /**
-    * @brief Get the number entries in a group.
-    *
-    * Has the side effect of setting the internal _dataset variable to
-    * the dataset of the group.
-    *
-    * @param datasetName Name of the dataset to check
-    */
-   std::vector<ULong64_t> n_entries(std::string datasetName); /// Returns the number of entries in a group
-
    hid_t open_file(char const *file, IO_MODE mode);
    std::tuple<hid_t, hsize_t> open_group(hid_t fileId, char const *group);
-   std::tuple<hid_t, std::vector<hsize_t>>
-   open_dataset(hid_t locId, char const *dataset); /// Returns the id of the dataspace and the dimesnions in the vector
-   virtual void setEventIDAndTimestamps();
-
+   std::tuple<hid_t, std::vector<hsize_t>> open_dataset(hid_t locId, char const *dataset);
+   // Returns the id of the dataspace and the dimesnions in the vector
    void close_file(hid_t file);
    void close_group(hid_t group);
    void close_dataset(hid_t dataset);
    void end_raw_event();
-   Float_t getBaseline(const std::vector<u_int16_t> &data);
    Float_t getBaseline(const std::vector<int16_t> &data);
 
    template <typename T>
@@ -95,10 +81,12 @@ protected:
    }
 
    hid_t _file{};
-   hid_t _group{}; /// The group that contains the events (get in original unpacker)
+   hid_t _group{};
    hid_t _dataset{};
    std::vector<std::string> _eventsbyname;
 
+private:
+   void setEventIDAndTimestamps();
    AtPad *createPadAndSetIsAux(const AtPadReference &padRef);
    void setDimensions(AtPad *pad);
    void setAdc(AtPad *pad, const std::vector<int16_t> &data);

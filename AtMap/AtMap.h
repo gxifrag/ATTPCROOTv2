@@ -54,6 +54,8 @@ protected:
 
    void drawPadPlane();
 
+   TString fPadPlanePlane = "XY"; // Variable which specifies in which plane the PadPlane is placed in. Set to "XY" by default, which is the case for the AT-TPC.
+
 public:
    AtMap();
    ~AtMap() = default;
@@ -98,6 +100,9 @@ public:
    AtMap::InhibitType IsInhibited(Int_t PadNum) { return IsInhibited(GetPadRef(PadNum)); }
    AtMap::InhibitType IsInhibited(AtPadReference padRef);
    Int_t GetPadSize(int padNum);
+
+   void SetPadPlanePlane(TString plane);               // This function allows the user to change the fPadPlanePlane variable so that it can be "XZ" or "YZ" instead of "XY".
+   TString GetPadPlanePlane() {return fPadPlanePlane;} // This function gets the current value of the fPadPlanePlane variable.
 
 #pragma GCC diagnostic push
    // Ignore shadow warning when we shadow ROOT's global GuiTypes enum

@@ -73,7 +73,7 @@ void AtPatternLine::DefinePattern(const std::vector<XYZPoint> &points)
  */
 AtPatternLine::XYZPoint AtPatternLine::GetPointAt(double z) const
 {
-   return GetPoint() + z * GetDirection();
+   return GetPoint() + (z - fPatternPar[2]) * GetDirection();
 }
 
 void AtPatternLine::FitPattern(const std::vector<XYZPoint> &points, const std::vector<double> &charge)

@@ -25,6 +25,7 @@ set(SRCS
   AtPadValue.cxx
   AtPulserInfo.cxx
   AtPadReference.cxx
+  AtPadV2745.cxx
 
   AtBaseEvent.cxx
   AtRawEvent.cxx
@@ -32,6 +33,7 @@ set(SRCS
   AtHitCluster.cxx
   AtHitClusterFull.cxx
   AtEvent.cxx
+  AtHitClusterEvent.cxx
   AtProtoEvent.cxx
   AtProtoEventAna.cxx
   AtTrackingEvent.cxx
@@ -52,7 +54,6 @@ set(SRCS
   AtPattern/AtPatternFission.cxx
   AtPattern/AtPatternRay.cxx
   AtPattern/AtPatternTypes.cxx
-  AtPattern/AtPadPlaneElement.cxx
 
   AtFittedTrack.cxx
   

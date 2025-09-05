@@ -1,0 +1,1184 @@
+#include <TFile.h>
+#include <TTree.h>
+#include <TH1F.h>
+#include <TCanvas.h>
+#include "TMath.h"
+#include <regex>
+#include <iostream>
+//#include "AtTools.h"
+
+Double_t omega(Double_t x, Double_t y, Double_t z)
+{
+   return sqrt(x * x + y * y + z * z - 2 * x * y - 2 * y * z - 2 * x * z);
+}
+
+/*std::tuple<double, double>
+kine_2b(Double_t m1, Double_t m2, Double_t m3, Double_t m4, Double_t K_proj, Double_t thetalab, Double_t K_eject)
+{
+
+   // in this definition: m1(projectile); m2(target); m3(ejectile); and m4(recoil);
+   double Et1 = K_proj + m1;
+   double Et2 = m2;
+   double Et3 = K_eject + m3;
+   double Et4 = Et1 + Et2 - Et3;
+   double m4_ex, Ex, theta_cm;
+   double s, t, u; //---Mandelstam variables
+
+   s = pow(m1, 2) + pow(m2, 2) + 2 * m2 * Et1;
+   u = pow(m2, 2) + pow(m3, 2) - 2 * m2 * Et3;
+
+   m4_ex = sqrt((cos(thetalab) * omega(s, pow(m1, 2), pow(m2, 2)) * omega(u, pow(m2, 2), pow(m3, 2)) -
+                 (s - pow(m1, 2) - pow(m2, 2)) * (pow(m2, 2) + pow(m3, 2) - u)) 
+                   (2 * pow(m2, 2)) +
+                s + u - pow(m2, 2));
+   Ex = m4_ex - m4;
+
+   t = pow(m2, 2) + pow(m4_ex, 2) - 2 * m2 * Et4;
+
+   // for inverse kinematics Note: this angle corresponds to the recoil
+   theta_cm = TMath::Pi() - acos((pow(s, 2) + s * (2 * t - pow(m1, 2) - pow(m2, 2) - pow(m3, 2) - pow(m4_ex, 2)) +
+                                  (pow(m1, 2) - pow(m2, 2)) * (pow(m3, 2) - pow(m4_ex, 2))) /
+                                 (omega(s, pow(m1, 2), pow(m2, 2)) * omega(s, pow(m3, 2), pow(m4_ex, 2))));
+
+   theta_cm = theta_cm * TMath::RadToDeg();
+   return std::make_tuple(Ex, theta_cm);
+}*/
+/*void normalize_histogram(TH2F* histogram, const std::string& filename) {
+   // Open the normalize_sim.txt file
+   std::ifstream normalizeFile(filename);
+   if (!normalizeFile.is_open()) {
+       std::cerr << "Error: Could not open " << filename << "!" << std::endl;
+       return;
+   }
+
+   // Loop over the rows in the file
+   std::string line;
+   while (std::getline(normalizeFile, line)) {
+       std::istringstream iss(line);
+       double angle_cm, energy_cm, num_events;
+
+       // Read the values from the current row
+       if (!(iss >> angle_cm >> energy_cm >> num_events)) {
+           std::cerr << "Error: Malformed line in " << filename << ": " << line << std::endl;
+           continue;
+       }
+
+       // Find the corresponding bin in the histogram
+       int xBin = histogram->GetXaxis()->FindBin(angle_cm);
+       int yBin = histogram->GetYaxis()->FindBin(energy_cm);
+
+       // Get the current bin content
+       double binContent = histogram->GetBinContent(xBin, yBin);
+
+       // Normalize the bin content by dividing by the number of events
+       if (num_events != 0) { // Avoid division by zero
+           histogram->SetBinContent(xBin, yBin, binContent / num_events);
+       }
+   }
+
+   // Close the file
+   normalizeFile.close();
+}*/
+void kin_spyral() {
+    
+    std::string base_path = "/home/georgina/ATTPC/rootfiles/";
+    //string base_path_contaminant = "/home/david/PhD/PhD-14-02/attpcroot/spyral_fit/highener_sync/contaminant/";
+   /* string base_path_cluster = "/home/david/PhD/PhD-14-02/attpcroot/spyral_fit/lowener/Cluster/";
+    string base_path_estimate = "/home/david/PhD/PhD-14-02/attpcroot/spyral_fit/lowener/Estimation/";
+    AtTools::AtELossTable *elossTableHe4 = new AtTools::AtELossTable();
+    AtTools::AtELossTable *elossTableHe4_lowpressure = new AtTools::AtELossTable();
+    AtTools::AtELossTable *elossTableNe20 = new AtTools::AtELossTable();
+    elossTableHe4->LoadSrimTable("/home/david/PhD/SRIM/SRIM-2013-Pro/SRIM Outputs/Be10_He_600torr.txt");
+    elossTableNe20->LoadSrimTable("/home/david/PhD/SRIM/SRIM-2013-Pro/SRIM Outputs/Neon_alpha.txt");
+    elossTableHe4_lowpressure->LoadSrimTable("/home/david/PhD/SRIM/SRIM-2013-Pro/SRIM Outputs/Be10_He_300torr.txt");  */  
+
+    /*TCutG *cutpid_1 = new TCutG("CUTG",7);
+    cutpid_1->SetVarX("brho_vs_dEdx");
+    cutpid_1->SetVarY("");
+    cutpid_1->SetTitle("Graph");
+    cutpid_1->SetFillStyle(1000);
+    cutpid_1->SetPoint(0,7.54386,0.485802);
+    cutpid_1->SetPoint(1,17.6942,0.452156);
+    cutpid_1->SetPoint(2,18.1955,0.278979);
+    cutpid_1->SetPoint(3,11.8045,0.236427);
+    cutpid_1->SetPoint(4,7.79449,0.310646);
+    cutpid_1->SetPoint(5,7.54386,0.485802);
+    cutpid_1->SetPoint(6,7.54386,0.485802);
+   */
+  
+
+    // List of ROOT files
+   Double_t m_p = 1.007825 * 931.49401;
+   Double_t m_d = 2.0135532 * 931.49401;
+   Double_t m_t = 3.016049281 * 931.49401;
+   Double_t m_He3 = 3.016029 * 931.49401;
+
+   std::vector<std::tuple<TString, TString, TString>> filepairs;
+  // filepairs.push_back(std::make_pair("run_0062_4He.root", "run_0062.root"));
+  // filepairs.push_back(std::make_tuple("run_0116_4He.root", "run_0116_cluster.root", "run_0116.root", "run_0116_4He.root"));
+  
+   const char* root_files[] = {
+      "run_0024_2H.root",
+      "run_0022_2H.root",
+      "run_0115_2H.root",
+      "run_0066_2H.root",
+      "run_0124_2H.root",
+      "run_0102_2H.root",
+      "run_0103_2H.root",
+      "run_0044_2H.root",
+      "run_0051_2H.root",
+      "run_0110_2H.root",
+      "run_0073_2H.root",
+      "run_0123_2H.root",
+      "run_0016_2H.root",
+      "run_0089_2H.root",
+      "run_0017_2H.root",
+      "run_0062_2H.root",
+      "run_0114_2H.root",
+      "run_0128_2H.root",
+      "run_0014_2H.root",
+      "run_0119_2H.root",
+      "run_0050_2H.root",
+      "run_0069_2H.root",
+      "run_0096_2H.root",
+      "run_0105_2H.root",
+      "run_0068_2H.root",
+      "run_0107_2H.root",
+      "run_0070_2H.root",
+      "run_0034_2H.root",
+      "run_0023_2H.root",
+      "run_0130_2H.root",
+      "run_0036_2H.root",
+      "run_0101_2H.root",
+      "run_0106_2H.root",
+      "run_0060_2H.root",
+      "run_0071_2H.root",
+      "run_0061_2H.root",
+      "run_0084_2H.root",
+      "run_0113_2H.root",
+      "run_0075_2H.root",
+      "run_0043_2H.root",
+      "run_0021_2H.root",
+      "run_0133_2H.root",
+      "run_0104_2H.root",
+      "run_0129_2H.root",
+      "run_0088_2H.root",
+      "run_0042_2H.root",
+      "run_0117_2H.root",
+      "run_0037_2H.root",
+      "run_0013_2H.root",
+      "run_0030_2H.root",
+      "run_0100_2H.root",
+      "run_0015_2H.root",
+      "run_0122_2H.root",
+      "run_0099_2H.root",
+      "run_0074_2H.root",
+      "run_0033_2H.root",
+      "run_0020_2H.root",
+      "run_0028_2H.root",
+      "run_0097_2H.root",
+      "run_0029_2H.root",
+      "run_0121_2H.root",
+      "run_0120_2H.root",
+      "run_0127_2H.root",
+      "run_0072_2H.root",
+      "run_0083_2H.root",
+      "run_0056_2H.root",
+      "run_0131_2H.root",
+      "run_0085_2H.root",
+      "run_0054_2H.root",
+  };
+
+    // Create histograms for ke and polar
+   /*TH2F* Ang_ener_gs = new TH2F("ang_ener_gs", "Ang_ener_gs", 720, 0, 90,10000,0,30);
+   TH2F* Ang_ener_cut = new TH2F("ang_ener_cut", "Ang_ener_cut", 720, 0, 90,10000,0,15);
+   TH2F* Ang_ener_gs_contaminants = new TH2F("ang_ener_gs_contaminants", "Ang_ener_gs_contaminants", 720, 0, 90,10000,0,30);
+   TH2F* Ang_ener_1st = new TH2F("ang_ener_1st", "Ang_ener_1st", 720, 0, 90,10000,0,30);
+   TH2F* Ang_energy = new TH2F("ang_energy", "Ang_energy", 720, 0, 90,10000,0,40);
+   TH2F* Ang_energy_contaminants = new TH2F("ang_energy_contaminants", "Ang_energy_contaminants", 720, 0, 90,10000,0,40);
+   TH2F* Ang_energy_150170 = new TH2F("ang_energy_150170", "Ang_energy_150170", 720, 0, 90,10000,0,30);
+   TH2F* Ang_energy_170190 = new TH2F("ang_energy_170190", "Ang_energy_170190", 720, 0, 90,10000,0,30);
+   TH2F* Ang_energy_190210 = new TH2F("ang_energy_190210", "Ang_energy_190210", 720, 0, 90,10000,0,30);
+   TH2F* Ang_energy_210230 = new TH2F("ang_energy_210230", "Ang_energy_210230", 720, 0, 90,10000,0,30);
+   TH2F* Ang_energy_230250 = new TH2F("ang_energy_230250", "Ang_energy_230250", 720, 0, 90,10000,0,30);
+   TH2F* Ang_energy_250270 = new TH2F("ang_energy_250270", "Ang_energy_250270", 720, 0, 90,10000,0,30);
+   TH2F* Ang_energy_270290 = new TH2F("ang_energy_270290", "Ang_energy_270290", 720, 0, 90,10000,0,30);
+   TH2F* Ang_energy_290310 = new TH2F("ang_energy_290310", "Ang_energy_290310", 720, 0, 90,10000,0,30);
+   TH2F* Ang_energy_310330 = new TH2F("ang_energy_310330", "Ang_energy_310330", 720, 0, 90,10000,0,30);
+   TH2F* Ang_energy_330350 = new TH2F("ang_energy_330350", "Ang_energy_330350", 720, 0, 90,10000,0,30);
+   TH2F* Ang_energy_350370 = new TH2F("ang_energy_350370", "Ang_energy_350370", 720, 0, 90,10000,0,30);
+   TH2F* Ang_energy_370390 = new TH2F("ang_energy_370390", "Ang_energy_370390", 720, 0, 90,10000,0,30);
+   TH2F* Ang_energy_390410 = new TH2F("ang_energy_390410", "Ang_energy_390410", 720, 0, 90,10000,0,30);
+   TH2F* Ang_energy_410430 = new TH2F("ang_energy_410430", "Ang_energy_410430", 720, 0, 90,10000,0,30);
+   TH2F* Ang_energy_430450 = new TH2F("ang_energy_430450", "Ang_energy_430450", 720, 0, 90,10000,0,30);
+   TH2F* vertex_vs_ex = new TH2F("vertex_vs_ex", "vertex_vs_ex", 100, -5, 10, 1000, 0, 1000);
+   TH2F* kin_vs_ebeam = new TH2F("kin_vs_ebeam", "kin_vs_ebeam", 1000, 0, 50, 1000, 0, 10);
+   TH2F* brho_vs_dEdx = new TH2F("brho_vs_dEdx", "brho_vs_dEdx", 1000, 0, 80, 1000, 0, 2);
+   TH2F* ex_vs_ebeam = new TH2F("ex_vs_ebeam", "ex_vs_ebeam", 100, -10,15, 1000, 0, 100);
+   TH2F* ang_ang = new TH2F("ang_ang", "ang_ang", 360, 0, 90, 360, 0, 90);
+   TH2F* ebeam_alphaener = new TH2F("ebeam_alphaener", "ebeam_alphaener", 1000, 0, 10, 1000, 0, 10);
+
+   TH2F* ecm_thetacm = new TH2F("ecm_thetacm", "ecm_thetacm", 720, 0,180, 100, 0, 10);
+   TH2F* ecm_thetacm_gs_coin = new TH2F("ecm_thetacm_gs_coin", "ecm_thetacm_gs_coin", 720, 0,180, 100, 0, 10);
+   TH2F* ecm_thetacm_gs_coin_alpha = new TH2F("ecm_thetacm_gs_coin_alpha", "ecm_thetacm_gs_coin_alpha", 720, 0,180, 100, 0, 10);
+   TH2F* ecm_thetacm_150170 = new TH2F("ecm_thetacm_150170", "ecm_thetacm_150170", 720, 0,180, 100, 0, 10);
+   TH2F* ecm_thetacm_170190 = new TH2F("ecm_thetacm_170190", "ecm_thetacm_170190", 720, 0,180, 100, 0, 10);
+   TH2F* ecm_thetacm_190210 = new TH2F("ecm_thetacm_190210", "ecm_thetacm_190210", 720, 0,180, 100, 0, 10);
+   TH2F* ecm_thetacm_210230 = new TH2F("ecm_thetacm_210230", "ecm_thetacm_210230", 720, 0,180, 100, 0, 10);
+   TH2F* ecm_thetacm_230250 = new TH2F("ecm_thetacm_230250", "ecm_thetacm_230250", 720, 0,180, 100, 0, 10);
+   TH2F* ecm_thetacm_250270 = new TH2F("ecm_thetacm_250270", "ecm_thetacm_250270", 720, 0,180, 100, 0, 10);
+   TH2F* ecm_thetacm_270290 = new TH2F("ecm_thetacm_270290", "ecm_thetacm_270290", 720, 0,180, 100, 0, 10);
+   TH2F* ecm_thetacm_290310 = new TH2F("ecm_thetacm_290310", "ecm_thetacm_290310", 720, 0,180, 100, 0, 10);
+   TH2F* ecm_thetacm_310330 = new TH2F("ecm_thetacm_310330", "ecm_thetacm_310330", 720, 0,180, 100, 0, 10);
+   TH2F* ecm_thetacm_330350 = new TH2F("ecm_thetacm_330350", "ecm_thetacm_330350", 720, 0,180, 100, 0, 10);
+   TH2F* ecm_thetacm_350370 = new TH2F("ecm_thetacm_350370", "ecm_thetacm_350370", 720, 0,180, 100, 0, 10);
+   TH2F* ecm_thetacm_370390 = new TH2F("ecm_thetacm_370390", "ecm_thetacm_370390", 720, 0,180, 100, 0, 10);
+   TH2F* ecm_thetacm_390410 = new TH2F("ecm_thetacm_390410", "ecm_thetacm_390410", 720, 0,180, 100, 0, 10);
+   TH2F* ecm_thetacm_410430 = new TH2F("ecm_thetacm_410430", "ecm_thetacm_410430", 720, 0,180, 100, 0, 10);
+   TH2F* ecm_thetacm_430450 = new TH2F("ecm_thetacm_430450", "ecm_thetacm_430450", 720, 0,180, 100, 0, 10);
+    TH2F* ecm_thetacm_gs = new TH2F("ecm_thetacm_gs", "ecm_thetacm_gs", 180, 0,180, 100, 0, 15);
+    TH2F* ecm_thetacm_gs_alpha = new TH2F("ecm_thetacm_gs_alpha", "ecm_thetacm_gs_alpha", 180, 0,180, 100, 0, 10);
+    TH2F* ecm_thetacm_1st = new TH2F("ecm_thetacm_1st", "ecm_thetacm_1st", 720, 0,180, 100, 0, 12); 
+    TH2F* kin_vs_vertex = new TH2F("kin_vs_vertex", "kin_vs_vertex", 100000, -1000, 1000, 100, 0, 10);   
+    TH2F* arclength_vs_zpos = new TH2F("arclength_vs_zpos", "arclength_vs_zpos", 1000, -10, 1000, 1000, 0, 3000);
+    TH2F* size_vs_energy = new TH2F("size_vs_energy", "size_vs_energy", 100, 0, 10, 1000, 0, 1000);
+    TH1F *ex_energy = new TH1F("ex_energy", "ex_energy", 100, -10, 15);
+    TH1F *ex_energy_cut = new TH1F("ex_energy_cut", "ex_energy_cut", 100, -10, 10);
+    TH1F *ex_energy_cut_2 = new TH1F("ex_energy_cut_2", "ex_energy_cut_2", 100, -10, 10);
+    TH1F *clustersize = new TH1F("clustersize", "clustersize", 50, 0, 400);
+    TH1F *ang45_55 = new TH1F("ang45_55", "ang45_55", 100, 0, 10);
+    TH1F *ang55_65 = new TH1F("ang55_65", "ang55_65", 100, 0, 10);
+    TH1F *ang65_75 = new TH1F("ang65_75", "ang65_75", 100, 0, 10);
+    TH1F *ang75_85 = new TH1F("ang75_85", "ang75_85", 100, 0, 10);
+      TH1F *ang85_95 = new TH1F("ang85_95", "ang85_95", 100, 0, 10);
+      TH1F *ang95_105 = new TH1F("ang95_105", "ang95_105", 100, 10, 20);
+      TH1F *ang105_115 = new TH1F("ang105_115", "ang105_115", 100, 0, 10);
+      TH1F *ang115_125 = new TH1F("ang115_125", "ang115_125", 100, 0, 10);
+      TH1F *ang125_135 = new TH1F("ang125_135", "ang125_135", 100, 0, 10);
+      TH1F *ang135_145 = new TH1F("ang135_145", "ang135_145", 100, 0, 10);
+      TH1F *ener1 = new TH1F("ener1", "ener1", 180, 0, 180);
+      TH1F *ener2 = new TH1F("ener2", "ener2", 180, 0, 180);
+      TH1F *ener5 = new TH1F("ener3", "ener5", 180, 0, 180);
+    
+    TH1F *vertex_ne = new TH1F("vertex_ne", "vertex_ne", 100, -10, 1000);
+    TH1F *vertex_pos = new TH1F("vertex_pos", "vertex_pos", 100, -10, 1000);*/
+    
+
+    // Loop over the ROOT files
+    for (auto file_name : filepairs) {
+
+      std::regex re("run_(\\d+).root");
+        std::smatch match;
+        std::string file_name_str = std::get<2>(file_name).Data();
+        std::string file_number;
+        if (std::regex_search(file_name_str, match, re) && match.size() > 1) {
+            file_number = match.str(1);
+        }
+
+      std::cout << "Processing file: " << std::get<0>(file_name) << std::endl;
+        // Open the ROOT file
+        auto full_path_solver = base_path + std::get<0>(file_name);
+        //auto full_path_cluster = base_path_cluster + std::get<1>(file_name);
+        //auto full_path_estimate = base_path_estimate + std::get<2>(file_name);
+       // auto full_path_contaminant = base_path_contaminant + std::get<3>(file_name);
+        //auto full_path = base_path + file_name;
+        TFile *file_solver= new TFile(full_path_solver, "READ");
+        //TFile *file_contaminant= new TFile(full_path_contaminant, "READ");
+        //TTree* tree_contaminant = (TTree*)file_contaminant->Get("parquettree");
+        //TFile* file_solver = TFile::Open(full_path.c_str(), "READ");
+        
+        // Get the tree from the file
+        TTree* tree_solver= (TTree*)file_solver->Get("parquettree");
+
+        /*TFile *file_cluster= new TFile(full_path_cluster, "READ");
+        TTree* tree_cluster = (TTree*)file_cluster->Get("ClusterTree");
+
+        TFile *file_estimate= new TFile(full_path_estimate, "READ");
+         TTree* tree_est = (TTree*)file_estimate->Get("parquettree");*/
+        
+        // Variables to hold the data
+        Double_t ke, polar, zpos, brho, sqrt_dEdx, ke_contaminant, polar_contaminant;
+        Int_t cluster_size;
+        Long64_t cluster_index_solver;
+        Long64_t event_solver;
+        Long64_t event_est;
+        Int_t event_cluster;
+        Long64_t cluster_index_est;
+        Int_t cluster_index_cluster;
+        Double_t arclength;
+        Double_t ic_amplitude;
+        // Set branch addresses
+        tree_solver->SetBranchAddress("ke", &ke);
+        tree_solver->SetBranchAddress("polar", &polar);
+        tree_solver->SetBranchAddress("vertex_z", &zpos);
+        tree_solver->SetBranchAddress("cluster_index", &cluster_index_solver);
+        tree_solver->SetBranchAddress("event", &event_solver);
+        /*tree_cluster->SetBranchAddress("event_id", &event_cluster);
+        tree_cluster->SetBranchAddress("cluster_id", &cluster_index_cluster);
+        tree_cluster->SetBranchAddress("cluster_size", &cluster_size);
+        tree_est->SetBranchAddress("event", &event_est);
+        tree_est->SetBranchAddress("cluster_index", &cluster_index_est);
+        tree_est->SetBranchAddress("arclength", &arclength);
+        tree_est->SetBranchAddress("brho", &brho);
+        tree_est->SetBranchAddress("sqrt_dEdx", &sqrt_dEdx);
+        tree_est->SetBranchAddress("ic_amplitude", &ic_amplitude);*/
+        //tree_contaminant->SetBranchAddress("ke", &ke_contaminant);
+        //tree_contaminant->SetBranchAddress("polar", &polar_contaminant);*/
+
+        
+        // Loop over the entries in the tree
+        Long64_t nentries = tree_solver->GetEntries();
+        //Long64_t nentries_cluster = tree_cluster->GetEntries();
+        //Long64_t nentries_est = tree_est->GetEntries(); 
+        //Long64_t nentries_contaminant = tree_contaminant->GetEntries();
+        
+        //std::cout << "Last event solver index: " << event_solver << std::endl;
+        Int_t j = 0;
+        Int_t k = 0;
+        //tree_cluster->GetEntry(j);
+        
+        //tree_est->GetEntry(k);
+        tree_solver->GetEntry(0);
+        Bool_t first_event = kTRUE;
+        Bool_t prev_coin = kFALSE;
+        Int_t coin_events = event_solver;
+        Bool_t first_coin = kTRUE;
+        for(int ji = 0; ji < nentries_est; ji++){
+            tree_est->GetEntry(ji);
+        }
+        
+        tree_est->GetEntry(j);
+        tree_cluster->GetEntry(j);
+        /*for (int i = 0; i < nentries_contaminant; i++) {
+         tree_contaminant->GetEntry(i);
+            Ang_energy_contaminants->Fill(polar_contaminant*TMath::RadToDeg(),ke_contaminant);
+          }*/
+        //std::cout << "Number of entries: " << nentries << std::endl;
+        for (int i = 0; i < nentries; i++) {
+            tree_solver->GetEntry(i);
+            coin_events = event_solver;
+            while(event_solver != event_cluster){
+               //   break;
+                j++;
+                tree_cluster->GetEntry(j);
+            }
+            while(cluster_index_solver != cluster_index_cluster){
+                  //if(j == nentries_cluster)
+                  //   break;
+                 j++;
+                tree_cluster->GetEntry(j);
+            }
+            while(event_solver != event_est){
+                //if(k == nentries_est)
+                    //break;
+                k++;
+                tree_est->GetEntry(k);
+            }
+            while(cluster_index_solver != cluster_index_est){
+                //if(k == nentries_est)
+                  //  break;
+                k++;
+                tree_est->GetEntry(k);
+            }
+
+            if(polar*TMath::RadToDeg() < 23.0)
+               continue;
+
+//            if(ic_amplitude > 1400 || ic_amplitude < 700)
+  //             continue;
+
+           // size_vs_energy->Fill(ke,cluster_size);
+            /*if(!first_event && !prev_coin){
+                  if(coin_events != event_solver){
+                     coin_events = event_solver;
+                     first_coin = kTRUE;
+                  }
+                  if(coin_events == event_solver){
+                     if(first_coin){
+                        first_coin = kFALSE;
+                     //std::cout<<"Coincidence event: " << coin_events << std::endl;   
+                     double theta1 = polar;   
+                     double ener1 = ke;
+                     double z1 = zpos;
+                     tree_solver->GetEntry(i-1);
+                     double theta2 = polar;
+                     double ener2 = ke;
+                     double z2 = zpos;
+
+                     if(theta1 > theta2){
+                        auto[ex,thetacm] = kine_2b(m_Be10, m_a,m_a,m_Be10, elossTableHe4_lowpressure->GetEnergy(18.1,z1*1000), theta1, ener1);
+                        //if(cutne->IsInside(theta1*TMath::RadToDeg(),theta2*TMath::RadToDeg()))
+                        ex_energy->Fill(ex);
+                        if(cutbeang->IsInside(theta1*TMath::RadToDeg(),theta2*TMath::RadToDeg()))
+                        vertex_ne->Fill(z1*1000);
+                        ex_energy->Fill(ex);
+                        if(ex > -2.0 && ex < 2.0){
+                         ang_ang->Fill(theta1*TMath::RadToDeg(),theta2*TMath::RadToDeg());
+                         //if(theta2*TMath::RadToDeg()>12.0)
+                         if(cutbeang->IsInside(theta1*TMath::RadToDeg(),theta2*TMath::RadToDeg())){
+                           ecm_thetacm_gs_coin->Fill(thetacm,2.0/7.0*elossTableHe4_lowpressure->GetEnergy(18.1,z1*1000));
+                           Ang_ener_cut->Fill(theta1*TMath::RadToDeg(),ener1);
+                           double a = (m_a*(ener1 + m_a) - m_a*m_a)/(1 - TMath::Cos(2*(TMath::Pi()/2 - theta1)));
+                           double Ebeam = ((TMath::Sqrt(a + m_Be10*m_Be10) + TMath::Sqrt(a + m_a*m_a))*(TMath::Sqrt(a + m_Be10*m_Be10) + TMath::Sqrt(a + m_a*m_a)) - (m_a + m_Be10)*(m_a + m_Be10))/(2*m_a);
+                           ecm_thetacm_gs_coin_alpha->Fill(2*(TMath::Pi()/2 - theta1)*TMath::RadToDeg(),Ebeam*2.0/7.0);
+                           ebeam_alphaener->Fill(2.0/7.0*Ebeam,2.0/7.0*elossTableHe4_lowpressure->GetEnergy(18.1,z1*1000));
+                        }
+                           }
+                     }
+                     
+                     if(theta2 >= theta1){
+                         auto[ex,thetacm] = kine_2b(m_Be10, m_a,m_a,m_Be10, elossTableHe4_lowpressure->GetEnergy(18.1,z2*1000), theta2, ener2);
+                         if(cutbeang->IsInside(theta1*TMath::RadToDeg(),theta2*TMath::RadToDeg()))
+                         vertex_ne->Fill(z2*1000);
+                        ex_energy->Fill(ex);
+                         if(ex > -2.0 && ex < 2.0){
+                           ang_ang->Fill(theta2*TMath::RadToDeg(),theta1*TMath::RadToDeg());
+                           //if(theta1*TMath::RadToDeg()>12.0)
+                           if(cutbeang->IsInside(theta2*TMath::RadToDeg(),theta1*TMath::RadToDeg())){
+                           ecm_thetacm_gs_coin->Fill(thetacm,2.0/7.0*elossTableHe4_lowpressure->GetEnergy(18.1,z2*1000));
+                           Ang_ener_cut->Fill(theta2*TMath::RadToDeg(),ener2);
+                           double a = (m_a*(ener2 + m_a) - m_a*m_a)/(1 - TMath::Cos(2*(TMath::Pi()/2 - theta2)));
+                           double Ebeam = ((TMath::Sqrt(a + m_Be10*m_Be10) + TMath::Sqrt(a + m_a*m_a))*(TMath::Sqrt(a + m_Be10*m_Be10) + TMath::Sqrt(a + m_a*m_a)) - (m_a + m_Be10)*(m_a + m_Be10))/(2*m_a);
+                           ecm_thetacm_gs_coin_alpha->Fill(2*(TMath::Pi()/2 - theta2)*TMath::RadToDeg(),Ebeam*2.0/7.0);
+                           ebeam_alphaener->Fill(2.0/7.0*Ebeam,2.0/7.0*elossTableHe4_lowpressure->GetEnergy(18.1,z2*1000));
+                              
+
+                        }
+                        
+                            }
+                           
+                     }
+                     prev_coin = kTRUE;
+                  }
+
+                  if(!first_coin)
+                     continue;
+                  }
+            }*/
+
+           /* if(!first_event && prev_coin){
+               if(coin_events != event_solver){
+                  prev_coin = kFALSE;
+                  coin_events = event_solver;
+               }
+
+            }*/
+
+            /*if(!first_event && prev_coin){
+                  if(coin_events != event_solver){
+                     prev_coin = kFALSE;
+                     coin_events = event_solver;
+                  }
+
+                  if(coin_events == event_solver){
+                     //std::cout<<"Coincidence event: " << coin_events << std::endl;   
+                     double theta1 = polar;   
+                     double ener1 = ke;
+                     double z1 = zpos;
+                     tree_solver->GetEntry(i-1);
+                     double theta2 = polar;
+                     double ener2 = ke;
+                     double z2 = zpos;
+                     tree_solver->GetEntry(i-2);
+                     double theta3 = polar;
+                     double ener3 = ke;
+                     double z3 = zpos;
+
+                     if(theta1 >= theta2 && theta1 >= theta3 && theta2 >= theta3){
+                        auto[ex,thetacm] = kine_2b(m_Be10, m_a,m_a,m_Be10, elossTableHe4_lowpressure->GetEnergy(18.1,z1*1000), theta1, ener1);
+                        if(cutbeang->IsInside(theta1*TMath::RadToDeg(),theta2*TMath::RadToDeg()))
+                        vertex_ne->Fill(z1*1000);
+                        ex_energy->Fill(ex);
+                        if(ex > -2.0 && ex < 2.0){
+                           ang_ang->Fill(theta1*TMath::RadToDeg(),theta2*TMath::RadToDeg());
+                           //if(theta2*TMath::RadToDeg()>12.0)
+                           if(cutbeang->IsInside(theta1*TMath::RadToDeg(),theta2*TMath::RadToDeg())){
+                           ecm_thetacm_gs_coin->Fill(thetacm,2.0/7.0*elossTableHe4_lowpressure->GetEnergy(18.1,z1*1000));
+                           Ang_ener_cut->Fill(theta1*TMath::RadToDeg(),ener1);
+
+                           double a = (m_a*(ener1 + m_a) - m_a*m_a)/(1 - TMath::Cos(2*(TMath::Pi()/2 - theta1)));
+                           double Ebeam = ((TMath::Sqrt(a + m_Be10*m_Be10) + TMath::Sqrt(a + m_a*m_a))*(TMath::Sqrt(a + m_Be10*m_Be10) + TMath::Sqrt(a + m_a*m_a)) - (m_a + m_Be10)*(m_a + m_Be10))/(2*m_a);
+                           ecm_thetacm_gs_coin_alpha->Fill(2*(TMath::Pi()/2 - theta1)*TMath::RadToDeg(),Ebeam*2.0/7.0);
+                           ebeam_alphaener->Fill(2.0/7.0*Ebeam,2.0/7.0*elossTableHe4_lowpressure->GetEnergy(18.1,z1*1000));
+                           }
+                        }
+                     }
+
+                     if(theta1 >= theta2 && theta1 >= theta3 && theta3 >= theta2){
+                        auto[ex,thetacm] = kine_2b(m_Be10, m_a,m_a,m_Be10, elossTableHe4_lowpressure->GetEnergy(18.1,z1*1000), theta1, ener1);
+                        if(cutbeang->IsInside(theta1*TMath::RadToDeg(),theta3*TMath::RadToDeg()))
+                        vertex_ne->Fill(z1*1000);
+                        ex_energy->Fill(ex);
+                        if(ex > -2.0 && ex < 2.0){
+                           ang_ang->Fill(theta1*TMath::RadToDeg(),theta3*TMath::RadToDeg());
+                           
+                           //if(theta3*TMath::RadToDeg()>12.0)
+                           if(cutbeang->IsInside(theta1*TMath::RadToDeg(),theta3*TMath::RadToDeg())){
+                           ecm_thetacm_gs_coin->Fill(thetacm,2.0/7.0*elossTableHe4_lowpressure->GetEnergy(18.1,z1*1000));
+                           Ang_ener_cut->Fill(theta1*TMath::RadToDeg(),ener1);
+                           double a = (m_a*(ener1 + m_a) - m_a*m_a)/(1 - TMath::Cos(2*(TMath::Pi()/2 - theta1)));
+                           double Ebeam = ((TMath::Sqrt(a + m_Be10*m_Be10) + TMath::Sqrt(a + m_a*m_a))*(TMath::Sqrt(a + m_Be10*m_Be10) + TMath::Sqrt(a + m_a*m_a)) - (m_a + m_Be10)*(m_a + m_Be10))/(2*m_a);
+                           ecm_thetacm_gs_coin_alpha->Fill(2*(TMath::Pi()/2 - theta1)*TMath::RadToDeg(),Ebeam*2.0/7.0);
+                           ebeam_alphaener->Fill(2.0/7.0*Ebeam,2.0/7.0*elossTableHe4_lowpressure->GetEnergy(18.1,z1*1000));
+                           }
+                        }
+                     }
+                     
+                     if(theta2 >= theta1 && theta2 >= theta3 && theta1 >= theta3){
+                        auto[ex,thetacm] = kine_2b(m_Be10, m_a,m_a,m_Be10, elossTableHe4_lowpressure->GetEnergy(18.1,z2*1000), theta2, ener2);
+                        if(cutbeang->IsInside(theta2*TMath::RadToDeg(),theta1*TMath::RadToDeg()))
+                        vertex_ne->Fill(z2*1000);
+                        ex_energy->Fill(ex);
+                        if(ex > -2.0 && ex < 2.0){
+                        ang_ang->Fill(theta2*TMath::RadToDeg(),theta1*TMath::RadToDeg());
+                        //if(theta1*TMath::RadToDeg()>12.0)
+                        if(cutbeang->IsInside(theta2*TMath::RadToDeg(),theta1*TMath::RadToDeg())){
+                        ecm_thetacm_gs_coin->Fill(thetacm,2.0/7.0*elossTableHe4_lowpressure->GetEnergy(18.1,z2*1000));
+                        Ang_ener_cut->Fill(theta2*TMath::RadToDeg(),ener2);
+                        double a = (m_a*(ener2 + m_a) - m_a*m_a)/(1 - TMath::Cos(2*(TMath::Pi()/2 - theta2)));
+                        double Ebeam = ((TMath::Sqrt(a + m_Be10*m_Be10) + TMath::Sqrt(a + m_a*m_a))*(TMath::Sqrt(a + m_Be10*m_Be10) + TMath::Sqrt(a + m_a*m_a)) - (m_a + m_Be10)*(m_a + m_Be10))/(2*m_a);
+                        ecm_thetacm_gs_coin_alpha->Fill(2*(TMath::Pi()/2 - theta2)*TMath::RadToDeg(),Ebeam*2.0/7.0);
+                        ebeam_alphaener->Fill(2.0/7.0*Ebeam,2.0/7.0*elossTableHe4_lowpressure->GetEnergy(18.1,z2*1000));
+                        }
+                        }
+                     }
+
+                     if(theta2 >= theta1 && theta2 >= theta3 && theta3 >= theta1){
+                        auto[ex,thetacm] = kine_2b(m_Be10, m_a,m_a,m_Be10, elossTableHe4_lowpressure->GetEnergy(18.1,z2*1000), theta2, ener2);
+                        if(cutbeang->IsInside(theta2*TMath::RadToDeg(),theta3*TMath::RadToDeg()))
+                        vertex_ne->Fill(z2*1000);
+                        ex_energy->Fill(ex);
+                        if(ex > -2.0 && ex < 2.0){
+                        ang_ang->Fill(theta2*TMath::RadToDeg(),theta3*TMath::RadToDeg());
+                        //if(theta3*TMath::RadToDeg()>12.0)
+                        if(cutbeang->IsInside(theta2*TMath::RadToDeg(),theta3*TMath::RadToDeg())){
+                        ecm_thetacm_gs_coin->Fill(thetacm,2.0/7.0*elossTableHe4_lowpressure->GetEnergy(18.1,z2*1000));
+                        Ang_ener_cut->Fill(theta2*TMath::RadToDeg(),ener2);
+                        double a = (m_a*(ener2 + m_a) - m_a*m_a)/(1 - TMath::Cos(2*(TMath::Pi()/2 - theta2)));
+                        double Ebeam = ((TMath::Sqrt(a + m_Be10*m_Be10) + TMath::Sqrt(a + m_a*m_a))*(TMath::Sqrt(a + m_Be10*m_Be10) + TMath::Sqrt(a + m_a*m_a)) - (m_a + m_Be10)*(m_a + m_Be10))/(2*m_a);
+                        ecm_thetacm_gs_coin_alpha->Fill(2*(TMath::Pi()/2 - theta2)*TMath::RadToDeg(),Ebeam*2.0/7.0);
+                        ebeam_alphaener->Fill(2.0/7.0*Ebeam,2.0/7.0*elossTableHe4_lowpressure->GetEnergy(18.1,z2*1000));
+                        }
+                        }
+                     }
+
+                     if(theta3 >= theta1 && theta3 >= theta2 && theta1 >= theta2){
+                        auto[ex,thetacm] = kine_2b(m_Be10, m_a,m_a,m_Be10, elossTableHe4_lowpressure->GetEnergy(18.1,z3*1000), theta3, ener3);
+                        if(cutbeang->IsInside(theta3*TMath::RadToDeg(),theta1*TMath::RadToDeg()))
+                        vertex_ne->Fill(z3*1000);
+                        ex_energy->Fill(ex);
+                        if(ex > -2.0 && ex < 2.0){
+                        ang_ang->Fill(theta3*TMath::RadToDeg(),theta1*TMath::RadToDeg());
+                        //if(theta1*TMath::RadToDeg()>12.0)
+                        if(cutbeang->IsInside(theta3*TMath::RadToDeg(),theta1*TMath::RadToDeg())){
+                        ecm_thetacm_gs_coin->Fill(thetacm,2.0/7.0*elossTableHe4_lowpressure->GetEnergy(18.1,z3*1000));
+                        Ang_ener_cut->Fill(theta3*TMath::RadToDeg(),ener3);
+                        double a = (m_a*(ener3 + m_a) - m_a*m_a)/(1 - TMath::Cos(2*(TMath::Pi()/2 - theta3)));
+                        double Ebeam = ((TMath::Sqrt(a + m_Be10*m_Be10) + TMath::Sqrt(a + m_a*m_a))*(TMath::Sqrt(a + m_Be10*m_Be10) + TMath::Sqrt(a + m_a*m_a)) - (m_a + m_Be10)*(m_a + m_Be10))/(2*m_a);
+                        ecm_thetacm_gs_coin_alpha->Fill(2*(TMath::Pi()/2 - theta3)*TMath::RadToDeg(),Ebeam*2.0/7.0);
+                        ebeam_alphaener->Fill(2.0/7.0*Ebeam,2.0/7.0*elossTableHe4_lowpressure->GetEnergy(18.1,z3*1000));
+                        }
+                        }
+                     }
+
+                     if(theta3 >= theta1 && theta3 >= theta2 && theta2 >= theta1){
+                        auto[ex,thetacm] = kine_2b(m_Be10, m_a,m_a,m_Be10, elossTableHe4_lowpressure->GetEnergy(18.1,z3*1000), theta3, ener3);
+                        if(cutbeang->IsInside(theta3*TMath::RadToDeg(),theta2*TMath::RadToDeg()))
+                        vertex_ne->Fill(z3*1000);
+                        ex_energy->Fill(ex);
+                        if(ex > -2.0 && ex < 2.0){
+                        ang_ang->Fill(theta3*TMath::RadToDeg(),theta2*TMath::RadToDeg());
+                        //if(theta2*TMath::RadToDeg()>12.0)
+                        if(cutbeang->IsInside(theta3*TMath::RadToDeg(),theta2*TMath::RadToDeg())){
+                        ecm_thetacm_gs_coin->Fill(thetacm,2.0/7.0*elossTableHe4_lowpressure->GetEnergy(18.1,z3*1000));
+                        Ang_ener_cut->Fill(theta3*TMath::RadToDeg(),ener3);
+                        double a = (m_a*(ener3 + m_a) - m_a*m_a)/(1 - TMath::Cos(2*(TMath::Pi()/2 - theta3)));
+                        double Ebeam = ((TMath::Sqrt(a + m_Be10*m_Be10) + TMath::Sqrt(a + m_a*m_a))*(TMath::Sqrt(a + m_Be10*m_Be10) + TMath::Sqrt(a + m_a*m_a)) - (m_a + m_Be10)*(m_a + m_Be10))/(2*m_a);
+                        ecm_thetacm_gs_coin_alpha->Fill(2*(TMath::Pi()/2 - theta3)*TMath::RadToDeg(),Ebeam*2.0/7.0);
+                        ebeam_alphaener->Fill(2.0/7.0*Ebeam,2.0/7.0*elossTableHe4_lowpressure->GetEnergy(18.1,z3*1000));
+                        }
+                      }
+                     }
+                        
+                  }
+
+
+            }*/
+            //if(event_cluster > event_solver || event_est > event_solver)
+              //  continue;
+              //std::cout << "Brho and dEdx: " << brho << " " << sqrt_dEdx << std::endl;
+            
+            // Fill the histograms with the ke and polar variables
+           // std::cout << "Cluster size: " << cluster_size << std::endl;
+           //if(arclength < 250)
+             // continue;
+            //if(cluster_size < 90)
+               //continue;
+            //if(polar * TMath::RadToDeg() < 10.0 )
+              //    continue;
+            //arclength_vs_zpos->Fill(zpos*1000,arclength);
+            clustersize->Fill(cluster_size);
+            kin_vs_vertex->Fill(zpos*1000,ke);
+            
+            //std::cout << i << std::endl;
+
+            //double_t ex, theta_cm;
+//          
+            /*for (double j = 0.1; j < 100.0; j=j+0.1) {
+               auto[ex,thetacm] = kine_2b(m_Be10, m_a,m_a,m_Be10, elossTableHe4->GetEnergy(j,zpos*1000), polar, ke);
+               ex_vs_ebeam->Fill(ex,j);
+            }*/
+            
+            auto[ex,thetacm] = kine_2b(m_Be10, m_a,m_a,m_Be10, elossTableHe4_lowpressure->GetEnergy(18.1,zpos*1000), polar, ke);
+            //if(cutalpha_23->IsInside(sqrt_dEdx,brho))
+            //ex_energy->Fill(ex);
+            //if(ex > 5.0)
+              //  continue;
+            //if(cutpid_2->IsInside(sqrt_dEdx,brho)){
+                //ex_energy->Fill(ex);
+            
+              //std::cout << "Check event number " << event_solver << " in file " << file_number << std::endl; 
+            vertex_vs_ex->Fill(ex,zpos*1000);
+            double a = (m_a*(ke + m_a) - m_a*m_a)/(1 - TMath::Cos(2*(TMath::Pi()/2 - polar)));
+            //thetacm = (2*(TMath::Pi()/2 - polar))*TMath::RadToDeg();             
+            double Ebeam = ((TMath::Sqrt(a + m_Be10*m_Be10) + TMath::Sqrt(a + m_a*m_a))*(TMath::Sqrt(a + m_Be10*m_Be10) + TMath::Sqrt(a + m_a*m_a)) - (m_a + m_Be10)*(m_a + m_Be10))/(2*m_a);
+           // ecm_thetacm->Fill(thetacm,Ebeam*2.0/7.0);
+            //ecm_thetacm->Fill((2*(TMath::Pi()/2 - polar))*TMath::RadToDeg(),elossTableHe4->GetEnergy(10.5,zpos*1000)*2.0/7.0);
+           /* if(ex > 2.0 && ex < 4.0){
+            Ang_ener_1st->Fill(polar*TMath::RadToDeg(),ke);
+            ecm_thetacm_1st->Fill(thetacm,elossTableHe4_lowpressure->GetEnergy(18.1,zpos*1000)*2.0/7.0);
+            kin_vs_ebeam->Fill(elossTableHe4_lowpressure->GetEnergy(18.1,zpos*1000),ke);
+            }   */
+            
+            
+            /*if(ex > -2.0 && ex < 2.0){
+           //if(ex > 2.0){
+            
+            ecm_thetacm_gs_alpha->Fill(thetacm,Ebeam*2.0/7.0);
+            //if(cutalpha_23->IsInside(sqrt_dEdx,brho))
+            //ecm_thetacm_gs_alpha->Fill(2.0*(TMath::Pi()/2 - polar)*TMath::RadToDeg(),Ebeam*2.0/7.0);
+            ecm_thetacm_gs->Fill(2.0*(TMath::Pi()/2 - polar)*TMath::RadToDeg(),elossTableHe4_lowpressure->GetEnergy(18.1,zpos*1000)*2.0/7.0);
+            vertex_ne->Fill(zpos*1000);
+            vertex_pos->Fill(zpos*1000);
+            //brho_vs_dEdx->Fill(sqrt_dEdx,brho);
+            //if(cutcheck->IsInside(polar*TMath::RadToDeg(),ke))
+            
+            ebeam_alphaener->Fill(2.0/7.0*Ebeam,2.0/7.0*elossTableHe4_lowpressure->GetEnergy(18.1,zpos*1000));
+            brho_vs_dEdx->Fill(sqrt_dEdx,brho);
+            ex_energy->Fill(ex);
+              // std::cout << "Check event number " << event_solver << " in file " << file_number << std::endl;
+               //if(cutalpha_23->IsInside(sqrt_dEdx,brho))   
+                Ang_energy->Fill(polar*TMath::RadToDeg(),ke);
+               if(thetacm > 45.0 && thetacm < 55.0)
+               ang45_55->Fill(Ebeam*2.0/7.0);   
+               if(thetacm > 55.0 && thetacm < 65.0)
+               ang55_65->Fill(Ebeam*2.0/7.0);
+               if(thetacm > 65.0 && thetacm < 75.0)
+               ang65_75->Fill(Ebeam*2.0/7.0);
+               if(thetacm > 75.0 && thetacm < 85.0)
+               ang75_85->Fill(Ebeam*2.0/7.0);
+               if(thetacm > 85.0 && thetacm < 95.0)
+               ang85_95->Fill(Ebeam*2.0/7.0);
+               if(thetacm > 95.0 && thetacm < 105.0)
+               ang95_105->Fill(Ebeam*2.0/7.0);
+               if(thetacm > 105.0 && thetacm < 115.0)
+               ang105_115->Fill(Ebeam*2.0/7.0);
+               if(thetacm > 115.0 && thetacm < 125.0)
+               ang115_125->Fill(Ebeam*2.0/7.0);
+               if(thetacm > 125.0 && thetacm < 135.0)
+               ang125_135->Fill(Ebeam*2.0/7.0);
+               if(thetacm > 135.0 && thetacm < 145.0)
+               ang135_145->Fill(Ebeam*2.0/7.0);
+               if(Ebeam*2.0/7.0 > 0.5 && Ebeam*2.0/7.0 < 1.5)
+                 ener1->Fill(thetacm);
+                 if(Ebeam*2.0/7.0 > 1.8 && Ebeam*2.0/7.0 < 3.0)  
+                 ener2->Fill(thetacm);
+                 if(Ebeam*2.0/7.0 > 4.0 && Ebeam*2.0/7.0 < 5.0)
+                   ener5->Fill(thetacm);
+
+            }*/
+            
+            //if((polar*TMath::RadToDeg() > 60.0 && polar*TMath::RadToDeg() < 75.0) && (ke > 3.0 && ke < 5.0))
+            //ex_energy_cut->Fill(ex);
+
+            //if((polar*TMath::RadToDeg() > 40.0 && polar*TMath::RadToDeg() < 60.0) && (ke > 8.0 && ke < 13.0))
+            //ex_energy_cut_2->Fill(ex);  
+
+            
+          //  std::cout << ex << " " << thetacm << std::endl;
+       // }  
+            if(i == 0)
+                  first_event = kFALSE;
+                  
+      }
+        // Close the ROOT file
+        
+         file_solver->Close();
+         //file_est->Close();
+        //root_file->Close();
+        
+    }
+   // }
+  /*normalize_histogram(ecm_thetacm_gs_alpha, "ecm_eff.txt");
+    Double_t *ThetaCMS = new Double_t[20000];
+   Double_t *ThetaLabRec = new Double_t[20000];
+   Double_t *EnerLabRec = new Double_t[20000];
+   Double_t *ThetaLabSca = new Double_t[20000];
+   Double_t *EnerLabSca = new Double_t[20000];
+   Double_t *MomLabRec = new Double_t[20000];
+
+   Double_t *ThetaCMS2 = new Double_t[20000];
+   Double_t *ThetaLabRec2 = new Double_t[20000];
+   Double_t *EnerLabRec2 = new Double_t[20000];
+   Double_t *ThetaLabSca2 = new Double_t[20000];
+   Double_t *EnerLabSca2 = new Double_t[20000];
+   Double_t *MomLabRec2 = new Double_t[20000];
+
+    TString fileKine = "10Be_a_gs_lowener_2.txt";
+    TString fileKine2 = "20Ne_a_gs_highener_5.txt";
+   std::ifstream *kineStr = new std::ifstream(fileKine.Data());
+   std::ifstream *kineStr2 = new std::ifstream(fileKine2.Data());
+   Int_t numKin = 0;
+   Int_t numKin2 = 0;
+
+   if (!kineStr->fail()) {
+      while (!kineStr->eof()) {
+         *kineStr >> ThetaCMS[numKin] >> ThetaLabRec[numKin] >> EnerLabRec[numKin] >> ThetaLabSca[numKin] >>
+            EnerLabSca[numKin];
+         // numKin++;
+
+         // MomLabRec[numKin] =( pow(EnerLabRec[numKin] + M_Ener,2) - TMath::Power(M_Ener, 2))/1000.0;
+         // std::cout<<" Momentum : " <<MomLabRec[numKin]<<"\n";
+         // Double_t E = TMath::Sqrt(TMath::Power(p, 2) + TMath::Power(M_Ener, 2)) - M_Ener;
+         numKin++;
+      }
+   } else if (kineStr->fail())
+      std::cout << " Warning : No Kinematics file found for this reaction!" << std::endl;
+
+   if (!kineStr2->fail()) {
+      while (!kineStr2->eof()) {
+         *kineStr2 >> ThetaCMS2[numKin2] >> ThetaLabRec2[numKin2] >> EnerLabRec2[numKin2] >> ThetaLabSca2[numKin2] >>
+            EnerLabSca2[numKin2];
+         // numKin++;
+
+         // MomLabRec[numKin] =( pow(EnerLabRec[numKin] + M_Ener,2) - TMath::Power(M_Ener, 2))/1000.0;
+         // std::cout<<" Momentum : " <<MomLabRec[numKin]<<"\n";
+         // Double_t E = TMath::Sqrt(TMath::Power(p, 2) + TMath::Power(M_Ener, 2)) - M_Ener;
+         numKin2++;
+      }
+   }
+   TGraph *kine_gs = new TGraph(numKin, ThetaLabRec, EnerLabRec);
+   TGraph *ang_be = new TGraph(numKin, ThetaLabRec, ThetaLabSca);
+   TGraph *ang_n = new TGraph(numKin, ThetaLabRec2, ThetaLabSca2);
+   kine_gs->SetLineColor(kRed);
+   ang_n->SetLineColor(kRed);
+    // Draw the histograms
+    TCanvas* canvas = new TCanvas("canvas", "Canvas", 800, 600);
+    Ang_ener_gs->SetMarkerStyle(8);
+    Ang_ener_gs->Draw("");
+    Ang_ener_gs_contaminants->SetMarkerColor(kRed);
+      Ang_ener_gs_contaminants->SetMarkerStyle(7);
+      Ang_ener_gs_contaminants->Draw("scat same");
+
+    TCanvas* canvas1 = new TCanvas("canvas1", "Canvas1", 800, 600);
+    Ang_ener_1st->Draw("colz");
+
+    TCanvas* canvas2 = new TCanvas("canvas2", "Canvas2", 800, 600);
+    ex_energy->Draw();
+    //ex_energy_cut->SetLineColor(kRed);
+    //ex_energy_cut->Draw("same");
+    //ex_energy_cut_2->SetLineColor(kGreen);
+    //ex_energy_cut_2->Draw("same");
+
+    TCanvas* canvas3 = new TCanvas("canvas3", "Canvas3", 800, 600);
+    Ang_energy->SetMarkerStyle(8);
+    Ang_energy->Draw("");
+    kine_gs->Draw("same");
+
+    TCanvas* canvas4 = new TCanvas("canvas4", "Canvas4", 800, 600);
+    ecm_thetacm_gs->Draw("colz");
+
+    TCanvas* canvas6 = new TCanvas("canvas6", "Canvas6", 800, 600);
+    ecm_thetacm_gs_alpha->Draw("colz");
+
+    TCanvas* canvas5 = new TCanvas("canvas5", "Canvas5", 800, 600);
+    ecm_thetacm_1st->Draw("colz");
+
+    TCanvas* canvas7 = new TCanvas("canvas7", "Canvas7", 800, 600);
+      ecm_thetacm->Draw("colz");
+
+    TCanvas* canvas8 = new TCanvas("canvas8", "Canvas8", 800, 600);
+      kin_vs_vertex->Draw("colz");
+    //TCanvas* canvas3 = new TCanvas("canvas3", "Canvas3", 800, 600);
+    //ex_energy_cut->Draw();
+
+   /* TCanvas* canvas9 = new TCanvas("canvas9", "Canvas9", 800, 600);
+    canvas9->Divide(2,2);
+      canvas9->cd(1);
+      Ang_energy_150170->Draw("colz");
+      canvas9->cd(2);
+      Ang_energy_170190->Draw("colz");
+      canvas9->cd(3);
+      Ang_energy_190210->Draw("colz");
+      canvas9->cd(4);
+      Ang_energy_210230->Draw("colz");
+
+    TCanvas* canvas10 = new TCanvas("canvas10", "Canvas10", 800, 600);
+      canvas10->Divide(2,2);
+         canvas10->cd(1);
+         Ang_energy_230250->Draw("colz");
+         canvas10->cd(2);
+         Ang_energy_250270->Draw("colz");
+         canvas10->cd(3);
+         Ang_energy_270290->Draw("colz");
+         canvas10->cd(4);
+         Ang_energy_290310->Draw("colz");
+
+    TCanvas* canvas11 = new TCanvas("canvas11", "Canvas11", 800, 600);
+      canvas11->Divide(2,2);
+         canvas11->cd(1);
+         Ang_energy_310330->Draw("colz");
+         canvas11->cd(2);
+         Ang_energy_330350->Draw("colz");
+         canvas11->cd(3);
+         Ang_energy_350370->Draw("colz");
+         canvas11->cd(4);
+         Ang_energy_370390->Draw("colz");
+
+   TCanvas* canvas12 = new TCanvas("canvas12", "Canvas12", 800, 600);
+      canvas12->Divide(2,2);
+         canvas12->cd(1);
+         Ang_energy_390410->Draw("colz");
+         canvas12->cd(2);
+         Ang_energy_410430->Draw("colz");
+         canvas12->cd(3);
+         Ang_energy_430450->Draw("colz");        
+
+      TCanvas* canvas13 = new TCanvas("canvas13", "Canvas13", 800, 600);
+      canvas13->Divide(2,2);
+         canvas13->cd(1);
+         ecm_thetacm_150170->Draw("colz");
+         canvas13->cd(2);
+         ecm_thetacm_170190->Draw("colz");
+         canvas13->cd(3);
+         ecm_thetacm_190210->Draw("colz");
+         canvas13->cd(4);
+         ecm_thetacm_210230->Draw("colz");
+
+      TCanvas* canvas14 = new TCanvas("canvas14", "Canvas14", 800, 600);
+      canvas14->Divide(2,2);
+         canvas14->cd(1);
+         ecm_thetacm_230250->Draw("colz");
+         canvas14->cd(2);
+         ecm_thetacm_250270->Draw("colz");
+         canvas14->cd(3);
+         ecm_thetacm_270290->Draw("colz");
+         canvas14->cd(4);
+         ecm_thetacm_290310->Draw("colz");
+
+      TCanvas* canvas15 = new TCanvas("canvas15", "Canvas15", 800, 600);
+      canvas15->Divide(2,2);
+         canvas15->cd(1);
+         ecm_thetacm_310330->Draw("colz");
+         canvas15->cd(2);
+         ecm_thetacm_330350->Draw("colz");
+         canvas15->cd(3);
+         ecm_thetacm_350370->Draw("colz");
+         canvas15->cd(4);
+         ecm_thetacm_370390->Draw("colz");
+
+      TCanvas* canvas16 = new TCanvas("canvas16", "Canvas16", 800, 600);
+      canvas16->Divide(2,2);
+         canvas16->cd(1);
+         ecm_thetacm_390410->Draw("colz");
+         canvas16->cd(2);
+         ecm_thetacm_410430->Draw("colz");
+         canvas16->cd(3);
+         ecm_thetacm_430450->Draw("colz");     
+
+      TCanvas* canvas17 = new TCanvas("canvas17", "Canvas17", 800, 600);
+      canvas17->Draw();
+      arclength_vs_zpos->Draw("colz");   */
+
+      /*TCanvas* canvas18 = new TCanvas("canvas18", "Canvas18", 800, 600);
+      canvas18->Draw();
+      vertex_vs_ex->Draw("colz");
+
+      TCanvas* canvas19 = new TCanvas("canvas19", "Canvas19", 800, 600);
+      canvas19->Draw();
+      kin_vs_ebeam->Draw("colz");
+      TCanvas* canvas20 = new TCanvas("canvas20", "Canvas20", 800, 600);
+      canvas20->Draw();
+      brho_vs_dEdx->Draw("colz");
+      cutalpha_23->Draw("same");
+      //cutalpha->Draw("same");
+
+      TCanvas* canvas21 = new TCanvas("canvas21", "Canvas21", 800, 600);
+      canvas21->Draw();
+      clustersize->Draw();
+
+      TCanvas* canvas22 = new TCanvas("canvas22", "Canvas22", 800, 600);
+      canvas22->Draw();
+      ang75_85->Draw();
+
+      TCanvas* canvas23 = new TCanvas("canvas23", "Canvas23", 800, 600);
+      canvas23->Draw();
+      ex_vs_ebeam->Draw("colz");
+
+      TCanvas* canvas24 = new TCanvas("canvas24", "Canvas24", 800, 600);   
+      canvas24->Draw();
+      ang_ang->Draw("colz");
+      cutbeang->Draw("same");
+      ang_n->Draw("same");
+      ang_be->Draw("same");
+
+      TCanvas* canvas25 = new TCanvas("canvas25", "Canvas25", 800, 600);
+      canvas25->Draw();
+      ecm_thetacm_gs_coin->Draw("colz");
+
+      TCanvas* canvas26 = new TCanvas("canvas26", "Canvas26", 800, 600);
+      canvas26->Draw();
+      ecm_thetacm_gs_coin_alpha->Draw("colz");
+
+      TCanvas* canvas27 = new TCanvas("canvas27", "Canvas27", 800, 600);
+      canvas27->Draw();
+      ebeam_alphaener->Draw("colz");
+
+      TCanvas* canvas28 = new TCanvas("canvas28", "Canvas28", 800, 600);
+      canvas28->Draw();
+      vertex_pos->Draw();
+
+      TCanvas* canvas29 = new TCanvas("canvas29", "Canvas29", 800, 600);
+      canvas29->Draw();
+      Ang_ener_cut->Draw("colz");
+      kine_gs->Draw("same");
+
+      TCanvas* canvas30 = new TCanvas("canvas30", "Canvas30", 800, 600);
+      canvas30->Draw();
+      size_vs_energy->Draw("colz");
+
+      TCanvas* canvas31 = new TCanvas("canvas31", "Canvas31", 800, 600);
+      canvas31->Divide(2,2);
+      canvas31->cd(1);
+      ang45_55->Draw();
+      canvas31->cd(2);
+      ang55_65->Draw();
+      canvas31->cd(3);
+      ang65_75->Draw();
+      canvas31->cd(4);
+      ang75_85->Draw();
+
+      TCanvas* canvas32 = new TCanvas("canvas32", "Canvas32", 800, 600);
+      canvas32->Divide(2,2);
+      canvas32->cd(1);
+      ang85_95->Draw();
+      canvas32->cd(2);
+      ang95_105->Draw();
+      canvas32->cd(3);
+      ang105_115->Draw();
+      canvas32->cd(4);
+      ang115_125->Draw();
+
+      TCanvas* canvas33 = new TCanvas("canvas33", "Canvas33", 800, 600);
+      canvas33->Divide(2,2);
+      canvas33->cd(1);
+      ang125_135->Draw();
+      canvas33->cd(2);
+      ang135_145->Draw();
+
+      TCanvas* canvas34 = new TCanvas("canvas34", "Canvas34", 800, 600);
+      canvas34->Divide(2,2);
+      canvas34->cd(1);
+      ener1->Draw();
+      canvas34->cd(2);
+      ener2->Draw();
+      canvas34->cd(3);
+      ener5->Draw();
+
+      TCanvas* canvas35 = new TCanvas("canvas35", "Canvas35", 800, 600);
+      ang95_105->Draw("");*/
+/*
+      std::ofstream outFile("ecm_eff.txt");
+
+      for (int xBin = 1; xBin <= ecm_thetacm_gs_alpha->GetNbinsX(); ++xBin) {
+          for (int yBin = 1; yBin <= ecm_thetacm_gs_alpha->GetNbinsY(); ++yBin) {
+            double xValue = ecm_thetacm_gs_alpha->GetXaxis()->GetBinCenter(xBin);
+            double yValue = ecm_thetacm_gs_alpha->GetYaxis()->GetBinCenter(yBin);
+            double zValue = ecm_thetacm_gs_alpha->GetBinContent(xBin, yBin);
+            outFile << xValue << " " << yValue << " " << zValue << "\n";
+         }
+      }
+
+      outFile.close();
+*/
+
+
+      /*
+      std::ofstream outFileazure7("azure_110.txt");
+      std::ofstream outFileazure6("azure_100.txt");
+      for (int bin = 1; bin < ang105_115->GetNbinsX(); bin++) {
+         double binContent = ang105_115->GetBinContent(bin);
+         double binCenter = ang105_115->GetBinCenter(bin);
+         double binError = ang105_115->GetBinError(bin);
+         if (binContent == 0) 
+            continue;
+
+         if (binError == 1)
+            binError = 0.9;   
+         outFileazure7 << binCenter*7.0/2.0*0.4 << " " << 87 << " " << binContent << " " << binError << std::endl;
+      }
+
+      for (int bin = 1; bin < ang95_105->GetNbinsX(); bin++) {
+         double binContent = ang95_105->GetBinContent(bin);
+         double binCenter = ang95_105->GetBinCenter(bin);
+         double binError = ang95_105->GetBinError(bin);
+         if (binContent == 0) 
+            continue;
+         
+         if (binError == 1)
+            binError = 0.9;   
+         outFileazure6 << binCenter*7.0/2.0*0.4 << " " << 77 << " " << binContent << " " << binError << std::endl;
+      }
+
+      outFileazure7.close();
+      outFileazure6.close();*/
+
+/*
+      std::ofstream outFileazure("azure_50.txt");
+      std::ofstream outFileazure2("azure_60.txt");
+      std::ofstream outFileazure3("azure_70.txt");
+      std::ofstream outFileazure4("azure_80.txt");
+      std::ofstream outFileazure5("azure_90.txt");
+      std::ofstream outFileazure6("azure_100.txt");
+      std::ofstream outFileazure7("azure_110.txt");
+      std::ofstream outFileazure8("azure_120.txt");
+      std::ofstream outFileazure9("azure_130.txt");
+      std::ofstream outFileazure10("azure_140.txt");
+
+      for (int bin = 1; bin < ang45_55->GetNbinsX(); bin++) {
+         double binContent = ang45_55->GetBinContent(bin);
+         double binCenter = ang45_55->GetBinCenter(bin);
+         double binError = ang45_55->GetBinError(bin);
+         if (binContent == 0) 
+            continue;
+         outFileazure << binCenter << " " << 50 << " " << binContent << " " << binError << std::endl;
+      }
+
+      for (int bin = 1; bin < ang55_65->GetNbinsX(); bin++) {
+         double binContent = ang55_65->GetBinContent(bin);
+         double binCenter = ang55_65->GetBinCenter(bin);
+         double binError = ang55_65->GetBinError(bin);
+         if (binContent == 0) 
+            continue;
+         outFileazure2 << binCenter << " " << 60 << " " << binContent << " " << binError << std::endl;
+      }
+
+      for (int bin = 1; bin < ang65_75->GetNbinsX(); bin++) {
+         double binContent = ang65_75->GetBinContent(bin);
+         double binCenter = ang65_75->GetBinCenter(bin);
+         double binError = ang65_75->GetBinError(bin);
+         if (binContent == 0) 
+            continue;
+         
+         if (binError == 1)
+            binError = 0.9;
+         outFileazure3 << binCenter << " " << 70 << " " << binContent << " " << binError << std::endl;
+      }
+
+      for (int bin = 1; bin < ang75_85->GetNbinsX(); bin++) {
+         double binContent = ang75_85->GetBinContent(bin);
+         double binCenter = ang75_85->GetBinCenter(bin);
+         double binError = ang75_85->GetBinError(bin);
+         if (binContent == 0) 
+            continue;
+
+         if (binError == 1)
+            binError = 0.9;   
+         outFileazure4 << binCenter*7.0/2.0*0.4 << " " << 80 << " " << binContent << " " << binError << std::endl;
+      }
+
+      for (int bin = 1; bin < ang85_95->GetNbinsX(); bin++) {
+         double binContent = ang85_95->GetBinContent(bin);
+         double binCenter = ang85_95->GetBinCenter(bin);
+         double binError = ang85_95->GetBinError(bin);
+         if (binContent == 0) 
+            continue;
+         
+         if (binError == 1)
+            binError = 0.9;   
+         outFileazure5 << binCenter << " " << 90 << " " << binContent << " " << binError << std::endl;
+      }
+
+      for (int bin = 1; bin < ang95_105->GetNbinsX(); bin++) {
+         double binContent = ang95_105->GetBinContent(bin);
+         double binCenter = ang95_105->GetBinCenter(bin);
+         double binError = ang95_105->GetBinError(bin);
+         if (binContent == 0) 
+            continue;
+         
+         if (binError == 1)
+            binError = 0.9;   
+         outFileazure6 << binCenter << " " << 100 << " " << binContent << " " << binError << std::endl;
+      }
+
+      for (int bin = 1; bin < ang105_115->GetNbinsX(); bin++) {
+         double binContent = ang105_115->GetBinContent(bin);
+         double binCenter = ang105_115->GetBinCenter(bin);
+         double binError = ang105_115->GetBinError(bin);
+         if (binContent == 0) 
+            continue;
+
+         if (binError == 1)
+            binError = 0.9;   
+         outFileazure7 << binCenter << " " << 110 << " " << binContent << " " << binError << std::endl;
+      }
+
+      for (int bin = 1; bin < ang115_125->GetNbinsX(); bin++) {
+         double binContent = ang115_125->GetBinContent(bin);
+         double binCenter = ang115_125->GetBinCenter(bin);
+         double binError = ang115_125->GetBinError(bin);
+         if (binContent == 0) 
+            continue;
+         
+         if (binError == 1)
+            binError = 0.9;   
+         outFileazure8 << binCenter << " " << 120 << " " << binContent << " " << binError << std::endl;
+      }
+
+      for (int bin = 1; bin < ang125_135->GetNbinsX(); bin++) {
+         double binContent = ang125_135->GetBinContent(bin);
+         double binCenter = ang125_135->GetBinCenter(bin);
+         double binError = ang125_135->GetBinError(bin);
+         if (binContent == 0) 
+            continue;
+         
+         if (binError == 1)
+            binError = 0.9;
+         outFileazure9 << binCenter << " " << 130 << " " << binContent << " " << binError << std::endl;
+      }
+
+      for (int bin = 1; bin < ang135_145->GetNbinsX(); bin++) {
+         double binContent = ang135_145->GetBinContent(bin);
+         double binCenter = ang135_145->GetBinCenter(bin);
+         double binError = ang135_145->GetBinError(bin);
+         if (binContent == 0) 
+            continue;
+
+         if (binError == 1)
+            binError = 0.9;   
+         outFileazure10 << binCenter << " " << 140 << " " << binContent << " " << binError << std::endl;
+      }
+
+      outFileazure.close();
+      outFileazure2.close();
+      outFileazure3.close();
+      outFileazure4.close();
+      outFileazure5.close();
+      outFileazure6.close();
+      outFileazure7.close();
+      outFileazure8.close();
+      outFileazure9.close();
+      outFileazure10.close();
+*/
+}
+

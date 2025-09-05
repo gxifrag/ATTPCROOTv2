@@ -41,9 +41,8 @@ void AtHDFUnpacker::Init()
    if (fEventID > uniqueEvents)
       LOG(fatal) << "Exceded valid range of event numbers. Looking for " << fEventID << " max event number is "
                  << uniqueEvents;
-   if (uniqueEvents != numEvents)
-      LOG(error) << "Number of events from metaData (" << uniqueEvents
-                 << ") does not match the number of entries in HDF5 file (" << numEvents << ")!";
+   if (uniqueEvents != numEvents / 2)
+      LOG(error) << "Number of events from metaData does not match the number of entries in HDF5 file!";
 
    // Correct event ID for offset in file
    fDataEventID = fFirstEvent + fEventID;
@@ -134,17 +133,6 @@ void AtHDFUnpacker::setAdc(AtPad *pad, const std::vector<int16_t> &data)
    pad->SetPedestalSubtracted(fIsBaseLineSubtraction);
 }
 
-Float_t AtHDFUnpacker::getBaseline(const std::vector<u_int16_t> &data)
-{
-   Float_t baseline = 0;
-
-   if (fIsBaseLineSubtraction) {
-      for (Int_t iTb = 5; iTb < 25; iTb++) // First 5 words are electronic id
-         baseline += data[iTb];
-      baseline /= 20.0;
-   }
-   return baseline;
-}
 Float_t AtHDFUnpacker::getBaseline(const std::vector<int16_t> &data)
 {
    Float_t baseline = 0;
@@ -184,7 +172,7 @@ std::tuple<hid_t, hsize_t> AtHDFUnpacker::open_group(hid_t fileId, char const *g
 {
    hid_t groupId = H5Gopen2(fileId, group, H5P_DEFAULT);
    if (groupId >= 0) {
-      LOG(info) << "> hdf5_wrapper::open_group:MESSAGE, opening group: " << group << ", ID: " << groupId;
+      // std::cout << "> hdf5_wrapper::open_group:MESSAGE, opening group: " << group << ", ID: " << groupId << '\n';
       hsize_t size;
       H5Gget_num_objs(groupId, &size);
       return std::make_tuple(groupId, size);
@@ -211,7 +199,7 @@ std::tuple<hid_t, std::vector<hsize_t>> AtHDFUnpacker::open_dataset(hid_t locId,
    } else {
       std::cerr << "> AtHDFUnpacker::open_dataset:ERROR, invalid ID for dataset: " << dataset << '\n';
       std::vector<hsize_t> v{0};
-      return std::make_tuple(-1, v);
+      return std::make_tuple(0, v);
    }
 }
 
@@ -273,12 +261,6 @@ void AtHDFUnpacker::setFirstAndLastEventNum()
    }
    LOG(info) << "Events: " << fFirstEvent << " to " << fLastEvent;
 }
-
-/**
- * @brief Open the file and sets the first/last event number in the file
- *
- * @return the number of events in the file
- */
 std::size_t AtHDFUnpacker::open(char const *file)
 {
    auto f = open_file(file, AtHDFUnpacker::IO_MODE::READ);
@@ -334,20 +316,14 @@ std::vector<uint64_t> AtHDFUnpacker::get_header(std::string headerName)
    return retVec;
 }
 
-std::vector<ULong64_t> AtHDFUnpacker::n_entries(std::string dataset_name)
-{
-   auto dataset_dims = open_dataset(_group, dataset_name.c_str());
-   if (std::get<0>(dataset_dims) == 0)
-      return {0};
-   _dataset = std::get<0>(dataset_dims);
-
-   return std::get<1>(dataset_dims);
-}
-
 std::size_t AtHDFUnpacker::n_pads(std::string i_raw_event)
 {
    std::string dataset_name = i_raw_event;
-   return n_entries(i_raw_event)[0];
+   auto dataset_dims = open_dataset(_group, dataset_name.c_str());
+   if (std::get<0>(dataset_dims) == 0)
+      return 0;
+   _dataset = std::get<0>(dataset_dims);
+   return std::get<1>(dataset_dims)[0];
 }
 
 std::vector<int16_t> AtHDFUnpacker::pad_raw_data(std::size_t i_pad)

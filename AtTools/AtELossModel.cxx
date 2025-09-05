@@ -9,24 +9,11 @@ namespace AtTools {
  */
 void AtELossModel::SetDensity(double density)
 {
+   if (fDensityIni == 0)
+      throw std::invalid_argument("Cannot set the density if the density of in model is not known");
+
    fDensity = density;
-}
-
-std::vector<std::pair<double, double>>
-AtELossModel::GetBraggCurve(double energy, double rangeStepSize, double totalFractionELoss) const
-{
-   std::vector<std::pair<double, double>> braggCurve;
-
-   double remainingEnergy{energy};
-   double range{};
-   while (remainingEnergy / energy > totalFractionELoss) {
-      remainingEnergy = GetEnergy(energy, range);
-      double dEdx = GetdEdx(remainingEnergy);
-      braggCurve.push_back(std::make_pair(dEdx, range));
-      range += rangeStepSize;
-   }
-
-   return braggCurve;
+   fdEdxScale = fDensity / fDensityIni;
 }
 
 } // namespace AtTools

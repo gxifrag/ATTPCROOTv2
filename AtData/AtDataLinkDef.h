@@ -6,6 +6,7 @@
 #pragma link off all functions;
 
 #pragma link C++ struct AtPadReference + ;
+#pragma link C++ struct AtV2745Block + ;
 #pragma link C++ struct AtElectronicReference + ;
 
 #pragma link C++ class AtPadBase + ;
@@ -15,13 +16,16 @@
 #pragma link C++ class AtPadArray + ;
 #pragma link C++ class AtPadValue + ;
 #pragma link C++ class AtPulserInfo + ;
+#pragma link C++ class AtPadV2745 + ;
 
 #pragma link C++ class AtBaseEvent + ;
 #pragma link C++ class AtRawEvent + ;
 #pragma link C++ class AtHit + ;
 #pragma link C++ class AtHitCluster + ;
+#pragma link C++ class AtHitClusterFull + ;
 #pragma link C++ struct AtHit::MCSimPoint + ;
 #pragma link C++ class AtEvent + ;
+#pragma link C++ class AtHitClusterEvent + ;
 #pragma link C++ class AtProtoEvent + ;
 #pragma link C++ class AtProtoEventAna + ;
 #pragma link C++ class AtPatternEvent + ;
@@ -38,8 +42,6 @@
 #pragma link C++ class AtPatterns::AtPatternCircle2D + ;
 #pragma link C++ class AtPatterns::AtPatternY + ;
 #pragma link C++ class AtPatterns::AtPatternFission + ;
-#pragma link C++ class AtPadPlaneElement + ;
-#pragma link C++ class AtPadPlaneCircle + ;
 #pragma link C++ enum AtPatterns::PatternType;
 #pragma link C++ function AtPatterns::CreatePattern;
 

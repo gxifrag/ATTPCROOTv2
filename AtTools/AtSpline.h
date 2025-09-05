@@ -130,7 +130,6 @@ public:
       assert(!m_x.empty());
       return m_x.back();
    }
-   double get_size() const { return m_x.size(); }
 
 #ifdef HAVE_SSTREAM
    // spline info string, i.e. spline type, boundary conditions etc.

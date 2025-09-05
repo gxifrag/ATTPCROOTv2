@@ -20,7 +20,9 @@
 #include <vector>  // for vector
 
 class AtHit;
+class AtHitClusterFull;
 class AtEvent;
+class AtHitClusterEvent;
 class AtPatternEvent;
 class AtBaseEvent;
 namespace RandomSample {
@@ -74,6 +76,7 @@ public:
 
    /// See Solve(const std::vector<const AtHit *> &hitArray)
    AtPatternEvent Solve(AtEvent *event);
+   AtPatternEvent Solve(AtHitClusterEvent *hitClusterEvent);
    /// See Solve(const std::vector<const AtHit *> &hitArray)
    AtPatternEvent Solve(const std::vector<AtHit> &hitArray, AtBaseEvent *event = nullptr);
    AtPatternEvent Solve(const std::vector<const AtHit *> &hitArray, AtBaseEvent *event = nullptr);
@@ -91,8 +94,10 @@ public:
 private:
    PatternPtr GeneratePatternFromHits(const std::vector<const AtHit *> &hitArray);
    std::vector<const AtHit *> movePointsInPattern(AtPattern *pattern, std::vector<const AtHit *> &indexes);
+   std::vector<const AtHitClusterFull *> movePointsInPattern(AtPattern *pattern, std::vector<const AtHitClusterFull *> &hits);
    // void SaveTrack(AtPattern *pattern, std::vector<AtHit> &indexes, AtPatternEvent *event);
    AtTrack CreateTrack(AtPattern *pattern, std::vector<const AtHit *> &indexes);
+   AtTrack CreateTrack(AtPattern *pattern, std::vector<const AtHitClusterFull *> &inliers);
 };
 } // namespace SampleConsensus
 #endif
