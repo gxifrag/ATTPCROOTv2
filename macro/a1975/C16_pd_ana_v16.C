@@ -67,21 +67,22 @@ kine_2b(Double_t m1, Double_t m2, Double_t m3, Double_t m4, Double_t K_proj, Dou
 
 void GetEnergy(Double_t M, Double_t IZ, Double_t BRO, Double_t &E);
 
-void C16_pd_ana()
+
+void C16_pd_ana_v16()
 {
    // FairRunAna *run = new FairRunAna();
 
-   TH2F *Ang_Ener = new TH2F("Ang_Ener", "Ang_Ener", 600, 0, 60, 1000, 0, 20.0);
+   TH2F *Ang_Ener = new TH2F("Ang_Ener", "Ang_Ener", 720, 10, 60, 1000, 0, 14.0);
    TH2F *Ang_Ener_PRAC = new TH2F("Ang_Ener_PRAC", "Ang_Ener_PRAC", 1000, 0, 100, 1000, 0, 200.0);
    TH2F *ELossvsBrho = new TH2F("ELossvsBrho", "ELossvsBrho", 4000, 0, 25000, 1000, 0, 4);
    TH2F *dedxvsBrho = new TH2F("dedxvsBrho", "dedxvsBrho", 4000, 0, 10000, 1000, 0, 4);
    TH2F *hVxVy = new TH2F("hVxVy", "hVxVy", 1000, 0, 4, 1000, 0, 4);
    TH1F *henergyIC = new TH1F("henergyIC", "henergyIC", 2048, 0, 2047);
 
-   auto *hex = new TH1F("hex", "hex", 80, -2, 8);
+   auto *hex = new TH1F("hex", "hex", 150, -4, 14);
    auto *QvsEb = new TH2F("QvsEb", "QvsEb", 1000, -5, 15, 100, 0, 300);
    auto *QvsZpos = new TH2F("QvsZpos", "QvsZpos", 1000, -10, 50, 200, -100, 100);
-   auto *hexCorr = new TH1F("hexCorr", "hexCorr", 80, -2, 8);
+   auto *hexCorr = new TH1F("hexCorr", "hexCorr", 150, -4, 14);
 
    auto *AngDistr = new TH1F("Ang_Distr", "Ang_Distr", 128, 0, 120);
    auto *AngDistrCM = new TH1F("Ang_Distr_CM", "Ang_Distr_CM", 90, 0, 180);
@@ -91,36 +92,15 @@ void C16_pd_ana()
 
    /*auto *hredchi2 = new TH1F("redchi2", "redchi2", 1000, 0, 0.0001);
    auto *hbredchi2 = new TH1F("bredchi2", "bredchi2", 1000, 0, 5);*/
-   auto *hex11 = new TH1F("hex11", "hex11", 100, -5, 20);
-   auto *hex12 = new TH1F("hex12", "hex12", 100, -5, 20);
-   auto *hex13 = new TH1F("hex13", "hex13", 100, -5, 20);
-   auto *hex21 = new TH1F("hex21", "hex21", 100, -5, 20);
-   auto *hex22 = new TH1F("hex22", "hex22", 100, -5, 20);
-   auto *hex23 = new TH1F("hex23", "hex23", 100, -5, 20);
-   auto *hex31 = new TH1F("hex31", "hex31", 100, -5, 20);
-   auto *hex32 = new TH1F("hex32", "hex32", 100, -5, 20);
-   auto *hex33 = new TH1F("hex33", "hex33", 100, -5, 20);
 
-   auto *hex41 = new TH1F("hex41", "hex41", 100, -5, 20);
-   auto *hex42 = new TH1F("hex42", "hex42", 100, -5, 20);
-   auto *hex43 = new TH1F("hex43", "hex43", 100, -5, 20);
-   auto *hex51 = new TH1F("hex51", "hex54", 100, -5, 20);
-   auto *hex52 = new TH1F("hex52", "hex52", 100, -5, 20);
-   auto *hex53 = new TH1F("hex53", "hex53", 100, -5, 20);
-   auto *hex61 = new TH1F("hex61", "hex61", 100, -5, 20);
-   auto *hex62 = new TH1F("hex62", "hex62", 100, -5, 20);
-   auto *hex63 = new TH1F("hex63", "hex63", 100, -5, 20);
-
-   /*auto *hex20 = new TH1F("hex0-19", "hex0-19", 100, -5, 20);
-double densityH2 = 3.3084e-5; // g/cm³
+ /*
+   double densityH2 = 3.3084e-5; // g/cm³
    AtTools::AtELossCATIMA elossH2(densityH2);
    double mass{16.0147}; // Mass of C16 in u
    elossH2.SetMaterial(catima::Material(1, 1)); // Set material to H2
    elossH2.SetProjectile(16 6, mass);           // Set projectile to proton
-   auto *hex40 = new TH1F("hex20-39", "hex20-39", 100, -5, 20);
-   auto *hex60 = new TH1F("hex40-59", "hex40-59", 100, -5, 20);
-   auto *hex80 = new TH1F("hex60-79", "hex60-79", 100, -5, 20);
-   auto *hex100 = new TH1F("hex80-99", "hex80-99", 100, -5, 20);*/
+
+   */
 
    auto *hexvstheta = new TH2F("hexVStheta", "hexVStheta", 1000, -5, 15, 90, 0, 90);
 
@@ -144,7 +124,7 @@ double densityH2 = 3.3084e-5; // g/cm³
 
 
    // Beam and target parameters.
-   Double_t Ebeam_buff = 11.5 * 16;
+   Double_t Ebeam_buff = 11.0 * 16;
    cout<<" Beam energy in buffer gas : "<<Ebeam_buff<<"\n";
    //Double_t Ebeam_buff = 10.6* 16; // MeV
    Double_t m_b = m_d;
@@ -156,6 +136,16 @@ double densityH2 = 3.3084e-5; // g/cm³
    Double_t m_ej = m_d;
 
    std::vector<TString> filenames;
+   // Declare hHex at the beginning of your macro or function
+   std::vector<TH1F*> hHex(18);
+   // Assuming hHex is already defined and filled
+   std::vector<TF1*> fExSpectra_vec(hHex.size(), nullptr);
+   
+
+   // Now you can safely initialize and use it
+   for (int i = 0; i < hHex.size(); i++) {
+      hHex[i] = new TH1F(Form("hex%d", i+1), Form("hex%d", i+1), 100, -5, 20);
+   }
 
    // ELoss tables.
    //AtTools::AtELossTable *elossTableH2 = new AtTools::AtELossTable();
@@ -168,10 +158,16 @@ double densityH2 = 3.3084e-5; // g/cm³
    elossH2.SetMaterial(catima::Material(1, 1)); // Set material to H2
    elossH2.SetProjectile(16, 6, mass);           // Set projectile to proton
 
-   double kethe= 13.;     
-   
+  // double kethe= 13.;    
+
+   filenames.push_back("run_0104_2H.root");
+   filenames.push_back("run_0105_2H.root");
+   filenames.push_back("run_0106_2H.root");
+   filenames.push_back("run_0107_2H.root");
+   filenames.push_back("run_0108_2H.root");
+   filenames.push_back("run_0109_2H.root");
    filenames.push_back("run_0110_2H.root");
-   //filenames.push_back("run_0111_1H.root");
+   //filenames.push_back("run_0111_2H.root");
    filenames.push_back("run_0112_2H.root");
    filenames.push_back("run_0113_2H.root");
    filenames.push_back("run_0114_2H.root");
@@ -181,7 +177,7 @@ double densityH2 = 3.3084e-5; // g/cm³
    filenames.push_back("run_0118_2H.root");
    filenames.push_back("run_0119_2H.root");
    filenames.push_back("run_0120_2H.root");
-   // filenames.push_back("run_0121_1H.root");
+   // filenames.push_back("run_0121_2H.root");
    filenames.push_back("run_0122_2H.root");
    filenames.push_back("run_0123_2H.root");
    filenames.push_back("run_0124_2H.root");
@@ -204,12 +200,12 @@ double densityH2 = 3.3084e-5; // g/cm³
    filenames.push_back("run_0141_2H.root");
    filenames.push_back("run_0142_2H.root");
    filenames.push_back("run_0143_2H.root");
-   // filenames.push_back("run_0144_1H.root");
+   filenames.push_back("run_0144_2H.root");
    filenames.push_back("run_0145_2H.root");
    filenames.push_back("run_0146_2H.root");
    filenames.push_back("run_0147_2H.root");
-   // filenames.push_back("run_0148_1H.root");
-   filenames.push_back("run_0149_2H.root");
+   // filenames.push_back("run_0148_2H.root");
+   //filenames.push_back("run_0149_2H.root");
    filenames.push_back("run_0150_2H.root");
    filenames.push_back("run_0151_2H.root");
    filenames.push_back("run_0152_2H.root");
@@ -225,22 +221,22 @@ double densityH2 = 3.3084e-5; // g/cm³
    filenames.push_back("run_0162_2H.root");
    filenames.push_back("run_0163_2H.root");
    filenames.push_back("run_0164_2H.root");
-   // filenames.push_back("run_0165_1H.root");
+   filenames.push_back("run_0165_2H.root");
    filenames.push_back("run_0166_2H.root");
    filenames.push_back("run_0167_2H.root");
    filenames.push_back("run_0168_2H.root");
    filenames.push_back("run_0169_2H.root");
    filenames.push_back("run_0170_2H.root");
-   // filenames.push_back("run_0171_1H.root");
+   filenames.push_back("run_0171_2H.root");
    filenames.push_back("run_0172_2H.root");
    filenames.push_back("run_0173_2H.root");
    filenames.push_back("run_0174_2H.root");
    filenames.push_back("run_0175_2H.root");
    filenames.push_back("run_0176_2H.root");
    filenames.push_back("run_0177_2H.root");
-   // filenames.push_back("run_0178_1H.root");
+   filenames.push_back("run_0178_2H.root");
    filenames.push_back("run_0179_2H.root");
-   // filenames.push_back("run_0180_1H.root");
+   filenames.push_back("run_0180_2H.root");
    filenames.push_back("run_0181_2H.root");
    filenames.push_back("run_0182_2H.root");
    filenames.push_back("run_0183_2H.root");
@@ -253,19 +249,22 @@ double densityH2 = 3.3084e-5; // g/cm³
 
    for (auto filename : filenames) {
       TFile *runFile =
-         new TFile("/home/georgina/C16_analysis/C16_H2/C16_pd/InterpolationSolver_pd_root/" + filename, "R");
+      new TFile("/home/georgina/C16_analysis/C16_H2/C16_pd_v16_root/" + filename, "R");
       TTree *Tphysics = (TTree *)runFile->Get("parquettree");
 
       Double_t theta{};
       Double_t phi{};
       Double_t Brho{};
-      //Double_t redchi{};
+      Double_t redchi{};
       Double_t zPos{};
+      Double_t ke{};
       Tphysics->SetBranchAddress("polar", &theta);
       Tphysics->SetBranchAddress("azimuthal", &phi);
       Tphysics->SetBranchAddress("brho", &Brho);
-      //Tphysics->SetBranchAddress("redchisq", &redchi);
+      Tphysics->SetBranchAddress("redchisq", &redchi);
       Tphysics->SetBranchAddress("vertex_z", &zPos);
+      Tphysics->SetBranchAddress("ke", &ke);
+
 
       for (int i = 0; i < Tphysics->GetEntries(); i++) {
          Tphysics->GetEntry(i);
@@ -273,89 +272,63 @@ double densityH2 = 3.3084e-5; // g/cm³
          Double_t p_ej = Brho * Z_ej * 2.99792458 / 10 * 1000;
          Double_t E_ej = TMath::Sqrt(p_ej * p_ej + m_ej * m_ej) - m_ej;
 
-         auto [ex_energy, theta_cm] = kine_2b(m_C16, m_p, m_b, m_B, Ebeam_buff, theta, E_ej);
+         //cout << " Ejectile energy: " << E_ej << " MeV" << "kinetic energy=" << ke << "\n";
 
+         auto [ex_energy, theta_cm] = kine_2b(m_C16, m_p, m_b, m_B, Ebeam_buff, theta, ke);
          // Beam energy corrected for energy loss along the target at vertex position
-         Double_t Ebeam_at_z = elossH2.GetEnergy(Ebeam_buff, zPos * 100); // 
          
-         std::cout<<" Beam energy at z : "<<Ebeam_at_z<< "  " <<  "z:" << zPos*100 << "\n";
+         if(ke < 0.0 || ke > 14.0)
+                continue;
 
-         auto [ex_energy_corr, theta_cm_corr]= kine_2b(m_C16, m_p, m_b, m_B,Ebeam_at_z, theta, E_ej);
-
-//         double theta_corr_JR=(theta-(2.0*3.14159/4000) * (E_ej - kethe)) * TMath::RadToDeg(); //theta: rad, E_ej-kethe: MeV
-         //cout << " theta_corr_JR: " << theta_corr_JR << "\n";
-
-         /*if (theta * TMath::RadToDeg() > 90 || theta * TMath::RadToDeg() < 12.0)
-            continue;*/
+         if(theta*TMath::RadToDeg() > 60 || theta*TMath::RadToDeg() < 12.0)
+                continue;
+         
+         Double_t Ebeam_at_z = elossH2.GetEnergy(Ebeam_buff, zPos * 100); // 
+        
+        
+         /*double theta_lab_corr=(theta-(2.0*3.14159/4000) * (E_ej - kethe)); //theta: rad; theta_lab_corr: rad; E_ej-kethe: MeV
+         cout << "theta lab: " << theta << "  rad  " << " theta_corr_JR: " << theta_lab_corr<< "  rad" << "\n";
+*/
+         auto [ex_energy_corr, theta_cm_corr]= kine_2b(m_C16, m_p, m_b, m_B, Ebeam_at_z, theta, ke);
 
          // Fill uncorrected histogram
          hex->Fill(ex_energy);      
          ExvsZpos->Fill(ex_energy, zPos*100.0);
 
           // Fill corrected histogram
-         /*if (zPos*100> 2.0 && zPos*100 < 60.0)  // only consider reactions occuring within the target region
+         if (zPos*100> 2.0 && zPos*100 < 60.0)  // only consider reactions occuring within the target region
          {
-            cout << " Ex corrected : " << ex_energy_corr << "  " << " zpos: " << zPos*100.0 << " Ebeam at z: " << Ebeam_at_z << "\n";
+            //cout << " Ex corrected : " << ex_energy_corr << "  " << " zpos: " << zPos*100.0 << " Ebeam at z: " << Ebeam_at_z << "\n";
             
             ExCorrvsZpos->Fill(ex_energy_corr, zPos*100.0);
-            hexCorr->Fill(ex_energy_corr-0.8);
-         }*/
+            hexCorr->Fill(ex_energy_corr);
+         }
 
+         /*cout << "hex= " << ex_energy << "  " << " hexCorr= " << ex_energy_corr << "  " << " theta_lab= " << theta * TMath::RadToDeg() << "  deg" << "\n";
+         cout << " thetacm= " << theta_cm << "  deg" << "ke= " << ke<< " MeV" << "zpos= " << zPos*100.0 << " Ebeam at z= " << Ebeam_at_z << "\n";
+*/
          // Histograms
          //hredchi2->Fill(redchi);
 
-         Ang_Ener->Fill(theta* TMath::RadToDeg(), E_ej); //theta lab!! -> I still have to implement the correction of catima?
+         Ang_Ener->Fill(theta* TMath::RadToDeg(), ke); //theta lab!! -> I still have to implement the correction of catima?
 
-         Double_t vx = TMath::Sin(theta) * TMath::Sqrt(E_ej);
-         Double_t vy = TMath::Cos(theta) * TMath::Sqrt(E_ej);
+         Double_t vx = TMath::Sin(theta) * TMath::Sqrt(ke);
+         Double_t vy = TMath::Cos(theta) * TMath::Sqrt(ke);
 
          hVxVy->Fill(vx, vy);
 
          AngDistr->Fill(theta * TMath::RadToDeg());
          AngDistrCM->Fill(theta_cm);
 
-         if (theta_cm > 10 && theta_cm <= 12.5)
-            hex11->Fill(ex_energy);
-         if (theta_cm > 12.5 && theta_cm <= 15)
-            hex12->Fill(ex_energy);
-         if (theta_cm > 15 && theta_cm <= 17.5)
-            hex13->Fill(ex_energy);
-         if (theta_cm > 17.5 && theta_cm <= 20)
-            hex21->Fill(ex_energy);
-         if (theta_cm > 20 && theta_cm <= 22.5)
-            hex22->Fill(ex_energy);
-         if (theta_cm > 22.5 && theta_cm <= 25)
-            hex23->Fill(ex_energy);
-         if (theta_cm > 25 && theta_cm <= 27.5)
-            hex31->Fill(ex_energy);
-         if (theta_cm > 27.5 && theta_cm <= 30)
-            hex32->Fill(ex_energy);
-         if (theta_cm > 30 && theta_cm <= 32.5)
-            hex33->Fill(ex_energy);
-         if (theta_cm > 32.5 && theta_cm <= 35)
-            hex41->Fill(ex_energy);
-         if (theta_cm > 35 && theta_cm <= 37.5)
-            hex42->Fill(ex_energy);
-         if (theta_cm > 37.5 && theta_cm <= 40)
-            hex43->Fill(ex_energy);
-         if (theta_cm > 40 && theta_cm <= 42.5)
-            hex51->Fill(ex_energy);
-         if (theta_cm > 42.5 && theta_cm <= 45)
-            hex52->Fill(ex_energy);
-         if (theta_cm > 45 && theta_cm <= 47.5)
-            hex53->Fill(ex_energy);
-         if (theta_cm > 47.5 && theta_cm <= 50)
-            hex61->Fill(ex_energy);
-         if (theta_cm > 50 && theta_cm <= 52.5)
-            hex62->Fill(ex_energy);
-         if (theta_cm > 52.5 && theta_cm <= 55)
-            hex63->Fill(ex_energy);
-
-         /*if(theta_cm > 0 && theta_cm <= 20) hex20->Fill(ex_energy);
-         if(theta_cm > 20 && theta_cm <= 40) hex40->Fill(ex_energy);
-         if(theta_cm > 40 && theta_cm <= 60) hex60->Fill(ex_energy);
-         if(theta_cm > 60 && theta_cm <= 80) hex80->Fill(ex_energy);
-         if(theta_cm > 80 && theta_cm <= 100) hex100->Fill(ex_energy);*/
+         // Plots of excitation energy in different angular ranges: initialization
+         for (int i = 0; i < hHex.size(); i++) {
+         double theta_min = 10 + i * 2.5;
+         double theta_max = theta_min + 2.5;
+         if (theta_cm > theta_min && theta_cm <= theta_max) {
+            hHex[i]->Fill(ex_energy);
+            break; // Only fill one bin per event
+         }
+}
 
          hexvstheta->Fill(ex_energy, theta * TMath::RadToDeg());
       } // events
@@ -363,70 +336,73 @@ double densityH2 = 3.3084e-5; // g/cm³
 
    AngDistrCM->Divide(new TF1("sin", "sin(x * TMath::DegToRad())", 0, 180));
 
-   // Kinematics
-   /*Double_t *ThetaCMS = new Double_t[20000];
-   Double_t *ThetaLabRec = new Double_t[20000];
-   Double_t *EnerLabRec = new Double_t[20000];
-   Double_t *ThetaLabSca = new Double_t[20000];
-   Double_t *EnerLabSca = new Double_t[20000];
-   Double_t *MomLabRec = new Double_t[20000];
-
-C16_pd_C15_3103keV_Ebeam11_5.txt
-C16_pd_C15_4780keV_Ebeam11_5.txt
-C16_pd_C15_6841keV_Ebeam11_5.txt
+   // Excited states fitting
 
 
+    TF1 *fExSpectra = new TF1("fExSpectra", "gaus(0) + gaus(3) + [6] * TMath::BreitWigner(x, [7], [8]) + [9] * TMath::BreitWigner(x, [10], [11]) + [12] * TMath::BreitWigner(x, [13], [14])", -5, 14);
+    double params[15] = { 260, 0.66, 0.26, 320, 1.37, 0.265, 3.103,50, 0.2, 4.780, 25, 0.2, 6.8};
+   
+   // fExSpectra->SetNpx(10000);
+    fExSpectra->SetParameters(params);
+    hex->Fit(fExSpectra);
 
-   TString fileKine =
-      "/home/georgina/fair_install/ATTPCROOTv2/macro/Kinematics/Decay_kinematics/C16_pd_C15_gs_Ebeam11_5.txt";
-   std::ifstream *kineStr = new std::ifstream(fileKine.Data());
-   Int_t numKin = 0;
+    std::vector<double> p(15);
+for (int i = 0; i < 15; ++i) {
+    p[i] = fExSpectra->GetParameter(i);
+}
 
-   if (!kineStr->fail()) {
-      while (!kineStr->eof()) {
-         *kineStr >> ThetaCMS[numKin] >> ThetaLabRec[numKin] >> EnerLabRec[numKin] >> ThetaLabSca[numKin] >>
-            EnerLabSca[numKin];
-         // numKin++;
+TCanvas *cHexFit = new TCanvas("cHexFit", "Fit Components for hex", 800, 600);
+hex->Draw();
 
-         // MomLabRec[numKin] =( pow(EnerLabRec[numKin] + M_Ener,2) - TMath::Power(M_Ener, 2))/1000.0;
-         // std::cout<<" Momentum : " <<MomLabRec[numKin]<<"\n";
-         // Double_t E = TMath::Sqrt(TMath::Power(p, 2) + TMath::Power(M_Ener, 2)) - M_Ener;
-         numKin++;
-      }
-   } else if (kineStr->fail())
-      std::cout << " Warning : No Kinematics file found for this reaction GS!" << std::endl;
+// Gaussian 1
+TF1 *gaus1 = new TF1("gaus1", "gaus(0)", -5, 14);
+gaus1->SetParameters(p[0], p[1], p[2]);
+gaus1->SetLineColor(kRed);
+gaus1->Draw("same");
 
-   TGraph *kine_gs = new TGraph(numKin, ThetaLabRec, EnerLabRec);
+// Gaussian 2
+TF1 *gaus2 = new TF1("gaus2", "gaus(0)", -5, 14);
+gaus2->SetParameters(p[3], p[4], p[5]);
+gaus2->SetLineColor(kBlue);
+gaus2->Draw("same");
 
-   Double_t *ThetaCMS2 = new Double_t[20000];
-   Double_t *ThetaLabRec2 = new Double_t[20000];
-   Double_t *EnerLabRec2 = new Double_t[20000];
-   Double_t *ThetaLabSca2 = new Double_t[20000];
-   Double_t *EnerLabSca2 = new Double_t[20000];
-   Double_t *MomLabRec2 = new Double_t[20000];
+// Breit-Wigner 1
+TF1 *bw1 = new TF1("bw1", "[0]*TMath::BreitWigner(x,[1],[2])", -5, 14);
+bw1->SetParameters(p[6], p[7], p[8]);
+bw1->SetLineColor(kGreen+2);
+bw1->Draw("same");
 
-   TString fileKine2 =
-      "/home/georgina/fair_install/ATTPCROOTv2/macro/Kinematics/Decay_kinematics/C16_pd_C15_740keV_Ebeam11_5.txt";
-   std::ifstream *kineStr2 = new std::ifstream(fileKine2.Data());
-   Int_t numKin2 = 0;
+// Breit-Wigner 2
+TF1 *bw2 = new TF1("bw2", "[0]*TMath::BreitWigner(x,[1],[2])", -5, 14);
+bw2->SetParameters(p[9], p[10], p[11]);
+bw2->SetLineColor(kMagenta);
+bw2->Draw("same");
 
-   if (!kineStr2->fail()) {
-      while (!kineStr2->eof()) {
-         *kineStr2 >> ThetaCMS2[numKin2] >> ThetaLabRec2[numKin2] >> EnerLabRec2[numKin2] >> ThetaLabSca2[numKin2] >>
-            EnerLabSca2[numKin2];
-         // numKin++;
+// Breit-Wigner 3
+TF1 *bw3 = new TF1("bw3", "[0]*TMath::BreitWigner(x,[1],[2])", -5, 14);
+bw3->SetParameters(p[12], p[13], p[14]);
+bw3->SetLineColor(kOrange+7);
+bw3->Draw("same");
 
-         // MomLabRec[numKin] =( pow(EnerLabRec[numKin] + M_Ener,2) - TMath::Power(M_Ener, 2))/1000.0;
-         // std::cout<<" Momentum : " <<MomLabRec[numKin]<<"\n";
-         // Double_t E = TMath::Sqrt(TMath::Power(p, 2) + TMath::Power(M_Ener, 2)) - M_Ener;
-         numKin2++;
-      }
-   } else if (kineStr2->fail())
-      std::cout << " Warning : No Kinematics file found for this reaction!" << std::endl;
+cHexFit->BuildLegend();
+cHexFit->Update();
 
-   TGraph *kine_1st = new TGraph(numKin2, ThetaLabRec2, EnerLabRec2);*/
+ // Angular distribution 
 
-   // End Kinematics
+std::vector<std::vector<double>> all_fit_params(hHex.size(), std::vector<double>(15, 0.0));
+
+
+for (int i = 0; i < hHex.size(); i++) {
+    fExSpectra_vec[i] = new TF1(Form("fExSpectra%d", i+1),
+        "gaus(0) + gaus(3) + [6]*TMath::BreitWigner(x,[7],[8]) + [9]*TMath::BreitWigner(x,[10],[11]) + [12]*TMath::BreitWigner(x,[13],[14])", -5, 14);
+    
+    fExSpectra_vec[i]->SetParameters(params);
+    hHex[i]->Fit(fExSpectra_vec[i]);
+
+    for (int p = 0; p < 15; ++p) {
+        all_fit_params[i][p] = fExSpectra_vec[i]->GetParameter(p);
+    }
+}
 
 
    // KINEMATICS FOR DIFFERENT EXCITATION ENERGIES
@@ -476,35 +452,16 @@ for (size_t i = 0; i < files.size(); i++) {
 
    graphs.push_back(g);
 }
-
-
-   /*TCanvas *c1 = new TCanvas();
-   c1->Divide(2, 2);
-   c1->Draw();
-   c1->cd(1);
-   Ang_Ener->SetMarkerStyle(20);
-   Ang_Ener->SetMarkerSize(0.5);
-   Ang_Ener->Draw("col");
-   Ang_Ener->GetXaxis()->SetTitle("Angle (deg)");
-   Ang_Ener->GetYaxis()->SetTitle("Energy (MeV)");
-   kine_gs->Draw("SAME");
-   kine_1st->Draw("SAME");*/
-
-
-   /*c1->cd(2);
-   Ang_Ener_PRAC->Draw("col");
-   c1->cd(3);
-   hVxVy->Draw("zcol");*/
-
+  
 TCanvas *c1 = new TCanvas();
 Ang_Ener->SetMarkerStyle(20);
 Ang_Ener->SetMarkerSize(0.5);
 Ang_Ener->Draw("col");
-Ang_Ener->GetXaxis()->SetTitle("Angle (deg)");
-Ang_Ener->GetYaxis()->SetTitle("Energy (MeV)");
+Ang_Ener->GetXaxis()->SetTitle("theta_lab (deg)");
+Ang_Ener->GetYaxis()->SetTitle("Energy (MeV)"); //Energy (MeV)
 
 // Draw all kinematics graphs from the loop
-/*for (size_t i = 0; i < graphs.size(); i++) {
+for (size_t i = 0; i < graphs.size(); i++) {
     graphs[i]->Draw("L SAME");  // "L SAME" draws as a line on the same canvas
 }
 
@@ -513,26 +470,20 @@ auto legend = new TLegend(0.65, 0.65, 0.88, 0.88);
 for (size_t i = 0; i < graphs.size(); i++) {
     legend->AddEntry(graphs[i], labels[i].c_str(), "l");
 }
-legend->Draw();*/
+legend->Draw();
 
-
-   TCanvas *c_ExEner = new TCanvas();
+   /*TCanvas *c_ExEner = new TCanvas();
    hex->Draw();
    hex->GetXaxis()->SetTitle("Excitation Energy (MeV)");
-   hex->GetYaxis()->SetTitle("Counts");
+   hex->GetYaxis()->SetTitle("Counts");*/
 
-   /*TCanvas *c_ExenerCorr = new TCanvas();
+   TCanvas *c_ExenerCorr = new TCanvas();
    c_ExenerCorr->Divide(2, 1);
    c_ExenerCorr->Draw();
    c_ExenerCorr->cd(1);
    hexCorr->Draw();
    c_ExenerCorr->cd(2);
    ExCorrvsZpos->Draw("zcol");
-
-   TCanvas *c_ExenerCorr1 = new TCanvas();
-   c_ExenerCorr->Draw();
-   hexCorr->Draw();*/
-
 
    TCanvas *c_AngDistr = new TCanvas();
    c_AngDistr->Divide(2, 1);
@@ -561,60 +512,38 @@ legend->Draw();*/
    c_redchi2->cd(2);
    hbredchi2->Draw("zcol");*/
 
-   /*TCanvas *c_hex_segmented = new TCanvas();
-   c_hex_segmented->Divide(3, 2);
-   c_hex_segmented->cd(1);
-   hex20->Draw();
-   c_hex_segmented->cd(2);
-   hex40->Draw();
-   c_hex_segmented->cd(3);
-   hex60->Draw();
-   c_hex_segmented->cd(4);
-   hex80->Draw();
-   c_hex_segmented->cd(5);
-   hex100->Draw();*/
 
-   TCanvas *c_hex_segmented = new TCanvas();
-   c_hex_segmented->Divide(3, 3);
-   c_hex_segmented->cd(1);
-   hex11->Draw();
-   c_hex_segmented->cd(2);
-   hex12->Draw();
-   c_hex_segmented->cd(3);
-   hex13->Draw();
-   c_hex_segmented->cd(4);
-   hex21->Draw();
-   c_hex_segmented->cd(5);
-   hex22->Draw();
-   c_hex_segmented->cd(6);
-   hex23->Draw();
-   c_hex_segmented->cd(7);
-   hex31->Draw();
-   c_hex_segmented->cd(8);
-   hex32->Draw();
-   c_hex_segmented->cd(9);
-   hex33->Draw();
+TCanvas *c_hex_segmented1 = new TCanvas("c_hex_segmented1", "Hex Spectra 1 to 9", 1200, 800);
+c_hex_segmented1->Divide(3, 3);
 
-   TCanvas *c_hex_segmented2 = new TCanvas();
-   c_hex_segmented2->Divide(3, 3);
-   c_hex_segmented2->cd(1);
-   hex41->Draw();
-   c_hex_segmented2->cd(2);
-   hex42->Draw();
-   c_hex_segmented2->cd(3);
-   hex43->Draw();
-   c_hex_segmented2->cd(4);
-   hex51->Draw();
-   c_hex_segmented2->cd(5);
-   hex52->Draw();
-   c_hex_segmented2->cd(6);
-   hex53->Draw();
-   c_hex_segmented2->cd(7);
-   hex61->Draw();
-   c_hex_segmented2->cd(8);
-   hex62->Draw();
-   c_hex_segmented2->cd(9);
-   hex63->Draw();
+TCanvas *c_hex_segmented2 = new TCanvas("c_hex_segmented2", "Hex Spectra 10 to 18", 1200, 800);
+c_hex_segmented2->Divide(3, 3);
+
+// First canvas
+for (int i = 0; i < 9; i++) {
+   c_hex_segmented1->cd(i + 1);
+   if (hHex[i]) hHex[i]->Draw();
+   if (fExSpectra_vec[i]) fExSpectra_vec[i]->Draw("same");
+}
+// Second canvas
+for (int i = 9; i < 18; i++) {
+   c_hex_segmented2->cd(i - 8);
+
+   if (hHex[i]) {
+      std::cout << "Drawing hHex[" << i << "] with " << hHex[i]->GetEntries() << " entries." << std::endl;
+      hHex[i]->Draw();
+   } else {
+      std::cerr << "Warning: hHex[" << i << "] is null!" << std::endl;
+   }
+   if (fExSpectra_vec[i]) {
+      fExSpectra_vec[i]->Draw("same");
+   } else {
+      std::cerr << "Warning: fExSpectra_vec[" << i << "] is null!" << std::endl;
+   }
+}
+
+/*c_hex_segmented1->Update();
+c_hex_segmented2->Update();*/
 
    TCanvas *c_hex_vs_theta = new TCanvas();
    hexvstheta->Draw("zcol");

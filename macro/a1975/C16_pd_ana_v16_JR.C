@@ -67,21 +67,22 @@ kine_2b(Double_t m1, Double_t m2, Double_t m3, Double_t m4, Double_t K_proj, Dou
 
 void GetEnergy(Double_t M, Double_t IZ, Double_t BRO, Double_t &E);
 
-void C16_pd_ana()
+
+void C16_pd_ana_v16_JR()
 {
    // FairRunAna *run = new FairRunAna();
 
-   TH2F *Ang_Ener = new TH2F("Ang_Ener", "Ang_Ener", 600, 0, 60, 1000, 0, 20.0);
+   TH2F *Ang_Ener = new TH2F("Ang_Ener", "Ang_Ener", 600, 0, 60, 1000, 0, 60.0);
    TH2F *Ang_Ener_PRAC = new TH2F("Ang_Ener_PRAC", "Ang_Ener_PRAC", 1000, 0, 100, 1000, 0, 200.0);
    TH2F *ELossvsBrho = new TH2F("ELossvsBrho", "ELossvsBrho", 4000, 0, 25000, 1000, 0, 4);
    TH2F *dedxvsBrho = new TH2F("dedxvsBrho", "dedxvsBrho", 4000, 0, 10000, 1000, 0, 4);
    TH2F *hVxVy = new TH2F("hVxVy", "hVxVy", 1000, 0, 4, 1000, 0, 4);
    TH1F *henergyIC = new TH1F("henergyIC", "henergyIC", 2048, 0, 2047);
 
-   auto *hex = new TH1F("hex", "hex", 80, -2, 8);
+   auto *hex = new TH1F("hex", "hex", 150, -2, 8);
    auto *QvsEb = new TH2F("QvsEb", "QvsEb", 1000, -5, 15, 100, 0, 300);
    auto *QvsZpos = new TH2F("QvsZpos", "QvsZpos", 1000, -10, 50, 200, -100, 100);
-   auto *hexCorr = new TH1F("hexCorr", "hexCorr", 80, -2, 8);
+   auto *hexCorr = new TH1F("hexCorr", "hexCorr", 150, -2, 8);
 
    auto *AngDistr = new TH1F("Ang_Distr", "Ang_Distr", 128, 0, 120);
    auto *AngDistrCM = new TH1F("Ang_Distr_CM", "Ang_Distr_CM", 90, 0, 180);
@@ -168,20 +169,26 @@ double densityH2 = 3.3084e-5; // g/cm³
    elossH2.SetMaterial(catima::Material(1, 1)); // Set material to H2
    elossH2.SetProjectile(16, 6, mass);           // Set projectile to proton
 
-   double kethe= 13.;     
-   
+   double kethe= 13.;    
+
+   filenames.push_back("run_0104_2H.root");
+   filenames.push_back("run_0105_2H.root");
+   filenames.push_back("run_0106_2H.root");
+   filenames.push_back("run_0107_2H.root");
+   filenames.push_back("run_0108_2H.root");
+   filenames.push_back("run_0109_2H.root");
    filenames.push_back("run_0110_2H.root");
-   //filenames.push_back("run_0111_1H.root");
+   //filenames.push_back("run_0111_2H.root");
    filenames.push_back("run_0112_2H.root");
    filenames.push_back("run_0113_2H.root");
    filenames.push_back("run_0114_2H.root");
-   filenames.push_back("run_0115_2H.root");
+   /*filenames.push_back("run_0115_2H.root");
    filenames.push_back("run_0116_2H.root");
    filenames.push_back("run_0117_2H.root");
    filenames.push_back("run_0118_2H.root");
    filenames.push_back("run_0119_2H.root");
    filenames.push_back("run_0120_2H.root");
-   // filenames.push_back("run_0121_1H.root");
+   // filenames.push_back("run_0121_2H.root");
    filenames.push_back("run_0122_2H.root");
    filenames.push_back("run_0123_2H.root");
    filenames.push_back("run_0124_2H.root");
@@ -204,12 +211,12 @@ double densityH2 = 3.3084e-5; // g/cm³
    filenames.push_back("run_0141_2H.root");
    filenames.push_back("run_0142_2H.root");
    filenames.push_back("run_0143_2H.root");
-   // filenames.push_back("run_0144_1H.root");
+   filenames.push_back("run_0144_2H.root");
    filenames.push_back("run_0145_2H.root");
    filenames.push_back("run_0146_2H.root");
    filenames.push_back("run_0147_2H.root");
-   // filenames.push_back("run_0148_1H.root");
-   filenames.push_back("run_0149_2H.root");
+   // filenames.push_back("run_0148_2H.root");
+   //filenames.push_back("run_0149_2H.root");
    filenames.push_back("run_0150_2H.root");
    filenames.push_back("run_0151_2H.root");
    filenames.push_back("run_0152_2H.root");
@@ -225,22 +232,22 @@ double densityH2 = 3.3084e-5; // g/cm³
    filenames.push_back("run_0162_2H.root");
    filenames.push_back("run_0163_2H.root");
    filenames.push_back("run_0164_2H.root");
-   // filenames.push_back("run_0165_1H.root");
+   filenames.push_back("run_0165_2H.root");
    filenames.push_back("run_0166_2H.root");
    filenames.push_back("run_0167_2H.root");
    filenames.push_back("run_0168_2H.root");
    filenames.push_back("run_0169_2H.root");
    filenames.push_back("run_0170_2H.root");
-   // filenames.push_back("run_0171_1H.root");
+   filenames.push_back("run_0171_2H.root");
    filenames.push_back("run_0172_2H.root");
    filenames.push_back("run_0173_2H.root");
    filenames.push_back("run_0174_2H.root");
    filenames.push_back("run_0175_2H.root");
    filenames.push_back("run_0176_2H.root");
    filenames.push_back("run_0177_2H.root");
-   // filenames.push_back("run_0178_1H.root");
+   filenames.push_back("run_0178_2H.root");
    filenames.push_back("run_0179_2H.root");
-   // filenames.push_back("run_0180_1H.root");
+   filenames.push_back("run_0180_2H.root");
    filenames.push_back("run_0181_2H.root");
    filenames.push_back("run_0182_2H.root");
    filenames.push_back("run_0183_2H.root");
@@ -249,11 +256,12 @@ double densityH2 = 3.3084e-5; // g/cm³
    filenames.push_back("run_0186_2H.root");
    filenames.push_back("run_0187_2H.root");
    filenames.push_back("run_0188_2H.root");
-   filenames.push_back("run_0189_2H.root");
+   filenames.push_back("run_0189_2H.root");*/
 
    for (auto filename : filenames) {
       TFile *runFile =
-         new TFile("/home/georgina/C16_analysis/C16_H2/C16_pd/InterpolationSolver_pd_root/" + filename, "R");
+      //new TFile("/home/georgina/C16_analysis/C16_H2/C16_pd_v16_root/" + filename, "R");
+      new TFile("/home/georgina/Desktop/JUNRUI/"+filename, "R");
       TTree *Tphysics = (TTree *)runFile->Get("parquettree");
 
       Double_t theta{};
@@ -274,17 +282,15 @@ double densityH2 = 3.3084e-5; // g/cm³
          Double_t E_ej = TMath::Sqrt(p_ej * p_ej + m_ej * m_ej) - m_ej;
 
          auto [ex_energy, theta_cm] = kine_2b(m_C16, m_p, m_b, m_B, Ebeam_buff, theta, E_ej);
-
          // Beam energy corrected for energy loss along the target at vertex position
          Double_t Ebeam_at_z = elossH2.GetEnergy(Ebeam_buff, zPos * 100); // 
+         std::cout << "---------------------------------------------------------------------\n";
+        
+         double theta_lab_corr=(theta-(2.0*3.14159/4000) * (E_ej - kethe)); //theta: rad; theta_lab_corr: rad; E_ej-kethe: MeV
+         cout << "theta lab: " << theta << "  rad  " << " theta_corr_JR: " << theta_lab_corr<< "  rad" << "\n";
+
+         auto [ex_energy_corr, theta_cm_corr]= kine_2b(m_C16, m_p, m_b, m_B, Ebeam_at_z, theta_lab_corr, E_ej);
          
-         std::cout<<" Beam energy at z : "<<Ebeam_at_z<< "  " <<  "z:" << zPos*100 << "\n";
-
-         auto [ex_energy_corr, theta_cm_corr]= kine_2b(m_C16, m_p, m_b, m_B,Ebeam_at_z, theta, E_ej);
-
-//         double theta_corr_JR=(theta-(2.0*3.14159/4000) * (E_ej - kethe)) * TMath::RadToDeg(); //theta: rad, E_ej-kethe: MeV
-         //cout << " theta_corr_JR: " << theta_corr_JR << "\n";
-
          /*if (theta * TMath::RadToDeg() > 90 || theta * TMath::RadToDeg() < 12.0)
             continue;*/
 
@@ -293,13 +299,13 @@ double densityH2 = 3.3084e-5; // g/cm³
          ExvsZpos->Fill(ex_energy, zPos*100.0);
 
           // Fill corrected histogram
-         /*if (zPos*100> 2.0 && zPos*100 < 60.0)  // only consider reactions occuring within the target region
+         if (zPos*100> 2.0 && zPos*100 < 60.0)  // only consider reactions occuring within the target region
          {
-            cout << " Ex corrected : " << ex_energy_corr << "  " << " zpos: " << zPos*100.0 << " Ebeam at z: " << Ebeam_at_z << "\n";
+            //cout << " Ex corrected : " << ex_energy_corr << "  " << " zpos: " << zPos*100.0 << " Ebeam at z: " << Ebeam_at_z << "\n";
             
             ExCorrvsZpos->Fill(ex_energy_corr, zPos*100.0);
-            hexCorr->Fill(ex_energy_corr-0.8);
-         }*/
+            hexCorr->Fill(ex_energy_corr);
+         }
 
          // Histograms
          //hredchi2->Fill(redchi);
@@ -350,12 +356,6 @@ double densityH2 = 3.3084e-5; // g/cm³
             hex62->Fill(ex_energy);
          if (theta_cm > 52.5 && theta_cm <= 55)
             hex63->Fill(ex_energy);
-
-         /*if(theta_cm > 0 && theta_cm <= 20) hex20->Fill(ex_energy);
-         if(theta_cm > 20 && theta_cm <= 40) hex40->Fill(ex_energy);
-         if(theta_cm > 40 && theta_cm <= 60) hex60->Fill(ex_energy);
-         if(theta_cm > 60 && theta_cm <= 80) hex80->Fill(ex_energy);
-         if(theta_cm > 80 && theta_cm <= 100) hex100->Fill(ex_energy);*/
 
          hexvstheta->Fill(ex_energy, theta * TMath::RadToDeg());
       } // events
@@ -491,20 +491,20 @@ for (size_t i = 0; i < files.size(); i++) {
    kine_1st->Draw("SAME");*/
 
 
-   /*c1->cd(2);
-   Ang_Ener_PRAC->Draw("col");
-   c1->cd(3);
-   hVxVy->Draw("zcol");*/
+/*c1->cd(2);
+Ang_Ener_PRAC->Draw("col");
+c1->cd(3);
+hVxVy->Draw("zcol");*/
 
 TCanvas *c1 = new TCanvas();
 Ang_Ener->SetMarkerStyle(20);
 Ang_Ener->SetMarkerSize(0.5);
 Ang_Ener->Draw("col");
-Ang_Ener->GetXaxis()->SetTitle("Angle (deg)");
-Ang_Ener->GetYaxis()->SetTitle("Energy (MeV)");
+Ang_Ener->GetXaxis()->SetTitle("theta_lab (deg)");
+Ang_Ener->GetYaxis()->SetTitle("kinetic energy (MeV)"); //Energy (MeV)
 
 // Draw all kinematics graphs from the loop
-/*for (size_t i = 0; i < graphs.size(); i++) {
+for (size_t i = 0; i < graphs.size(); i++) {
     graphs[i]->Draw("L SAME");  // "L SAME" draws as a line on the same canvas
 }
 
@@ -513,7 +513,7 @@ auto legend = new TLegend(0.65, 0.65, 0.88, 0.88);
 for (size_t i = 0; i < graphs.size(); i++) {
     legend->AddEntry(graphs[i], labels[i].c_str(), "l");
 }
-legend->Draw();*/
+legend->Draw();
 
 
    TCanvas *c_ExEner = new TCanvas();
@@ -521,18 +521,13 @@ legend->Draw();*/
    hex->GetXaxis()->SetTitle("Excitation Energy (MeV)");
    hex->GetYaxis()->SetTitle("Counts");
 
-   /*TCanvas *c_ExenerCorr = new TCanvas();
+   TCanvas *c_ExenerCorr = new TCanvas();
    c_ExenerCorr->Divide(2, 1);
    c_ExenerCorr->Draw();
    c_ExenerCorr->cd(1);
    hexCorr->Draw();
    c_ExenerCorr->cd(2);
    ExCorrvsZpos->Draw("zcol");
-
-   TCanvas *c_ExenerCorr1 = new TCanvas();
-   c_ExenerCorr->Draw();
-   hexCorr->Draw();*/
-
 
    TCanvas *c_AngDistr = new TCanvas();
    c_AngDistr->Divide(2, 1);
@@ -560,19 +555,6 @@ legend->Draw();*/
    hredchi2->Draw("zcol");
    c_redchi2->cd(2);
    hbredchi2->Draw("zcol");*/
-
-   /*TCanvas *c_hex_segmented = new TCanvas();
-   c_hex_segmented->Divide(3, 2);
-   c_hex_segmented->cd(1);
-   hex20->Draw();
-   c_hex_segmented->cd(2);
-   hex40->Draw();
-   c_hex_segmented->cd(3);
-   hex60->Draw();
-   c_hex_segmented->cd(4);
-   hex80->Draw();
-   c_hex_segmented->cd(5);
-   hex100->Draw();*/
 
    TCanvas *c_hex_segmented = new TCanvas();
    c_hex_segmented->Divide(3, 3);
