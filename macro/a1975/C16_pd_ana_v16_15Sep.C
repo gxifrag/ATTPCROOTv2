@@ -68,7 +68,7 @@ kine_2b(Double_t m1, Double_t m2, Double_t m3, Double_t m4, Double_t K_proj, Dou
 void GetEnergy(Double_t M, Double_t IZ, Double_t BRO, Double_t &E);
 
 
-void C16_pd_ana_v16()
+void C16_pd_ana_v16_old()
 {
    // FairRunAna *run = new FairRunAna();
 
@@ -340,52 +340,55 @@ void C16_pd_ana_v16()
 
 
     TF1 *fExSpectra = new TF1("fExSpectra", "gaus(0) + gaus(3) + [6] * TMath::BreitWigner(x, [7], [8]) + [9] * TMath::BreitWigner(x, [10], [11]) + [12] * TMath::BreitWigner(x, [13], [14])", -5, 14);
-    double params[15] = { 260, 0.66, 0.26, 320, 1.37, 0.265, 3.103,50, 0.2, 4.780, 25, 0.2, 6.8};
+    double params[15] = { 260, 0.66, 0.26, 320, 1.37, 0.265, 3.103,50, 0.2, 4.780, 25, 0.2, 6.8, 0.2, 25};
    
    // fExSpectra->SetNpx(10000);
     fExSpectra->SetParameters(params);
     hex->Fit(fExSpectra);
 
     std::vector<double> p(15);
-for (int i = 0; i < 15; ++i) {
-    p[i] = fExSpectra->GetParameter(i);
-}
+   for (int i = 0; i < 15; ++i) {
+      p[i] = fExSpectra->GetParameter(i);
+   }
 
-TCanvas *cHexFit = new TCanvas("cHexFit", "Fit Components for hex", 800, 600);
-hex->Draw();
+   TCanvas *cHexFit = new TCanvas("cHexFit", "Fit Components for hex", 800, 600);
+   hex->Draw();
 
-// Gaussian 1
-TF1 *gaus1 = new TF1("gaus1", "gaus(0)", -5, 14);
-gaus1->SetParameters(p[0], p[1], p[2]);
-gaus1->SetLineColor(kRed);
-gaus1->Draw("same");
+   // Gaussian 1
+   TF1 *gaus1 = new TF1("gaus1", "gaus(0)", -5, 14);
+   gaus1->SetParameters(p[0], p[1], p[2]);
+   gaus1->SetLineColor(kRed);
+   gaus1->Draw("same");
 
-// Gaussian 2
-TF1 *gaus2 = new TF1("gaus2", "gaus(0)", -5, 14);
-gaus2->SetParameters(p[3], p[4], p[5]);
-gaus2->SetLineColor(kBlue);
-gaus2->Draw("same");
+   // Gaussian 2
+   TF1 *gaus2 = new TF1("gaus2", "gaus(0)", -5, 14);
+   gaus2->SetParameters(p[3], p[4], p[5]);
+   gaus2->SetLineColor(kBlue);
+   gaus2->Draw("same");
 
-// Breit-Wigner 1
-TF1 *bw1 = new TF1("bw1", "[0]*TMath::BreitWigner(x,[1],[2])", -5, 14);
-bw1->SetParameters(p[6], p[7], p[8]);
-bw1->SetLineColor(kGreen+2);
-bw1->Draw("same");
+   // Breit-Wigner 1
+   TF1 *bw1 = new TF1("bw1", "[0]*TMath::BreitWigner(x,[1],[2])", -5, 14);
+   bw1->SetParameters(p[6], p[7], p[8]);
+   bw1->SetLineColor(kGreen+2);
+   bw1->Draw("same");
 
-// Breit-Wigner 2
-TF1 *bw2 = new TF1("bw2", "[0]*TMath::BreitWigner(x,[1],[2])", -5, 14);
-bw2->SetParameters(p[9], p[10], p[11]);
-bw2->SetLineColor(kMagenta);
-bw2->Draw("same");
+   // Breit-Wigner 2
+   TF1 *bw2 = new TF1("bw2", "[0]*TMath::BreitWigner(x,[1],[2])", -5, 14);
+   bw2->SetParameters(p[9], p[10], p[11]);
+   bw2->SetLineColor(kMagenta);
+   bw2->Draw("same");
 
-// Breit-Wigner 3
-TF1 *bw3 = new TF1("bw3", "[0]*TMath::BreitWigner(x,[1],[2])", -5, 14);
-bw3->SetParameters(p[12], p[13], p[14]);
-bw3->SetLineColor(kOrange+7);
-bw3->Draw("same");
+   // Breit-Wigner 3
+   TF1 *bw3 = new TF1("bw3", "[0]*TMath::BreitWigner(x,[1],[2])", -5, 14);
+   bw3->SetParameters(p[12], p[13], p[14]);
+   bw3->SetLineColor(kOrange+7);
+   bw3->Draw("same");
 
-cHexFit->BuildLegend();
-cHexFit->Update();
+
+   cHexFit->BuildLegend();
+   cHexFit->Update();
+   //cHexFit->WaitPrimitive();
+
 
  // Angular distribution 
 
@@ -472,10 +475,10 @@ for (size_t i = 0; i < graphs.size(); i++) {
 }
 legend->Draw();
 
-   /*TCanvas *c_ExEner = new TCanvas();
+   TCanvas *c_ExEner = new TCanvas();
    hex->Draw();
    hex->GetXaxis()->SetTitle("Excitation Energy (MeV)");
-   hex->GetYaxis()->SetTitle("Counts");*/
+   hex->GetYaxis()->SetTitle("Counts");
 
    TCanvas *c_ExenerCorr = new TCanvas();
    c_ExenerCorr->Divide(2, 1);
@@ -542,8 +545,8 @@ for (int i = 9; i < 18; i++) {
    }
 }
 
-/*c_hex_segmented1->Update();
-c_hex_segmented2->Update();*/
+c_hex_segmented1->Update();
+c_hex_segmented2->Update();
 
    TCanvas *c_hex_vs_theta = new TCanvas();
    hexvstheta->Draw("zcol");

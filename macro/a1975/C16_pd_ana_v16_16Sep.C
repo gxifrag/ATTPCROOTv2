@@ -68,8 +68,14 @@ kine_2b(Double_t m1, Double_t m2, Double_t m3, Double_t m4, Double_t K_proj, Dou
 void GetEnergy(Double_t M, Double_t IZ, Double_t BRO, Double_t &E);
 
 
-void C16_pd_ana_v16()
+void C16_pd_ana_v16_16Sep()
 {
+
+   bool guardar_en_pdf = true; // ← cambia a false si quieres solo verlos en pantalla
+   // Activar modo batch si estás guardando en PDF
+   if (guardar_en_pdf) {
+      gROOT->SetBatch(kTRUE); // ← esto evita que se abran ventanas
+   }
    // FairRunAna *run = new FairRunAna();
 
    TH2F *Ang_Ener = new TH2F("Ang_Ener", "Ang_Ener", 720, 10, 60, 1000, 0, 14.0);
@@ -92,15 +98,6 @@ void C16_pd_ana_v16()
 
    /*auto *hredchi2 = new TH1F("redchi2", "redchi2", 1000, 0, 0.0001);
    auto *hbredchi2 = new TH1F("bredchi2", "bredchi2", 1000, 0, 5);*/
-
- /*
-   double densityH2 = 3.3084e-5; // g/cm³
-   AtTools::AtELossCATIMA elossH2(densityH2);
-   double mass{16.0147}; // Mass of C16 in u
-   elossH2.SetMaterial(catima::Material(1, 1)); // Set material to H2
-   elossH2.SetProjectile(16 6, mass);           // Set projectile to proton
-
-   */
 
    auto *hexvstheta = new TH2F("hexVStheta", "hexVStheta", 1000, -5, 15, 90, 0, 90);
 
@@ -265,17 +262,29 @@ void C16_pd_ana_v16()
       Tphysics->SetBranchAddress("vertex_z", &zPos);
       Tphysics->SetBranchAddress("ke", &ke);
 
+      std::string estimation_filename = std::string(filename.Data());
+      size_t pos = estimation_filename.find("_2H");
+      if (pos != std::string::npos) {
+         estimation_filename.erase(pos, 3); // elimina "_2H"
+      }
+
+      TFile *estimationFile = new TFile(
+   ("/home/georgina/C16_analysis/C16_H2/Estimation_C16_pd_v16/root/" + estimation_filename).c_str(), "R");
+
+      TTree *Testimation = (TTree *)estimationFile->Get("parquettree");
+
+      Double_t arclength{};
+      Testimation->SetBranchAddress("arclength", &arclength);
+
 
       for (int i = 0; i < Tphysics->GetEntries(); i++) {
          Tphysics->GetEntry(i);
+         Testimation->GetEntry(i);
 
          Double_t p_ej = Brho * Z_ej * 2.99792458 / 10 * 1000;
          Double_t E_ej = TMath::Sqrt(p_ej * p_ej + m_ej * m_ej) - m_ej;
 
-         //cout << " Ejectile energy: " << E_ej << " MeV" << "kinetic energy=" << ke << "\n";
-
          auto [ex_energy, theta_cm] = kine_2b(m_C16, m_p, m_b, m_B, Ebeam_buff, theta, ke);
-         // Beam energy corrected for energy loss along the target at vertex position
          
          if(ke < 0.0 || ke > 14.0)
                 continue;
@@ -285,28 +294,28 @@ void C16_pd_ana_v16()
          
          Double_t Ebeam_at_z = elossH2.GetEnergy(Ebeam_buff, zPos * 100); // 
         
-        
+        //Correccion JunRui
+
          /*double theta_lab_corr=(theta-(2.0*3.14159/4000) * (E_ej - kethe)); //theta: rad; theta_lab_corr: rad; E_ej-kethe: MeV
          cout << "theta lab: " << theta << "  rad  " << " theta_corr_JR: " << theta_lab_corr<< "  rad" << "\n";
-*/
-         auto [ex_energy_corr, theta_cm_corr]= kine_2b(m_C16, m_p, m_b, m_B, Ebeam_at_z, theta, ke);
+         */
+         //auto [ex_energy_corr, theta_cm_corr]= kine_2b(m_C16, m_p, m_b, m_B, Ebeam_at_z, theta, ke);
 
          // Fill uncorrected histogram
          hex->Fill(ex_energy);      
          ExvsZpos->Fill(ex_energy, zPos*100.0);
-
+         
           // Fill corrected histogram
          if (zPos*100> 2.0 && zPos*100 < 60.0)  // only consider reactions occuring within the target region
          {
             //cout << " Ex corrected : " << ex_energy_corr << "  " << " zpos: " << zPos*100.0 << " Ebeam at z: " << Ebeam_at_z << "\n";
-            
             ExCorrvsZpos->Fill(ex_energy_corr, zPos*100.0);
             hexCorr->Fill(ex_energy_corr);
          }
 
          /*cout << "hex= " << ex_energy << "  " << " hexCorr= " << ex_energy_corr << "  " << " theta_lab= " << theta * TMath::RadToDeg() << "  deg" << "\n";
          cout << " thetacm= " << theta_cm << "  deg" << "ke= " << ke<< " MeV" << "zpos= " << zPos*100.0 << " Ebeam at z= " << Ebeam_at_z << "\n";
-*/
+         */
          // Histograms
          //hredchi2->Fill(redchi);
 
@@ -319,6 +328,8 @@ void C16_pd_ana_v16()
 
          AngDistr->Fill(theta * TMath::RadToDeg());
          AngDistrCM->Fill(theta_cm);
+         hexvstheta->Fill(ex_energy, theta * TMath::RadToDeg());
+         ExvsTrackLength->Fill(ex_energy, arclength);
 
          // Plots of excitation energy in different angular ranges: initialization
          for (int i = 0; i < hHex.size(); i++) {
@@ -328,9 +339,8 @@ void C16_pd_ana_v16()
             hHex[i]->Fill(ex_energy);
             break; // Only fill one bin per event
          }
-}
-
-         hexvstheta->Fill(ex_energy, theta * TMath::RadToDeg());
+         }
+         
       } // events
    } // Files
 
@@ -338,93 +348,38 @@ void C16_pd_ana_v16()
 
    // Excited states fitting
 
-
-    TF1 *fExSpectra = new TF1("fExSpectra", "gaus(0) + gaus(3) + [6] * TMath::BreitWigner(x, [7], [8]) + [9] * TMath::BreitWigner(x, [10], [11]) + [12] * TMath::BreitWigner(x, [13], [14])", -5, 14);
-    double params[15] = { 260, 0.66, 0.26, 320, 1.37, 0.265, 3.103,50, 0.2, 4.780, 25, 0.2, 6.8};
+   TF1 *fExSpectra = new TF1("fExSpectra", "gaus(0) + gaus(3) + [6] * TMath::BreitWigner(x, [7], [8]) + [9] * TMath::BreitWigner(x, [10], [11]) + [12] * TMath::BreitWigner(x, [13], [14])", -5, 14);
+    double params[15] = { 260, 0.66, 0.26, 320, 1.37, 0.265, 3.103,50, 0.2, 4.780, 25, 0.2, 6.8, 0.2, 25};
    
    // fExSpectra->SetNpx(10000);
     fExSpectra->SetParameters(params);
     hex->Fit(fExSpectra);
 
     std::vector<double> p(15);
-for (int i = 0; i < 15; ++i) {
-    p[i] = fExSpectra->GetParameter(i);
-}
-
-TCanvas *cHexFit = new TCanvas("cHexFit", "Fit Components for hex", 800, 600);
-hex->Draw();
-
-// Gaussian 1
-TF1 *gaus1 = new TF1("gaus1", "gaus(0)", -5, 14);
-gaus1->SetParameters(p[0], p[1], p[2]);
-gaus1->SetLineColor(kRed);
-gaus1->Draw("same");
-
-// Gaussian 2
-TF1 *gaus2 = new TF1("gaus2", "gaus(0)", -5, 14);
-gaus2->SetParameters(p[3], p[4], p[5]);
-gaus2->SetLineColor(kBlue);
-gaus2->Draw("same");
-
-// Breit-Wigner 1
-TF1 *bw1 = new TF1("bw1", "[0]*TMath::BreitWigner(x,[1],[2])", -5, 14);
-bw1->SetParameters(p[6], p[7], p[8]);
-bw1->SetLineColor(kGreen+2);
-bw1->Draw("same");
-
-// Breit-Wigner 2
-TF1 *bw2 = new TF1("bw2", "[0]*TMath::BreitWigner(x,[1],[2])", -5, 14);
-bw2->SetParameters(p[9], p[10], p[11]);
-bw2->SetLineColor(kMagenta);
-bw2->Draw("same");
-
-// Breit-Wigner 3
-TF1 *bw3 = new TF1("bw3", "[0]*TMath::BreitWigner(x,[1],[2])", -5, 14);
-bw3->SetParameters(p[12], p[13], p[14]);
-bw3->SetLineColor(kOrange+7);
-bw3->Draw("same");
-
-cHexFit->BuildLegend();
-cHexFit->Update();
-
- // Angular distribution 
-
-std::vector<std::vector<double>> all_fit_params(hHex.size(), std::vector<double>(15, 0.0));
-
-
-for (int i = 0; i < hHex.size(); i++) {
-    fExSpectra_vec[i] = new TF1(Form("fExSpectra%d", i+1),
-        "gaus(0) + gaus(3) + [6]*TMath::BreitWigner(x,[7],[8]) + [9]*TMath::BreitWigner(x,[10],[11]) + [12]*TMath::BreitWigner(x,[13],[14])", -5, 14);
-    
-    fExSpectra_vec[i]->SetParameters(params);
-    hHex[i]->Fit(fExSpectra_vec[i]);
-
-    for (int p = 0; p < 15; ++p) {
-        all_fit_params[i][p] = fExSpectra_vec[i]->GetParameter(p);
-    }
-}
-
+   for (int i = 0; i < 15; ++i) {
+      p[i] = fExSpectra->GetParameter(i);
+   }
 
    // KINEMATICS FOR DIFFERENT EXCITATION ENERGIES
+
 std::vector<std::string> files = {
    "C16_pd_C15_gs_Ebeam11_5.txt",
-   "C16_pd_C15_740keV_Ebeam11_5.txt",
-   "C16_pd_C15_3103keV_Ebeam11_5.txt",
-   "C16_pd_C15_4780keV_Ebeam11_5.txt",
-   "C16_pd_C15_6841keV_Ebeam11_5.txt"
+    "C16_pd_C15_740keV_Ebeam11_5.txt",
+    "C16_pd_C15_3103keV_Ebeam11_5.txt",
+    "C16_pd_C15_4780keV_Ebeam11_5.txt",
+    "C16_pd_C15_6841keV_Ebeam11_5.txt"
 };
 
-std::vector<std::string> labels = {
-   "gs", "740keV", "3103keV", "4780keV", "6841keV"
-};
+   std::vector<std::string> labels = {
+      "gs", "740keV", "3103keV", "4780keV", "6841keV"
+   };
 
 // Colors for each line (ROOT color codes: 2=red,4=blue,8=green, etc.)
 std::vector<int> colors = {kBlack, kRed, kBlue, kGreen+2, kMagenta};
-
 std::vector<TGraph*> graphs;
 
 for (size_t i = 0; i < files.size(); i++) {
-   TString fileKine = Form("/home/georgina/fair_install/ATTPCROOTv2_3/macro/Kinematics/Decay_kinematics/%s", files[i].c_str());
+   TString fileKine = Form("/home/georgina/fair_install/ATTPCROOTv2/macro/Kinematics/Decay_kinematics/%s", files[i].c_str());
    std::ifstream kineStr(fileKine.Data());
 
    if (kineStr.fail()) {
@@ -453,12 +408,13 @@ for (size_t i = 0; i < files.size(); i++) {
    graphs.push_back(g);
 }
   
-TCanvas *c1 = new TCanvas();
+TCanvas *c_AngEner = new TCanvas("AngEner", "Energy as a function of theta", 1200, 800);
 Ang_Ener->SetMarkerStyle(20);
 Ang_Ener->SetMarkerSize(0.5);
 Ang_Ener->Draw("col");
 Ang_Ener->GetXaxis()->SetTitle("theta_lab (deg)");
 Ang_Ener->GetYaxis()->SetTitle("Energy (MeV)"); //Energy (MeV)
+
 
 // Draw all kinematics graphs from the loop
 for (size_t i = 0; i < graphs.size(); i++) {
@@ -472,12 +428,58 @@ for (size_t i = 0; i < graphs.size(); i++) {
 }
 legend->Draw();
 
-   /*TCanvas *c_ExEner = new TCanvas();
+   TCanvas *c_ExEner = new TCanvas("ExEner", "Excited Energy spectra", 1200, 800);
    hex->Draw();
    hex->GetXaxis()->SetTitle("Excitation Energy (MeV)");
-   hex->GetYaxis()->SetTitle("Counts");*/
+   hex->GetYaxis()->SetTitle("Counts");
 
-   TCanvas *c_ExenerCorr = new TCanvas();
+   // Gaussian 1
+   TF1 *gaus1 = new TF1("gaus1", "gaus(0)", -5, 14);
+   gaus1->SetParameters(p[0], p[1], p[2]);
+   gaus1->SetLineColor(kRed);
+   gaus1->Draw("same");
+
+   // Gaussian 2
+   TF1 *gaus2 = new TF1("gaus2", "gaus(0)", -5, 14);
+   gaus2->SetParameters(p[3], p[4], p[5]);
+   gaus2->SetLineColor(kBlue);
+   gaus2->Draw("same");
+
+   // Breit-Wigner 1
+   TF1 *bw1 = new TF1("bw1", "[0]*TMath::BreitWigner(x,[1],[2])", -5, 14);
+   bw1->SetParameters(p[6], p[7], p[8]);
+   bw1->SetLineColor(kGreen+2);
+   bw1->Draw("same");
+
+   // Breit-Wigner 2
+   TF1 *bw2 = new TF1("bw2", "[0]*TMath::BreitWigner(x,[1],[2])", -5, 14);
+   bw2->SetParameters(p[9], p[10], p[11]);
+   bw2->SetLineColor(kMagenta);
+   bw2->Draw("same");
+
+   // Breit-Wigner 3
+   TF1 *bw3 = new TF1("bw3", "[0]*TMath::BreitWigner(x,[1],[2])", -5, 14);
+   bw3->SetParameters(p[12], p[13], p[14]);
+   bw3->SetLineColor(kOrange+7);
+   bw3->Draw("same");
+
+
+   TLegend* legend2 = new TLegend(0.7, 0.15, 0.9, 0.3); // (x1, y1, x2, y2) en coordenadas del canvas
+   //legend2->SetBorderSize(0); // sin borde
+   legend2->SetFillStyle(0);  // fondo transparente
+   legend2->AddEntry(hex, "hex", "l");
+   legend2->AddEntry(gaus1, "gaus(0)", "l");
+   legend2->AddEntry(gaus2, "gaus(1)", "l");
+   legend2->AddEntry(bw1, "Breit-Wigner 1", "l");
+   legend2->AddEntry(bw2, "Breit-Wigner 2", "l");
+   legend2->AddEntry(bw3, "Breit-Wigner 3", "l");
+   legend2->Draw();
+
+   c_ExEner->Update();
+
+
+   TCanvas *c_ExenerCorr = new TCanvas("ExenerCorr", "Excited Energy spectra corrected", 1200, 800);
+   c_ExenerCorr->cd();
    c_ExenerCorr->Divide(2, 1);
    c_ExenerCorr->Draw();
    c_ExenerCorr->cd(1);
@@ -485,7 +487,8 @@ legend->Draw();
    c_ExenerCorr->cd(2);
    ExCorrvsZpos->Draw("zcol");
 
-   TCanvas *c_AngDistr = new TCanvas();
+   TCanvas *c_AngDistr = new TCanvas("AngDistr", "Angular Distribution", 1200, 600);
+   c_AngDistr->cd();
    c_AngDistr->Divide(2, 1);
    c_AngDistr->cd(1);
    AngDistr->Draw();
@@ -494,7 +497,8 @@ legend->Draw();
    AngDistrCM->GetXaxis()->SetTitle("Angle (deg)");
    AngDistrCM->GetYaxis()->SetTitle("#frac{d#sigma}{d#Omega} (a.u.)");
 
-   TCanvas *c_ExvsZpos = new TCanvas();
+   TCanvas *c_ExvsZpos = new TCanvas( "ExvsZpos", "Excitation Energy vs z position and track length", 1200, 600);
+   c_ExvsZpos->cd();
    c_ExvsZpos->Divide(2, 1);
    c_ExvsZpos->cd(1);
    ExvsZpos->Draw("zcol");
@@ -512,11 +516,32 @@ legend->Draw();
    c_redchi2->cd(2);
    hbredchi2->Draw("zcol");*/
 
+   TCanvas *basura = new TCanvas( "basura", "basura", 1200, 600);
+    ExvsTrackLength->Draw("zcol");
+   
 
+// Angular distribution 
+
+std::vector<std::vector<double>> all_fit_params(hHex.size(), std::vector<double>(15, 0.0));
+
+for (int i = 0; i < hHex.size(); i++) {
+    fExSpectra_vec[i] = new TF1(Form("fExSpectra%d", i+1),
+        "gaus(0) + gaus(3) + [6]*TMath::BreitWigner(x,[7],[8]) + [9]*TMath::BreitWigner(x,[10],[11]) + [12]*TMath::BreitWigner(x,[13],[14])", -5, 14);
+    
+    fExSpectra_vec[i]->SetParameters(params);
+    hHex[i]->Fit(fExSpectra_vec[i]);
+
+    for (int p = 0; p < 15; ++p) {
+        all_fit_params[i][p] = fExSpectra_vec[i]->GetParameter(p);
+    }
+}
+// Print fit parameters for each angular bin
 TCanvas *c_hex_segmented1 = new TCanvas("c_hex_segmented1", "Hex Spectra 1 to 9", 1200, 800);
+c_hex_segmented1->cd();
 c_hex_segmented1->Divide(3, 3);
 
 TCanvas *c_hex_segmented2 = new TCanvas("c_hex_segmented2", "Hex Spectra 10 to 18", 1200, 800);
+c_hex_segmented2->cd();
 c_hex_segmented2->Divide(3, 3);
 
 // First canvas
@@ -526,31 +551,58 @@ for (int i = 0; i < 9; i++) {
    if (fExSpectra_vec[i]) fExSpectra_vec[i]->Draw("same");
 }
 // Second canvas
+
 for (int i = 9; i < 18; i++) {
    c_hex_segmented2->cd(i - 8);
-
-   if (hHex[i]) {
-      std::cout << "Drawing hHex[" << i << "] with " << hHex[i]->GetEntries() << " entries." << std::endl;
-      hHex[i]->Draw();
-   } else {
-      std::cerr << "Warning: hHex[" << i << "] is null!" << std::endl;
-   }
-   if (fExSpectra_vec[i]) {
-      fExSpectra_vec[i]->Draw("same");
-   } else {
-      std::cerr << "Warning: fExSpectra_vec[" << i << "] is null!" << std::endl;
-   }
+   if (hHex[i]) hHex[i]->Draw();
+   if (fExSpectra_vec[i]) fExSpectra_vec[i]->Draw("same");
 }
 
-/*c_hex_segmented1->Update();
-c_hex_segmented2->Update();*/
+c_hex_segmented1->Update();
+c_hex_segmented2->Update();
 
-   TCanvas *c_hex_vs_theta = new TCanvas();
-   hexvstheta->Draw("zcol");
-   hexvstheta->GetXaxis()->SetTitle("Energy (MeV)");
-   hexvstheta->GetYaxis()->SetTitle("Angle (deg)");
+TCanvas *c1 = (TCanvas*)gROOT->GetListOfCanvases()->FindObject("c1");
+if (c1) c1->Close();
 
-   // last_20cm.close();
+
+/*gROOT->SetSelectedPad(nullptr);
+gROOT->SetSelectedPrimitive(nullptr);
+
+c_hex_segmented2->cd();
+gPad->Modified();
+gPad->Update();
+gROOT->SetSelectedPad(nullptr);
+
+if (gROOT->FindObject("basura")) {
+    ((TCanvas*)gROOT->FindObject("basura"))->Close();
+}*/
+
+// last_20cm.close();
+
+
+std::string nombre_pdf = "plots_C16_pd_C15.pdf";
+
+if (guardar_en_pdf) {
+    c_AngEner->Print((nombre_pdf + "(").c_str());
+    c_ExEner->Print(nombre_pdf.c_str());
+    c_ExenerCorr->Print(nombre_pdf.c_str());
+    c_AngDistr->Print(nombre_pdf.c_str());
+    c_ExvsZpos->Print(nombre_pdf.c_str());
+    c_hex_segmented1->Print(nombre_pdf.c_str());
+    c_hex_segmented2->Print(nombre_pdf.c_str());
+    c_hex_segmented2->Print((nombre_pdf + ")").c_str());
+
+    gSystem->Exec(("xdg-open " + nombre_pdf).c_str()); // abre el PDF automáticamente
+} else {
+    c_AngEner->Draw();
+    c_ExEner->Draw();
+    c_ExenerCorr->Draw();
+    c_AngDistr->Draw();
+    c_ExvsZpos->Draw();
+    c_hex_segmented1->Draw();
+    c_hex_segmented2->Draw();
+}
+
 }
 
 void GetEnergy(Double_t M, Double_t IZ, Double_t BRO, Double_t &E)
