@@ -699,12 +699,12 @@ TCanvas *c_ExEner = new TCanvas("ExEner", "Corrected Excited Energy spectra", 12
 // Angular distribution 
 
 TCanvas *kin = new TCanvas( "kin", "kin", 1200, 800);
-kin->cd();
-KineticEnergy->Draw("");
+KineticEnergy->Draw();
 
 
 
 std::vector<std::vector<double>> all_fit_params(hHex.size(), std::vector<double>(15, 0.0));
+
 
 for (int i = 0; i < hHex.size(); i++) {
     fExSpectra_vec[i] = new TF1(Form("fExSpectra%d", i+1),
@@ -716,7 +716,9 @@ for (int i = 0; i < hHex.size(); i++) {
         fExSpectra_vec[i] = nullptr; // Optional: mark as skipped
         continue; // Skip fitting this histogram
     }
+    auto *c_temp = new TCanvas(Form("c_temp_%d", i), Form("Fit for hHex%d", i+1), 800, 600);
     hHex[i]->Fit(fExSpectra_vec[i]);
+    delete c_temp;
 
     for (int p = 0; p < 15; ++p) {
         all_fit_params[i][p] = fExSpectra_vec[i]->GetParameter(p);
@@ -727,9 +729,10 @@ for (int i = 0; i < hHex.size(); i++) {
 
 std::cout << hHex.size() << " histograms processed.\n";
 
+
+
 // Print fit parameters for each angular bin
 auto *c_hex_segmented1 = new TCanvas("c_hex_segmented1", "Hex Spectra 1 to 9", 1200, 800);
-//c_hex_segmented1->cd();
 c_hex_segmented1->Divide(3, 3);
 
 for (int i = 0; i < 9; ++i) {
@@ -749,8 +752,8 @@ for (int i = 0; i < 9; ++i) {
 
 
 
-
 //c_hex_segmented1->Update(); // ← actualiza todo el canvas
+
 
 //---------------- Save plots ----------------//
 std::string nombre_pdf = "plots_C16_pd_C15.pdf";
