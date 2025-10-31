@@ -1,0 +1,823 @@
+#include <fstream>
+#include <iostream>
+
+Bool_t compareEventName(std::string &getname, std::string &fribname)
+{
+   // Parsing FRIB event number
+   std::regex fribregex("evt(\\d+)_\\d+");
+   std::string result = std::regex_replace(fribname, fribregex, "$1\n");
+
+   int fribnumber;
+   std::istringstream iss(result);
+   while (iss >> fribnumber) {
+      // std::cout << fribnumber << std::endl;
+   }
+   // Parsing GET event name
+   std::regex getregex("evt(\\d+)_data");
+   result = std::regex_replace(getname, getregex, "$1\n");
+
+   int getnumber;
+   std::istringstream isss(result);
+   while (isss >> getnumber) {
+      // std::cout << getnumber << std::endl;
+   }
+
+   return (fribnumber == getnumber) ? 1 : 0;
+   return 0;
+}
+
+Double_t omega(Double_t x, Double_t y, Double_t z)
+{
+   return sqrt(x * x + y * y + z * z - 2 * x * y - 2 * y * z - 2 * x * z);
+}
+
+std::tuple<double, double>
+kine_2b(Double_t m1, Double_t m2, Double_t m3, Double_t m4, Double_t K_proj, Double_t thetalab, Double_t K_eject)
+{
+   // in this definition: m1(projectile); m2(target); m3(ejectile); and m4(recoil);
+   double Et1 = K_proj + m1;
+   double Et2 = m2;
+   double Et3 = K_eject + m3;
+   double Et4 = Et1 + Et2 - Et3;
+   double m4_ex, Ex, theta_cm;
+   double s, t, u; //---Mandelstam variables
+
+   s = pow(m1, 2) + pow(m2, 2) + 2 * m2 * Et1;
+   u = pow(m2, 2) + pow(m3, 2) - 2 * m2 * Et3;
+
+   m4_ex = sqrt((cos(thetalab) * omega(s, pow(m1, 2), pow(m2, 2)) * omega(u, pow(m2, 2), pow(m3, 2)) -
+                 (s - pow(m1, 2) - pow(m2, 2)) * (pow(m2, 2) + pow(m3, 2) - u)) /
+                   (2 * pow(m2, 2)) +
+                s + u - pow(m2, 2));
+   Ex = m4_ex - m4;
+
+   t = pow(m2, 2) + pow(m4_ex, 2) - 2 * m2 * Et4;
+
+   // for inverse kinematics Note: this angle corresponds to the recoil
+   theta_cm = TMath::Pi() - acos((pow(s, 2) + s * (2 * t - pow(m1, 2) - pow(m2, 2) - pow(m3, 2) - pow(m4_ex, 2)) +
+                                  (pow(m1, 2) - pow(m2, 2)) * (pow(m3, 2) - pow(m4_ex, 2))) /
+                                 (omega(s, pow(m1, 2), pow(m2, 2)) * omega(s, pow(m3, 2), pow(m4_ex, 2))));
+
+   theta_cm = theta_cm * TMath::RadToDeg();
+   return std::make_tuple(Ex, theta_cm);
+}
+
+void GetEnergy(Double_t M, Double_t IZ, Double_t BRO, Double_t &E);
+
+//-----------fitting function-----------------------------------------
+
+  /* TF1* CreateSpectralModelWithPS(TH1F* h_PS_1n) {
+    TF1* fModel = new TF1("fModel", [=](double* x, double* p) {
+        double val = 0;
+
+        // 2 Gaussianas
+        val += p[0] * TMath::Gaus(x[0], p[1], p[2], true); // G1: amp, mean, sigma
+        val += p[3] * TMath::Gaus(x[0], p[4], p[5], true); // G2: amp, mean, sigma
+
+        // 3 Breit-Wigner
+        val += p[6]  * TMath::BreitWigner(x[0], p[7],  p[8]);  // BW1: amp, mean, width
+        val += p[9]  * TMath::BreitWigner(x[0], p[10], p[11]); // BW2
+        val += p[12] * TMath::BreitWigner(x[0], p[13], p[14]); // BW3
+
+        // Fondo de fase espacial
+        val += p[15] * h_PS_1n->GetBinContent(h_PS_1n->FindBin(x[0])); //when the phasespace contribution is too small, the global function does not work well
+
+        return val;
+    }, -5, 14, 16); // 16 parámetros: 15 físicos + 1 para el fondo
+
+    fModel->SetNpx(1000);
+    return fModel;
+}*/
+
+TF1* CreateSpectralModelWithPS(const char* name, TH1F* h_PS_1n) {
+    TF1* fModel = new TF1(name, [=](double* x, double* p) {
+        double val = 0;
+        val += p[0] * TMath::Gaus(x[0], p[1], p[2], true);
+        val += p[3] * TMath::Gaus(x[0], p[4], p[5], true);
+        val += p[6]  * TMath::BreitWigner(x[0], p[7],  p[8]);
+        val += p[9]  * TMath::BreitWigner(x[0], p[10], p[11]);
+        val += p[12] * TMath::BreitWigner(x[0], p[13], p[14]);
+
+        int bin = h_PS_1n->FindBin(x[0]);
+        if (bin >= 1 && bin <= h_PS_1n->GetNbinsX())
+            val += p[15] * h_PS_1n->GetBinContent(bin);
+
+        return val;
+    }, -5, 14, 16);
+
+    fModel->SetNpx(1000);
+    return fModel;
+}
+
+void C16_pt_ana_v16_21Oct()
+{
+   bool guardar_en_pdf = false; // ← cambia a false si quieres solo verlos en pantalla
+
+// Activar modo batch si estás guardando en PDF
+if (guardar_en_pdf) {
+    gROOT->SetBatch(kTRUE); // ← esto evita que se abran ventanas
+} else {
+    gROOT->SetBatch(kFALSE); // ← esto permite ver los canvas en pantalla
+}
+   // FairRunAna *run = new FairRunAna();
+   double Ebin_max = 14.0 ;
+	double Ebin_min = -5.0 ;
+	int NumberBins = 180 ;
+	int NumberBinsAux = 200 ;
+
+   TH2F *Ang_Ener = new TH2F("Ang_Ener", "Ang_Ener", 720, 10, 60, 1000, 0, 14.0);
+   TH2F *Ang_Ener_Corr = new TH2F("Ang_Ener_Corr", "Ang_Ener_Corr",720, 10, 60, 1000, 0, 14.0);
+
+   TH2F *ELossvsBrho = new TH2F("ELossvsBrho", "ELossvsBrho", 4000, 0, 25000, 1000, 0, 4);
+   TH2F *dedxvsBrho = new TH2F("dedxvsBrho", "dedxvsBrho", 4000, 0, 10000, 1000, 0, 4);
+   TH2F *hVxVy = new TH2F("hVxVy", "hVxVy", 1000, 0, 4, 1000, 0, 4);
+   TH1F *henergyIC = new TH1F("henergyIC", "henergyIC", 2048, 0, 2047);
+
+   auto *hex = new TH1F("hex", "hex", NumberBins, Ebin_min, Ebin_max);
+   auto *QvsEb = new TH2F("QvsEb", "QvsEb", 1000, -5, 15, 100, 0, 300);
+   auto *QvsZpos = new TH2F("QvsZpos", "QvsZpos", 1000, -10, 50, 200, -100, 100);
+   auto *hexCorr = new TH1F("hexCorr", "hexCorr", NumberBins, Ebin_min, Ebin_max);
+
+   auto *AngDistr = new TH1F("Ang_Distr", "Ang_Distr", 128, 0, 120);
+   auto *AngDistrCM = new TH1F("Ang_Distr_CM", "Ang_Distr_CM", 90, 0, 180);
+   auto *ExvsZpos = new TH2F("ExvsZpos", "ExvsZpos", 1000, -5, 15, 200, -20, 150);
+   auto *ExvsTrackLength = new TH2F("ExvsTrackLength", "ExvsTrackLength", 1000, -5, 15, 200, -20, 150);
+   auto *ExCorrvsZpos = new TH2F("ExCorrvsZpos", "ExCorrvsZpos", 1000, -10, 10, 200, -100, 100);
+   auto *KineticEnergy = new TH1F("KineticEnergy", "KineticEnergy", 100, 0, 100);
+
+   TH1F *h_PS_1n_plot = new TH1F("h_PS_1n_plot","h_PS_1n_plot",NumberBins, Ebin_min, Ebin_max); 
+
+   /*auto *hredchi2 = new TH1F("redchi2", "redchi2", 1000, 0, 0.0001);
+   auto *hbredchi2 = new TH1F("bredchi2", "bredchi2", 1000, 0, 5);*/
+
+   auto *hexvstheta = new TH2F("hexVStheta", "hexVStheta", 1000, -5, 15, 90, 0, 90);
+
+   Double_t nc_tot[200];
+   Double_t nc_PS_1n[200];
+   Double_t x[200];
+   Int_t nbins;
+
+   // Some useful transformation constants.
+   Double_t u_to_MeV = 931.49401;
+   Double_t Brho_to_p = 1.602176634E-19;
+
+   // Some masses that may be useful for the experiment.
+   Double_t m_p = 1.007825 * u_to_MeV;
+   Double_t m_d = 2.0135532 * u_to_MeV;
+   Double_t m_t = 3.016049281 * u_to_MeV;
+   Double_t m_He3 = 3.016029 * u_to_MeV;
+   Double_t m_a = 4.00260325415 * u_to_MeV;
+
+   Double_t m_C12 = 12.00 * u_to_MeV;
+   Double_t m_C13 = 13.00335484 * u_to_MeV;
+   Double_t m_C14 = 14.003242 * u_to_MeV;
+   Double_t m_C15 = 15.0105993 * u_to_MeV;
+   Double_t m_C16 = 16.0147 * u_to_MeV;
+   Double_t m_C17 = 17.0226 * u_to_MeV;
+
+   // Beam and target parameters.
+   Double_t Ebeam_buff = 11.5 * 16; //11.5 
+   cout<<" Beam energy in buffer gas : "<<Ebeam_buff<<"\n";
+   Double_t m_b = m_t;
+   Double_t m_B = m_C14;
+
+   // Ejectile parameters:tritium
+   int A_ej = 3;
+   int Z_ej = 1;
+   Double_t m_ej = m_t;
+
+   std::vector<TString> filenames;
+   // Declare hHex at the beginning of your macro or function
+   std::vector<TH1F*> hHex(9);
+   // Assuming hHex is already defined and filled
+   std::vector<TF1*> fExSpectra_vec(hHex.size(), nullptr);
+   
+
+   // Now you can safely initialize and use it
+   for (int i = 0; i < hHex.size(); i++) {
+      hHex[i] = new TH1F(Form("hex%d", i+1), Form("hex%d", i+1), 90, -5, 14);
+   }
+
+   // ELoss tables.
+   //AtTools::AtELossTable *elossTableH2 = new AtTools::AtELossTable();
+   //elossTableH2->LoadSrimTable("StoppingPower_SRIM_C16_H2.txt"); //SRIM no me va.
+   //elossTableH2->LoadLiseTable("StoppingPower_C16_H2.txt", 2.0158,3.3084e-5);
+
+   double densityH2 = 3.3084e-5; // g/cm³
+   AtTools::AtELossCATIMA elossH2(densityH2);
+   double mass{16.0147}; // Mass of C16 in u
+   elossH2.SetMaterial(catima::Material(1, 1)); // Set material to H2
+   elossH2.SetProjectile(16, 6, mass);           // Set projectile to proton
+
+   double kethe= 13.;    
+filenames.push_back("run_0110_3H.root");
+   //filenames.push_back("run_0111_3H.root");
+    filenames.push_back("run_0112_3H.root");
+    filenames.push_back("run_0113_3H.root");
+    filenames.push_back("run_0114_3H.root");
+    filenames.push_back("run_0115_3H.root");
+    filenames.push_back("run_0116_3H.root");
+    filenames.push_back("run_0117_3H.root");
+    filenames.push_back("run_0118_3H.root");
+    filenames.push_back("run_0119_3H.root");
+    filenames.push_back("run_0120_3H.root");
+    filenames.push_back("run_0122_3H.root");
+    filenames.push_back("run_0123_3H.root");
+    filenames.push_back("run_0124_3H.root");
+    filenames.push_back("run_0125_3H.root");
+    filenames.push_back("run_0126_3H.root");
+    filenames.push_back("run_0127_3H.root");
+    filenames.push_back("run_0128_3H.root");
+    filenames.push_back("run_0129_3H.root");
+    filenames.push_back("run_0130_3H.root");
+    filenames.push_back("run_0131_3H.root");
+    filenames.push_back("run_0132_3H.root");
+    filenames.push_back("run_0133_3H.root");
+    filenames.push_back("run_0134_3H.root");
+    filenames.push_back("run_0135_3H.root");
+    filenames.push_back("run_0136_3H.root");
+    filenames.push_back("run_0137_3H.root");
+    filenames.push_back("run_0138_3H.root");
+    filenames.push_back("run_0139_3H.root");
+    filenames.push_back("run_0140_3H.root");
+    filenames.push_back("run_0141_3H.root");
+    filenames.push_back("run_0142_3H.root");
+    filenames.push_back("run_0143_3H.root");
+   //filenames.push_back("run_0144_3H.root");
+    filenames.push_back("run_0145_3H.root");
+    filenames.push_back("run_0146_3H.root");
+    filenames.push_back("run_0147_3H.root");
+    // filenames.push_back("run_0148_3H.root");
+    filenames.push_back("run_0149_3H.root");
+    filenames.push_back("run_0150_3H.root");
+    filenames.push_back("run_0151_3H.root");
+    filenames.push_back("run_0152_3H.root");
+    filenames.push_back("run_0153_3H.root");
+    filenames.push_back("run_0154_3H.root");
+    filenames.push_back("run_0155_3H.root");
+    filenames.push_back("run_0156_3H.root");
+    filenames.push_back("run_0157_3H.root");
+    filenames.push_back("run_0158_3H.root");
+    filenames.push_back("run_0159_3H.root");
+    filenames.push_back("run_0160_3H.root");
+    filenames.push_back("run_0161_3H.root");
+    filenames.push_back("run_0162_3H.root");
+    filenames.push_back("run_0163_3H.root");
+    filenames.push_back("run_0164_3H.root");
+    filenames.push_back("run_0165_3H.root");
+    filenames.push_back("run_0166_3H.root");
+    filenames.push_back("run_0167_3H.root");
+    filenames.push_back("run_0168_3H.root");
+    filenames.push_back("run_0169_3H.root");
+    filenames.push_back("run_0170_3H.root");
+    filenames.push_back("run_0171_3H.root");
+    filenames.push_back("run_0172_3H.root");
+    filenames.push_back("run_0173_3H.root");
+    filenames.push_back("run_0174_3H.root");
+    filenames.push_back("run_0175_3H.root");
+    filenames.push_back("run_0176_3H.root");
+    filenames.push_back("run_0177_3H.root");
+    // filenames.push_back("run_0178_3H.root");
+    filenames.push_back("run_0179_3H.root");
+    filenames.push_back("run_0180_3H.root");
+    filenames.push_back("run_0181_3H.root");
+    filenames.push_back("run_0182_3H.root");
+    filenames.push_back("run_0183_3H.root");
+    filenames.push_back("run_0184_3H.root");
+    filenames.push_back("run_0185_3H.root");
+    filenames.push_back("run_0186_3H.root");
+    filenames.push_back("run_0187_3H.root");
+    filenames.push_back("run_0188_3H.root");
+    filenames.push_back("run_0189_3H.root");
+
+
+   for (auto filename : filenames) {
+      TFile *runFile = new TFile("/home/georgina/C16_analysis/C16_H2/C16_pt/InterpolationSolver_pt_root/" + filename, "R");
+      TTree *Tphysics = (TTree *)runFile->Get("parquettree");
+
+      Double_t theta{};
+      Double_t phi{};
+      Double_t Brho{};
+      Double_t redchi{};
+      Double_t zPos{};
+      Double_t ke{};
+      Tphysics->SetBranchAddress("polar", &theta);
+      Tphysics->SetBranchAddress("azimuthal", &phi);
+      Tphysics->SetBranchAddress("brho", &Brho);
+      Tphysics->SetBranchAddress("redchisq", &redchi);
+      Tphysics->SetBranchAddress("vertex_z", &zPos);
+      Tphysics->SetBranchAddress("ke", &ke);
+
+      std::string estimation_filename = std::string(filename.Data());
+      size_t pos = estimation_filename.find("_3H");
+      if (pos != std::string::npos) {
+         estimation_filename.erase(pos, 3); // elimina "_3H"
+      }
+
+      /*TFile *estimationFile = new TFile(
+      ("/home/georgina/C16_analysis/C16_H2/Estimation_C16_pt_v16/root/" + estimation_filename).c_str(), "R");
+
+      TTree *Testimation = (TTree *)estimationFile->Get("parquettree");
+
+      Double_t arclength{};
+      Testimation->SetBranchAddress("arclength", &arclength);*/
+
+      for (int i = 0; i < Tphysics->GetEntries(); i++) {
+         Tphysics->GetEntry(i);
+         //Testimation->GetEntry(i);
+
+         Double_t p_ej = Brho * Z_ej * 2.99792458 / 10 * 1000;
+         Double_t E_ej = TMath::Sqrt(p_ej * p_ej + m_ej * m_ej) - m_ej;
+
+         auto [ex_energy, theta_cm] = kine_2b(m_C16, m_p, m_b, m_B, Ebeam_buff, theta, ke);
+         
+         Double_t Ebeam_at_z = elossH2.GetEnergy(Ebeam_buff, zPos * 100); // 
+        
+        //Correccion JunRui
+         double theta_lab_corr=(theta-(2.0*TMath::Pi()/4000) * (E_ej - kethe)); //theta: rad; theta_lab_corr: rad; E_ej-kethe: MeV
+         auto [ex_energy_corr, theta_cm_corr]= kine_2b(m_C16, m_p, m_b, m_B, Ebeam_at_z, theta_lab_corr, ke);
+
+         // Fill uncorrected histogram
+         hex->Fill(ex_energy);      
+         ExvsZpos->Fill(ex_energy, zPos*100.0);
+         KineticEnergy->Fill(ke);
+         
+          // Fill corrected histogram
+         if (zPos*100> 2.0 && zPos*100 < 60.0)  // only consider reactions occuring within the target region
+         {
+            //cout << " Ex corrected : " << ex_energy_corr << "  " << " zpos: " << zPos*100.0 << " Ebeam at z: " << Ebeam_at_z << "\n";
+            ExCorrvsZpos->Fill(ex_energy_corr, zPos*100.0);
+            hexCorr->Fill(ex_energy_corr);
+         }
+
+         // Histograms
+        // hredchi2->Fill(redchi);
+
+         Ang_Ener->Fill(theta* TMath::RadToDeg(), ke); //theta lab!! -> I still have to implement the correction of catima?
+         Ang_Ener_Corr->Fill(theta_lab_corr* TMath::RadToDeg(), ke); //
+
+         Double_t vx = TMath::Sin(theta) * TMath::Sqrt(ke);
+         Double_t vy = TMath::Cos(theta) * TMath::Sqrt(ke);
+
+         hVxVy->Fill(vx, vy);
+
+         AngDistr->Fill(theta * TMath::RadToDeg());
+         AngDistrCM->Fill(theta_cm);
+         hexvstheta->Fill(ex_energy, theta * TMath::RadToDeg());
+         //ExvsTrackLength->Fill(ex_energy, arclength);
+
+         // Plots of excitation energy in different angular ranges: initialization
+         for (int i = 0; i < hHex.size(); i++) {
+         double theta_min = 10 + i * 5.;
+         double theta_max = theta_min + 5.;
+         if (theta_cm > theta_min && theta_cm <= theta_max) {
+            hHex[i]->Fill(ex_energy_corr);
+            break; // Only fill one bin per event
+         }
+         }
+      } // events
+   } // Files
+
+   AngDistrCM->Divide(new TF1("sin", "sin(x * TMath::DegToRad())", 0, 180));
+
+//--------------------fit------------------------------------------------------
+
+   nbins = hexCorr->GetNbinsX() ;
+  	int binmax = hexCorr->GetMaximumBin() ;
+   double ThetaCM_min = 0 ;
+   double ThetaCM_max = 180 ;
+
+   TString PhaseSpace_FileName = "PhaseSpace_16C_pt_1n.root" ; 
+
+	TFile *f_PS = new TFile( PhaseSpace_FileName, "READ" ) ; 
+	TTree *t_PS = (TTree*)f_PS->Get("simulated_tree") ;
+
+	double Weight_sim, Ex_cal, ThetaCM_cal ;
+
+	t_PS->SetBranchAddress("Weight_sim",&Weight_sim);
+	t_PS->SetBranchAddress("Ex_cal",&Ex_cal);
+	t_PS->SetBranchAddress("ThetaCM_cal",&ThetaCM_cal);
+
+	//TH1F *h_PS_1n_aux = new TH1F("h_PS_1n_aux","h_PS_1n_aux", NumberBins, Ebin_min, Ebin_max ) ;
+	TH1F *h_PS_1n = new TH1F("h_PS_1n","h_PS_1n", NumberBins, Ebin_min, Ebin_max ) ; 
+
+	for( int i = 0 ; i < t_PS->GetEntries() ; i++ ) {
+		t_PS -> GetEntry(i) ;
+		if ( ThetaCM_cal > ThetaCM_min && ThetaCM_cal < ThetaCM_max ) {
+			h_PS_1n -> Fill( Ex_cal, Weight_sim ) ;	
+		}	
+	}
+	h_PS_1n -> Smooth() ;
+   
+// -----------------------------KINEMATICS FOR DIFFERENT EXCITATION ENERGIES
+
+std::vector<std::string> files = {
+    "C16_pt_14C_gs_Ebeam11_5.txt",
+    "C16_pt_14C_1st_Ebeam11_5.txt",  
+    "C16_pt_14C_2nd_Ebeam11_5.txt",
+    "C16_pt_14C_3rd_Ebeam11_5.txt"  
+    "C16_pt_4th_Ebeam11_5.txt",
+};
+   std::vector<std::string> labels = {
+      "gs", "740keV", "3103keV", "4780keV", "6841keV"
+   };
+
+// Colors for each line (ROOT color codes: 2=red,4=blue,8=green, etc.)
+std::vector<int> colors = {kBlack, kRed, kBlue, kGreen+2, kMagenta};
+std::vector<TGraph*> graphs;
+
+for (size_t i = 0; i < files.size(); i++) {
+   TString fileKine = Form("/home/georgina/fair_install/ATTPCROOTv2/macro/Kinematics/Decay_kinematics/%s", files[i].c_str());
+   std::ifstream kineStr(fileKine.Data());
+
+   if (kineStr.fail()) {
+      std::cout << " Warning : No Kinematics file found for " << labels[i] << "!" << std::endl;
+      continue;
+   }
+
+   // Temporary storage
+   std::vector<Double_t> ThetaCMS, ThetaLabRec, EnerLabRec, ThetaLabSca, EnerLabSca;
+
+   Double_t tCMS, tLabRec, eLabRec, tLabSca, eLabSca;
+   while (kineStr >> tCMS >> tLabRec >> eLabRec >> tLabSca >> eLabSca) {
+      ThetaCMS.push_back(tCMS);
+      ThetaLabRec.push_back(tLabRec);
+      EnerLabRec.push_back(eLabRec);
+      ThetaLabSca.push_back(tLabSca);
+      EnerLabSca.push_back(eLabSca);
+   }
+
+   // Build graph
+   TGraph *g = new TGraph(ThetaLabRec.size(), ThetaLabRec.data(), EnerLabRec.data());
+   g->SetLineColor(colors[i]);
+   g->SetLineWidth(2);
+   g->SetTitle(labels[i].c_str());
+
+   graphs.push_back(g);
+}
+  
+//---------------- Fitting the experimental data ----------------//
+ROOT::Math::MinimizerOptions::SetDefaultMinimizer("Minuit2");
+TFile *filePS = new TFile("PhaseSpace_16C_pt_1n.root", "READ");
+TTree *treePS = (TTree*) filePS->Get("simulated_tree");
+
+// Búsqueda de picos con TSpectrum
+auto *cps = new TCanvas("cps", "cps", 800, 600);
+cps->cd();
+int nPeaksToSearch = 5;
+TSpectrum *spec = new TSpectrum(nPeaksToSearch);
+int nFound = spec->Search(hexCorr, 2, "", 0.1);
+delete cps;
+
+// Vector para almacenar los parámetros de los pre-fits
+std::vector<std::vector<double>> prefit_params;
+
+// Para cada pico encontrado, hacer un fit gaussiano local
+for (int i = 0; i < nFound; i++) {
+    double peak_pos = spec->GetPositionX()[i];
+    double peak_height = hexCorr->GetBinContent(hexCorr->FindBin(peak_pos));
+    
+    // Crear una gaussiana para el pre-fit
+    TF1 *gaus_prefit = new TF1(Form("gaus_prefit_%d", i), "gaus", peak_pos - 0.5, peak_pos + 0.5);
+    
+    // Parámetros iniciales para la gaussiana
+    gaus_prefit->SetParameters(peak_height, peak_pos, 0.2);
+    
+    // Hacer el fit en un rango limitado alrededor del pico
+    auto *ctest0 = new TCanvas("ctest0", "ctest0", 800, 600);
+    hexCorr->Fit(gaus_prefit, "RQN+", "", peak_pos - 0.5, peak_pos + 0.5);
+    delete ctest0;
+
+    // Almacenar los parámetros del fit
+    std::vector<double> params = {
+        gaus_prefit->GetParameter(0), // amplitud
+        gaus_prefit->GetParameter(1), // media
+        gaus_prefit->GetParameter(2)  // sigma
+    };
+    prefit_params.push_back(params);
+
+    // First sort prefit_params by mean value (index 1)
+    std::sort(prefit_params.begin(), prefit_params.end(),
+    [](const auto& a, const auto& b) { return a[1] < b[1]; });
+
+    // Print sorted peaks for verification
+    /*cout << "\nSorted peaks by mean value:" << endl;
+    for (size_t i = 0; i < prefit_params.size(); i++) {
+        cout << "Peak " << i << ": Mean = " << prefit_params[i][1] 
+            << ", Amplitude = " << prefit_params[i][0] 
+            << ", Sigma = " << prefit_params[i][2] << endl;
+    }   
+    delete gaus_prefit;  // Limpieza de memoria
+    */
+}
+
+
+// Sort once after all fits
+std::sort(prefit_params.begin(), prefit_params.end(),
+    [](const auto& a, const auto& b) { return a[1] < b[1]; });
+
+// Print once
+cout << "\nSorted peaks by mean value:" << endl;
+for (size_t i = 0; i < prefit_params.size(); i++) {
+    cout << "Peak " << i << ": Mean = " << prefit_params[i][1] 
+         << ", Amplitude = " << prefit_params[i][0] 
+         << ", Sigma = " << prefit_params[i][2] << endl;
+}
+// Después del pre-fit de los picos...
+double initParams[16];  // Declarar el array fuera del condicional
+
+// Ordenar los picos por posición
+std::sort(prefit_params.begin(), prefit_params.end(),
+    [](const auto& a, const auto& b) { return a[1] < b[1]; });
+
+// Verificar el número de picos encontrados e inicializar initParams
+    // Usar los parámetros del pre-fit
+    initParams[0] = prefit_params[0][0];  // Primera gaussiana
+    initParams[1] = prefit_params[0][1];
+    initParams[2] = prefit_params[0][2];
+    initParams[3] = prefit_params[1][0];  // Segunda gaussiana
+    initParams[4] = prefit_params[1][1];
+    initParams[5] = prefit_params[1][2];
+    initParams[6] = prefit_params[2][0];  // Primer BW
+    initParams[7] = prefit_params[2][1];
+    initParams[8] = 0.2;
+    initParams[9] = prefit_params[3][0];  // Segundo BW
+    initParams[10] = prefit_params[3][1];
+    initParams[11] = 0.4;
+    initParams[12] = prefit_params[4][0]; // Tercer BW
+    initParams[13] = prefit_params[4][1];
+    initParams[14] = 0.2;
+    initParams[15] = 0.00036;            // Phase space
+
+// Imprimir los parámetros para verificación
+for (int i = 0; i < 16; ++i) {
+    cout << "param[" << i << "] = " << initParams[i] << "\n";
+}
+
+/*double initParams[16] = {400, 0.57,0.218, 
+      500, 1.31, 0.218,
+      220, 3.9, 0.2,
+      50, 5.5, 0.2, 
+      25, 6.9, 0.2, 0.0005}; //BW: amplitude mean width 0.0001
+*/
+auto *ctest = new TCanvas("ctest", "ctest", 800, 600);
+TF1* model = CreateSpectralModelWithPS("fExSpectra", h_PS_1n);
+// Establecer límites ANTES del ajuste
+model->SetParLimits(2, -0.3, 0.3);    // Límites para anchura de Gaussian 1
+model->SetParLimits(10, 5.0, 6.);   // Límites para mean de BW 2
+model->SetParLimits(13, 6.5, 7.2);   // Límites para mean de BW 3
+
+// Parámetros iniciales (ajústalos según tu caso)
+model->SetParameters(initParams) ;       // fondo PS
+hexCorr->Fit(model, "RN"); // "R" para rango, "Q" para modo silencioso
+delete ctest;
+
+// Extraer parámetros ajustados
+std::vector<double> finalParams;
+for (int i = 0; i < model->GetNpar(); ++i){
+    finalParams.push_back(model->GetParameter(i));
+   cout << "Fitted p[" << i << "] = " << model->GetParameter(i) << std::endl;
+}
+//---------------- Plots ----------------//
+
+TCanvas *c_AngEner = new TCanvas("AngEner", "Energy as a function of #theta", 1200, 800);
+Ang_Ener->SetMarkerStyle(20);
+Ang_Ener->SetMarkerSize(0.5);
+Ang_Ener->Draw("col");
+Ang_Ener->GetXaxis()->SetTitle("#theta_lab (deg)");
+Ang_Ener->GetYaxis()->SetTitle("Energy (MeV)"); //Energy (MeV)
+// Draw all kinematics graphs from the loop
+
+for (size_t i = 0; i < graphs.size(); i++) {
+    graphs[i]->Draw("L SAME");  // "L SAME" draws as a line on the same canvas
+}
+
+// Optional: add a legend
+auto legend = new TLegend(0.65, 0.65, 0.88, 0.88);
+for (size_t i = 0; i < graphs.size(); i++) {
+    legend->AddEntry(graphs[i], labels[i].c_str(), "l");
+}
+legend->Draw();
+
+TCanvas *c_AngEner_Corr = new TCanvas("AngEnerCorr", "Energy as a function of #theta_Corr", 1200, 800);
+Ang_Ener_Corr->SetMarkerStyle(20);
+Ang_Ener_Corr->SetMarkerSize(0.5);
+Ang_Ener_Corr->Draw("col");
+Ang_Ener_Corr->GetXaxis()->SetTitle("#theta_lab (deg)");
+Ang_Ener_Corr->GetYaxis()->SetTitle("Energy (MeV)"); //Energy (MeV)
+
+
+// Draw all kinematics graphs from the loop
+for (size_t i = 0; i < graphs.size(); i++) {
+    graphs[i]->Draw("L SAME");  // "L SAME" draws as a line on the same canvas
+}
+
+// Optional: add a legend
+auto legend0 = new TLegend(0.65, 0.65, 0.88, 0.88);
+for (size_t i = 0; i < graphs.size(); i++) {
+    legend0->AddEntry(graphs[i], labels[i].c_str(), "l");
+}
+legend0->Draw();
+
+// Excitation energy spectrum with fits --------------------------------------
+
+TCanvas *c_ExEner = new TCanvas("ExEner", "Corrected Excited Energy spectra", 1200, 800);
+c_ExEner->cd();
+
+// Primero dibuja el histograma
+hexCorr->Draw();
+hexCorr->GetXaxis()->SetTitle("Excitation Energy (MeV)");
+hexCorr->GetYaxis()->SetTitle("Counts");
+
+// Dibuja el fit total (model) primero
+model->SetLineColor(kRed);
+model->SetLineWidth(3);
+model->SetLineStyle(1);
+model->Draw("same");
+
+// Luego dibuja las componentes individuales
+// Gaussian 1
+TF1 *gaus1 = new TF1("gaus1", "gaus(0)", -5, 14);
+gaus1->SetParameters(finalParams[0], finalParams[1], finalParams[2]);
+gaus1->SetLineColor(kViolet);
+//gaus1->SetNpx(1000);  // Add this line
+gaus1->Draw("same");
+
+// Gaussian 2
+TF1 *gaus2 = new TF1("gaus2", "gaus(0)", -5, 14);
+gaus2->SetParameters(finalParams[3], finalParams[4], finalParams[5]);
+gaus2->SetLineColor(kBlue);
+//gaus2->SetNpx(1000);  // Add this line
+gaus2->Draw("same");
+
+// Breit-Wigner 1
+TF1 *bw1 = new TF1("bw1", "[0]*TMath::BreitWigner(x,[1],[2])", -5, 14);
+bw1->SetParameters(finalParams[6], finalParams[7], finalParams[8]);
+bw1->SetLineColor(kGreen+2);
+//bw1->SetNpx(1000);  // Add this line
+bw1->Draw("same");
+
+// Breit-Wigner 2
+TF1 *bw2 = new TF1("bw2", "[0]*TMath::BreitWigner(x,[1],[2])", -5, 14);
+bw2->SetParameters(finalParams[9], finalParams[10], finalParams[11]);
+bw2->SetLineColor(kCyan+2);
+//bw2->SetNpx(1000);  // Add this line
+bw2->Draw("same");
+
+// Breit-Wigner 3
+TF1 *bw3 = new TF1("bw3", "[0]*TMath::BreitWigner(x,[1],[2])", -5, 14);
+bw3->SetParameters(finalParams[12], finalParams[13], finalParams[14]);
+bw3->SetLineColor(kOrange+7);
+//bw3->SetNpx(1000);  // Add this line
+bw3->Draw("same");
+
+// Phase Space
+h_PS_1n->Scale(finalParams[15]); // Escala el histograma con el parámetro del fit
+h_PS_1n->SetLineColor(kBlack);
+h_PS_1n->SetLineWidth(2);
+// For Phase Space, add more smoothing iterations
+//h_PS_1n->Smooth(3);  // Increase number of smoothing iterations
+h_PS_1n->Draw("same");
+
+// Actualiza la leyenda
+TLegend* legend2 = new TLegend(0.7, 0.15, 0.9, 0.3);
+legend2->SetFillStyle(0);
+legend2->AddEntry(hexCorr, "Data", "lep");
+legend2->AddEntry(model, "Total Fit", "l");
+legend2->AddEntry(gaus1, "Gaussian 1", "l");
+legend2->AddEntry(gaus2, "Gaussian 2", "l");
+legend2->AddEntry(bw1, "Breit-Wigner 1", "l");
+legend2->AddEntry(bw2, "Breit-Wigner 2", "l");
+legend2->AddEntry(bw3, "Breit-Wigner 3", "l");
+legend2->AddEntry(h_PS_1n, "Phase Space", "l");
+legend2->Draw();
+
+c_ExEner->Update();
+
+//--------------------------------------------------------------------------------------------------
+
+   TCanvas *c_ExenerCorr = new TCanvas("ExenerCorr", "Excited Energy spectra corrected", 1200, 800);
+   c_ExenerCorr->cd();
+   c_ExenerCorr->Divide(2, 1);
+   c_ExenerCorr->cd(1);
+   hexCorr->Draw();
+   c_ExenerCorr->cd(2);
+   ExCorrvsZpos->Draw("zcol");
+
+   TCanvas *c_AngDistr = new TCanvas("AngDistr", "Angular Distribution", 1200, 600);
+   c_AngDistr->cd();
+   c_AngDistr->Divide(2, 1);
+   c_AngDistr->cd(1);
+   AngDistr->Draw();
+   c_AngDistr->cd(2);
+   AngDistrCM->Draw();
+   AngDistrCM->GetXaxis()->SetTitle("Angle (deg)");
+   AngDistrCM->GetYaxis()->SetTitle("#frac{d#sigma}{d#Omega} (a.u.)");
+
+   TCanvas *c_ExvsZpos = new TCanvas( "ExvsZpos", "Excitation Energy vs z position and track length", 1200, 800);
+   c_ExvsZpos->cd();
+   c_ExvsZpos->Divide(2, 1);
+   c_ExvsZpos->cd(1);
+   ExvsZpos->Draw("zcol");
+   ExvsZpos->GetXaxis()->SetTitle("Excitation Energy (MeV)");
+   ExvsZpos->GetYaxis()->SetTitle("z (cm)");
+   c_ExvsZpos->cd(2);
+   ExvsTrackLength->Draw("zcol");
+   ExvsTrackLength->GetXaxis()->SetTitle("Excitation Energy (MeV)");
+   ExvsTrackLength->GetYaxis()->SetTitle("Track Length (cm)");
+
+TCanvas *kin = new TCanvas( "kin", "kin", 1200, 800);
+kin->cd();
+KineticEnergy->Draw();
+
+// Angular distribution 
+
+std::vector<std::vector<double>> all_fit_params(hHex.size(), std::vector<double>(16, 0.0));
+//std::vector<int> nPeaksFound(hHex.size(), 0);
+
+for (int i = 0; i < hHex.size(); ++i) {
+    if (hHex[i]->GetEntries() < 220) {
+        fExSpectra_vec[i] = nullptr;
+        continue;
+    }
+
+    /*auto *c_temp = new TCanvas(Form("c_temp_%d", i), Form("Fit for hHex%d", i+1), 800, 600);
+    fExSpectra_vec[i] = CreateSpectralModelWithPS(Form("fExSpectra%d", i+1), h_PS_1n);
+    delete c_temp;*/
+
+    // --- TSpectrum peak search ---
+    /*TSpectrum *spec = new TSpectrum(5); // max 5 peaks
+    int nFound = spec->Search(hHex[i], 2, "", 0.1); // sigma=2, threshold=0.1
+    nPeaksFound[i] = nFound;
+
+
+    // Optional: print peak positions
+    
+    double *peaks = spec->GetPositionX();
+    std::cout << "Histogram " << i << ": " << nFound << " peaks found at ";
+    for (int p = 0; p < nFound; ++p) std::cout << peaks[p] << " ";
+    std::cout << std::endl;
+    delete spec;*/
+
+    // --- Fit model ---
+    auto *c_temp = new TCanvas(Form("c_temp_%d", i), Form("Fit for hHex%d", i+1), 800, 600);
+    fExSpectra_vec[i] = CreateSpectralModelWithPS(Form("fExSpectra%d", i+1), h_PS_1n);
+    
+    fExSpectra_vec[i]->SetParameters(initParams);
+    fExSpectra_vec[i]->FixParameter(1, finalParams[1]);
+    fExSpectra_vec[i]->FixParameter(4, finalParams[4]);
+    fExSpectra_vec[i]->FixParameter(7, finalParams[7]);
+    fExSpectra_vec[i]->FixParameter(10, finalParams[10]);
+    fExSpectra_vec[i]->FixParameter(13, finalParams[13]);
+    
+      
+    hHex[i]->Fit(fExSpectra_vec[i], "R");
+   delete c_temp;
+    for (int p = 0; p < 16; ++p) {
+        all_fit_params[i][p] = fExSpectra_vec[i]->GetParameter(p);
+    }
+}
+std::cout << hHex.size() << " histograms processed.\n";
+
+
+// Print fit parameters for each angular bin
+auto *c_hex_segmented1 = new TCanvas("c_hex_segmented1", "Hex Spectra 1 to 9", 1200, 800);
+c_hex_segmented1->Divide(3, 3);
+
+for (int i = 0; i < 9; ++i) {
+    if (i >= hHex.size()) continue; // Safety check
+    c_hex_segmented1->cd(i + 1); // Switch to pad (pads are 1-indexed)
+    hHex[i]->Draw();
+}
+c_hex_segmented1->Update(); // ← actualiza todo el canvas
+
+
+//---------------- Save plots ----------------//
+std::string nombre_pdf = "plots_C16_pt_C14.pdf";
+
+if (guardar_en_pdf) {
+    //c_ExEner->Print((nombre_pdf + "(").c_str()); // abre el PDF multipágina
+    //c_AngEner_Corr->Print(nombre_pdf.c_str());
+    //c_AngEner->Print(nombre_pdf.c_str());
+    //c_redchi2->Print(nombre_pdf.c_str());
+    //c_ExenerCorr->Print(nombre_pdf.c_str());
+    //c_AngDistr->Print(nombre_pdf.c_str());
+    //c_ExvsZpos->Print(nombre_pdf.c_str());
+    //c_hex_segmented1->Print(nombre_pdf.c_str());
+    //kin->Print((nombre_pdf + ")").c_str()); // cierra el PDF multipágina
+
+    //gSystem->Exec(("xdg-open " + nombre_pdf).c_str()); // abre el PDF automáticamente
+} 
+}
+
+void GetEnergy(Double_t M, Double_t IZ, Double_t BRO, Double_t &E)
+{
+
+   // Energy per nucleon
+   Float_t AM = 931.5;
+   Float_t X = BRO / 0.1439 * IZ / M;
+   X = pow(X, 2);
+   X = 2. * AM * X;
+   X = X + pow(AM, 2);
+   E = TMath::Sqrt(X) - AM;
+}
