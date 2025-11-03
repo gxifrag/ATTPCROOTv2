@@ -155,56 +155,6 @@ TF1* CreateSpectralModelWithPS(const char* name, TH1F* h_PS_1n) {
     return fModel;
 }
 
-void PlotSpectralComponents(const std::vector<double>& p, TH1F* h_PS_1n) {
-    // Gaussian 1
-    TF1* gaus1 = new TF1("gaus1", "gaus(0)", -5, 14);
-    gaus1->SetParameters(p[0], p[1], p[2]);
-    gaus1->SetLineColor(kViolet);
-    gaus1->SetLineStyle(2);
-    gaus1->Draw("same");
-
-    // Gaussian 2
-    TF1* gaus2 = new TF1("gaus2", "gaus(0)", -5, 14);
-    gaus2->SetParameters(p[3], p[4], p[5]);
-    gaus2->SetLineColor(kBlue);
-    gaus2->SetLineStyle(2);
-    gaus2->Draw("same");
-
-    // Breit-Wigner 1
-    TF1* bw1 = new TF1("bw1", "[0]*TMath::BreitWigner(x,[1],[2])", -5, 14);
-    bw1->SetParameters(p[6], p[7], p[8]);
-    bw1->SetLineColor(kGreen+2);
-    bw1->SetLineStyle(3);
-    bw1->Draw("same");
-
-    // Breit-Wigner 2
-    TF1* bw2 = new TF1("bw2", "[0]*TMath::BreitWigner(x,[1],[2])", -5, 14);
-    bw2->SetParameters(p[9], p[10], p[11]);
-    bw2->SetLineColor(kMagenta);
-    bw2->SetLineStyle(3);
-    bw2->Draw("same");
-
-    // Breit-Wigner 3
-    TF1* bw3 = new TF1("bw3", "[0]*TMath::BreitWigner(x,[1],[2])", -5, 14);
-    bw3->SetParameters(p[12], p[13], p[14]);
-    bw3->SetLineColor(kOrange+7);
-    bw3->SetLineStyle(3);
-    bw3->Draw("same");
-
-    // Phase-space background
-    TF1* ps = new TF1("ps", [h_PS_1n](double* x, double* par) {
-        int bin = h_PS_1n->FindBin(x[0]);
-        if (bin >= 1 && bin <= h_PS_1n->GetNbinsX())
-            return par[0] * h_PS_1n->GetBinContent(bin);
-        else
-            return 0.0;
-    }, -5, 14, 1);
-    ps->SetParameter(0, p[15]);
-    ps->SetLineColor(kCyan+2);
-    ps->SetLineStyle(4);
-    ps->Draw("same");
-}
-
 
 void C16_pd_ana_v16_1Oct_2()
 {
@@ -625,14 +575,6 @@ for (size_t i = 0; i < files.size(); i++) {
     std::sort(prefit_params.begin(), prefit_params.end(),
         [](const auto& a, const auto& b) { return a[1] < b[1]; });
 
-    // Print sorted peaks for verification
-    /*cout << "\nSorted peaks by mean value:" << endl;
-    for (size_t i = 0; i < prefit_params.size(); i++) {
-        cout << "Peak " << i << ": Mean = " << prefit_params[i][1] 
-            << ", Amplitude = " << prefit_params[i][0] 
-            << ", Sigma = " << prefit_params[i][2] << endl;
-    }   
-    */
    
     double initParams[16];  // Declarar el array fuera del condicional
 
@@ -691,7 +633,7 @@ for (size_t i = 0; i < files.size(); i++) {
 
 //---------------- Plots ----------------//
 
-TCanvas *c_AngEner = new TCanvas("AngEner", "Energy as a function of #theta", 1200, 800);
+/*TCanvas *c_AngEner = new TCanvas("AngEner", "Energy as a function of #theta", 1200, 800);
 Ang_Ener->SetMarkerStyle(20);
 Ang_Ener->SetMarkerSize(0.5);
 Ang_Ener->Draw("col");
@@ -728,7 +670,7 @@ auto legend0 = new TLegend(0.65, 0.65, 0.88, 0.88);
 for (size_t i = 0; i < graphs.size(); i++) {
     legend0->AddEntry(graphs[i], labels[i].c_str(), "l");
 }
-legend0->Draw();
+legend0->Draw();*/
 
 // Excitation energy spectrum with fits --------------------------------------
 
@@ -872,9 +814,9 @@ for (int i = 0; i < 5; ++i) { //9
     c_hex_segmented1->cd(i + 1); // Switch to pad (pads are 1-indexed)
     hHex[i]->Sumw2();
     hHex[i]->Draw("E1");
-    
+
    // Gaussian 1
-   TF1 *gaus1 = new TF1("gaus1", "gaus(0)", -5, 14);
+   /*TF1 *gaus1 = new TF1("gaus1", "gaus(0)", -5, 14);
    gaus1->SetParameters(finalParams[0], finalParams[1], finalParams[2]);
    gaus1->SetLineColor(kViolet);
    gaus1->Draw("same");
@@ -919,7 +861,7 @@ for (int i = 0; i < 5; ++i) { //9
    legend2->AddEntry(bw2, "Breit-Wigner 2", "l");
    legend2->AddEntry(bw3, "Breit-Wigner 3", "l");
    legend2->AddEntry(h_PS_1n, "Phase Space Background", "l");
-   legend2->Draw("same");
+   legend2->Draw("same");*/
 
    
     //if (fExSpectra_vec[i]) {

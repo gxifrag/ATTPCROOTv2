@@ -69,7 +69,7 @@ void GetEnergy(Double_t M, Double_t IZ, Double_t BRO, Double_t &E);
 
 //-----------fitting function-----------------------------------------
 
-TF1* FitHexCorr(TH1* hexCorr, const double* params, TH1F* h_PS_1n) {
+/*TF1* FitHexCorr(TH1* hexCorr, const double* params, TH1F* h_PS_1n, std::vector<double>& finalParams) {
     TF1* fExSpectra = new TF1("fExSpectra", [=](double* x, double* p) {
         double val = 0;
 
@@ -83,7 +83,9 @@ TF1* FitHexCorr(TH1* hexCorr, const double* params, TH1F* h_PS_1n) {
         val += p[12] * TMath::BreitWigner(x[0], p[13], p[14]);
 
         // Phase space
-        val += p[15] * h_PS_1n->Interpolate(x[0]);
+        //val += p[15] * h_PS_1n->Interpolate(x[0]);
+        val += p[15] * h_PS_1n->GetBinContent(h_PS_1n->FindBin(x[0]));
+
 
         return val;
     }, -5, 14, 16); // 16 parameters
@@ -98,49 +100,122 @@ TF1* FitHexCorr(TH1* hexCorr, const double* params, TH1F* h_PS_1n) {
     fExSpectra->SetNpx(1000);
     hexCorr->Fit(fExSpectra, "R");
 
-    // Print fitted parameters to screen
-    std::cout << "Fitted parameters:\n";
-    for (int i = 0; i < fExSpectra->GetNpar(); ++i) {
-        std::cout << "p[" << i << "] = " << fExSpectra->GetParameter(i) << std::endl;
+      for (int i = 0; i < fExSpectra->GetNpar(); ++i) {
+         double fitParam = fExSpectra->GetParameter(i);
+         finalParams.push_back(fitParam); // Save to vector
+         std::cout << "p[" << i << "] = " << fitParam << std::endl;
+      }
 
-    }
+
     return fExSpectra;
-   }
+   }*/
 
 
-std::vector<double> SaveFitParametersToTxt(TF1* fitFunc, const std::string& filename) {
-    std::vector<double> fittedParams;
-    std::ofstream outFile(filename);
-    if (!outFile.is_open()) {
-        std::cerr << "Error opening file " << filename << std::endl;
-        return {}; // Return empty vector on error
-    }
+   /*TF1* CreateSpectralModelWithPS(TH1F* h_PS_1n) {
+    TF1* fModel = new TF1("fModel", [=](double* x, double* p) {
+        double val = 0;
 
-    outFile << "Fit parameters:\n";
-    for (int i = 0; i < fitFunc->GetNpar(); ++i) {
-        double fitParam = fitFunc->GetParameter(i);
-        // double error = fitFunc->GetParError(i);
+        // 2 Gaussianas
+        val += p[0] * TMath::Gaus(x[0], p[1], p[2], true); // G1: amp, mean, sigma
+        val += p[3] * TMath::Gaus(x[0], p[4], p[5], true); // G2: amp, mean, sigma
 
-        fittedParams.push_back(fitParam); // Save to vector
+        // 3 Breit-Wigner
+        val += p[6]  * TMath::BreitWigner(x[0], p[7],  p[8]);  // BW1: amp, mean, width
+        val += p[9]  * TMath::BreitWigner(x[0], p[10], p[11]); // BW2
+        val += p[12] * TMath::BreitWigner(x[0], p[13], p[14]); // BW3
 
-        outFile << "fittedParams[" << i << "] = " << fitParam << "\n";
-        // outFile << " ± " << error << "\n"; // Uncomment if needed
-    }
+        // Fondo de fase espacial
+        val += p[15] * h_PS_1n->GetBinContent(h_PS_1n->FindBin(x[0])); //when the phasespace contribution is too small, the global function does not work well
 
-    outFile.close();
-    std::cout << "Parameters saved to " << filename << std::endl;
-    return fittedParams;
+        return val;
+    }, -5, 14, 16); // 16 parámetros: 15 físicos + 1 para el fondo
+
+    fModel->SetNpx(1000);
+    return fModel;
+}*/
+
+
+TF1* CreateSpectralModelWithPS(const char* name, TH1F* h_PS_1n) {
+    TF1* fModel = new TF1(name, [=](double* x, double* p) {
+        double val = 0;
+        val += p[0] * TMath::Gaus(x[0], p[1], p[2], true);
+        val += p[3] * TMath::Gaus(x[0], p[4], p[5], true);
+        val += p[6]  * TMath::BreitWigner(x[0], p[7],  p[8]);
+        val += p[9]  * TMath::BreitWigner(x[0], p[10], p[11]);
+        val += p[12] * TMath::BreitWigner(x[0], p[13], p[14]);
+
+        int bin = h_PS_1n->FindBin(x[0]);
+        if (bin >= 1 && bin <= h_PS_1n->GetNbinsX())
+            val += p[15] * h_PS_1n->GetBinContent(bin);
+
+        return val;
+    }, -5, 14, 16);
+
+    fModel->SetNpx(1000);
+    return fModel;
 }
 
-//-----------------------------------------------------------------------
-void C16_pd_ana_v16_1Oct()
-{
 
+std::vector<double> GenerateInitialParams(TH1F* hexCorr, TSpectrum* spec) {
+    std::vector<std::vector<double>> prefit_params;
+    int nFound = spec->GetNPeaks();
+
+    for (int i = 0; i < nFound; i++) {
+        double peak_pos = spec->GetPositionX()[i];
+        double peak_height = hexCorr->GetBinContent(hexCorr->FindBin(peak_pos));
+
+        TF1* gaus_prefit = new TF1(Form("gaus_prefit_%d", i), "gaus", peak_pos - 0.5, peak_pos + 0.5);
+        gaus_prefit->SetParameters(peak_height, peak_pos, 0.2);
+        hexCorr->Fit(gaus_prefit, "RQN+", "", peak_pos - 0.5, peak_pos + 0.5);
+
+        prefit_params.push_back({
+            gaus_prefit->GetParameter(0),
+            gaus_prefit->GetParameter(1),
+            gaus_prefit->GetParameter(2)
+        });
+
+        delete gaus_prefit;
+    }
+
+    std::sort(prefit_params.begin(), prefit_params.end(),
+              [](const auto& a, const auto& b) { return a[1] < b[1]; });
+
+    std::vector<double> initParams(16, 0.0);
+    if (prefit_params.size() >= 5) {
+        initParams[0] = prefit_params[0][0];  // Gaus 1
+        initParams[1] = prefit_params[0][1];
+        initParams[2] = prefit_params[0][2];
+        initParams[3] = prefit_params[1][0];  // Gaus 2
+        initParams[4] = prefit_params[1][1];
+        initParams[5] = prefit_params[1][2];
+        initParams[6] = prefit_params[2][0];  // BW 1
+        initParams[7] = prefit_params[2][1];
+        initParams[8] = 0.2;
+        initParams[9] = prefit_params[3][0];  // BW 2
+        initParams[10] = prefit_params[3][1];
+        initParams[11] = 0.4;
+        initParams[12] = prefit_params[4][0]; // BW 3
+        initParams[13] = prefit_params[4][1];
+        initParams[14] = 0.2;
+        initParams[15] = 0.00036;            // Phase space
+    }
+
+    return initParams;
+}
+
+
+
+void C16_pd_ana_v16_1Oct_2()
+{
    bool guardar_en_pdf = false; // ← cambia a false si quieres solo verlos en pantalla
-   // Activar modo batch si estás guardando en PDF
-   if (guardar_en_pdf) {
-      gROOT->SetBatch(kFALSE); // ← esto evita que se abran ventanas
-   }
+
+// Activar modo batch si estás guardando en PDF
+if (guardar_en_pdf) {
+    gROOT->SetBatch(kTRUE); // ← esto evita que se abran ventanas
+} else {
+    gROOT->SetBatch(kFALSE); // ← esto permite ver los canvas en pantalla
+}
+
    // FairRunAna *run = new FairRunAna();
 
    double Ebin_max = 14.0 ;
@@ -170,8 +245,8 @@ void C16_pd_ana_v16_1Oct()
 
    TH1F *h_PS_1n_plot = new TH1F("h_PS_1n_plot","h_PS_1n_plot",NumberBins, Ebin_min, Ebin_max); 
 
-   auto *hredchi2 = new TH1F("redchi2", "redchi2", 1000, 0, 0.0001);
-   auto *hbredchi2 = new TH1F("bredchi2", "bredchi2", 1000, 0, 5);
+   /*auto *hredchi2 = new TH1F("redchi2", "redchi2", 1000, 0, 0.0001);
+   auto *hbredchi2 = new TH1F("bredchi2", "bredchi2", 1000, 0, 5);*/
 
    auto *hexvstheta = new TH2F("hexVStheta", "hexVStheta", 1000, -5, 15, 90, 0, 90);
 
@@ -212,14 +287,26 @@ void C16_pd_ana_v16_1Oct()
 
    std::vector<TString> filenames;
    // Declare hHex at the beginning of your macro or function
-   std::vector<TH1F*> hHex(18);
+   std::vector<TH1F*> hHex(5); //9
    // Assuming hHex is already defined and filled
    std::vector<TF1*> fExSpectra_vec(hHex.size(), nullptr);
-   
 
-   // Now you can safely initialize and use it
-   for (int i = 0; i < hHex.size(); i++) {
-      hHex[i] = new TH1F(Form("hex%d", i+1), Form("hex%d", i+1), 90, -5, 14);
+   std::vector<std::pair<int, int>> angularBins = {
+    {20, 30},
+    {30, 40},
+    {40, 50},
+    {50, 70},
+    {70, 90}
+   };
+
+  for (size_t i = 0; i < angularBins.size(); ++i) {
+    int thetaMin = angularBins[i].first;
+    int thetaMax = angularBins[i].second;
+    TString histTitle = Form("Excitation Energy (%.1d deg - %.1d deg)", thetaMin, thetaMax);
+    TString histName = Form("hex_%d_%d", thetaMin, thetaMax);
+    std::cout << "Procesando ángulos entre " << thetaMin << " y " << thetaMax << " grados.\n";
+     
+      hHex[i] = new TH1F(histName, histTitle, 90, -5, 14); //90, -5, 14
    }
 
    // ELoss tables.
@@ -385,7 +472,7 @@ void C16_pd_ana_v16_1Oct()
          }
 
          // Histograms
-         hredchi2->Fill(redchi);
+        // hredchi2->Fill(redchi);
 
          Ang_Ener->Fill(theta* TMath::RadToDeg(), ke); //theta lab!! -> I still have to implement the correction of catima?
          Ang_Ener_Corr->Fill(theta_lab_corr* TMath::RadToDeg(), ke); //
@@ -400,14 +487,15 @@ void C16_pd_ana_v16_1Oct()
          hexvstheta->Fill(ex_energy, theta * TMath::RadToDeg());
          ExvsTrackLength->Fill(ex_energy, arclength);
 
-         // Plots of excitation energy in different angular ranges: initialization
-         for (int i = 0; i < hHex.size(); i++) {
-         double theta_min = 10 + i * 2.5;
-         double theta_max = theta_min + 2.5;
-         if (theta_cm > theta_min && theta_cm <= theta_max) {
-            hHex[i]->Fill(ex_energy_corr);
-            break; // Only fill one bin per event
-         }
+        for (size_t i = 0; i < angularBins.size(); ++i) {
+         int thetaMin = angularBins[i].first;
+         int thetaMax = angularBins[i].second;
+
+            if (theta_cm > thetaMin && theta_cm <= thetaMax) {
+               hHex[i]->Fill(ex_energy_corr);
+              
+               break; // Only fill one bin per event
+            }
          }
       } // events
    } // Files
@@ -432,7 +520,7 @@ void C16_pd_ana_v16_1Oct()
 	t_PS->SetBranchAddress("Ex_cal",&Ex_cal);
 	t_PS->SetBranchAddress("ThetaCM_cal",&ThetaCM_cal);
 
-	TH1F *h_PS_1n_aux = new TH1F("h_PS_1n_aux","h_PS_1n_aux", NumberBins, Ebin_min, Ebin_max ) ;
+	//TH1F *h_PS_1n_aux = new TH1F("h_PS_1n_aux","h_PS_1n_aux", NumberBins, Ebin_min, Ebin_max ) ;
 	TH1F *h_PS_1n = new TH1F("h_PS_1n","h_PS_1n", NumberBins, Ebin_min, Ebin_max ) ; 
 
 	for( int i = 0 ; i < t_PS->GetEntries() ; i++ ) {
@@ -443,13 +531,6 @@ void C16_pd_ana_v16_1Oct()
 	}
 	h_PS_1n -> Smooth() ;
    
-   for(Int_t i=0;i<nbins;i++) {
-		x[i]          = hexCorr-> GetXaxis() -> GetBinCenter(i+1) ;
-		nc_tot[i]     = hexCorr     -> GetBinContent(i+1) ;  
-		nc_PS_1n[i]   = h_PS_1n  -> GetBinContent(i+1) ;
-		//nc_PS_2n[i]   = h_PS_2n  -> GetBinContent(i+1) ;
-	}
-
    // -----------------------------KINEMATICS FOR DIFFERENT EXCITATION ENERGIES
 
 std::vector<std::string> files = {
@@ -459,7 +540,6 @@ std::vector<std::string> files = {
     "C16_pd_C15_4780keV_Ebeam11_5.txt",
     "C16_pd_C15_6841keV_Ebeam11_5.txt"
 };
-
    std::vector<std::string> labels = {
       "gs", "740keV", "3103keV", "4780keV", "6841keV"
    };
@@ -499,51 +579,135 @@ for (size_t i = 0; i < files.size(); i++) {
 }
   
 //---------------- Fitting the experimental data ----------------//
+    ROOT::Math::MinimizerOptions::SetDefaultMinimizer("Minuit2");
+    TFile *filePS = new TFile("PhaseSpace_16C_pd_1n.root", "READ");
+    TTree *treePS = (TTree*) filePS->Get("simulated_tree");
 
-TFile *filePS = new TFile("PhaseSpace_16C_pd_1n.root", "READ");
-TTree *treePS = (TTree*) filePS->Get("simulated_tree");
+    // Búsqueda de picos con TSpectrum
+   /* auto *cps = new TCanvas("cps", "cps", 800, 600);
+    cps->cd();
+    int nPeaksToSearch = 5;
+    TSpectrum *spec = new TSpectrum(nPeaksToSearch);
+    int nFound = spec->Search(hexCorr, 2, "", 0.1);
+    delete cps;
+    */
 
-// Proyectar la rama Ex_cal a un histograma
-treePS->Draw("Ex_cal>>h_PS(90,-5,14)");
-TH1F *h_PS = (TH1F*) gDirectory->Get("h_PS");
-
-double scaleFactor = 0.001; // ajusta este valor visualmente
-h_PS->Scale(scaleFactor);
-h_PS->SetLineColor(kGray+2);
-h_PS->SetLineWidth(2);
-TCanvas *c_PS = new TCanvas("PS", "Phase Space Background", 1200, 800);
-c_PS->cd();
-h_PS->Draw("");
-
-/*double params[16] = {400, 0.57,0.218, 
-      500, 1.31, 0.218,
-      220, 3.9, 0.2,
-      50, 5.5, 0.2, 
-      25, 6.9, 0.2, 0.000000005}; //BW: amplitude mean width 0.0001
-*/
-
-int nPeaksToSearch = 5; // adjust based on expected number of peaks
-TSpectrum *spec = new TSpectrum(nPeaksToSearch);
-spec->Search(hexCorr, 2, "", 0.1); // smoothing=2, threshold=5%
-
-Double_t *xpeaks = spec->GetPositionX();
-
-double params[16] = {
-    400, xpeaks[0], 0.18,   // Gaussian 1: amp, mean, sigma
-    500, xpeaks[1], 0.2,   // Gaussian 2
-    220, xpeaks[2], 0.2,   // BW 1
-    50,  xpeaks[3], 0.2,   // BW 2
-    25,  xpeaks[4], 0.2,   // BW 3
-    0.001                  // Phase space scaling (initial guess)
-};
+    TSpectrum* spec_global = new TSpectrum(5);
+   spec_global->Search(hexCorr, 2, "", 0.2);
+   std::vector<double> initParams_global = GenerateInitialParams(hexCorr, spec_global);
+   delete spec_global;
 
 
-TF1* fitResult = FitHexCorr(hexCorr, params, h_PS_1n);
-std::vector<double> finalParams = SaveFitParametersToTxt(fitResult, "resultsFit_C16_pd.txt");
+  
+    // Vector para almacenar los parámetros de los pre-fits
+    /*std::vector<std::vector<double>> prefit_params;
+
+    // Para cada pico encontrado, hacer un fit gaussiano local
+    for (int i = 0; i < nFound; i++) {
+        double peak_pos = spec->GetPositionX()[i];
+        double peak_height = hexCorr->GetBinContent(hexCorr->FindBin(peak_pos));
+        
+        // Crear una gaussiana para el pre-fit
+        TF1 *gaus_prefit = new TF1(Form("gaus_prefit_%d", i), "gaus", peak_pos - 0.5, peak_pos + 0.5);
+        
+        // Parámetros iniciales para la gaussiana
+        gaus_prefit->SetParameters(peak_height, peak_pos, 0.2);
+        
+        // Hacer el fit en un rango limitado alrededor del pico
+        auto *ctest0 = new TCanvas("ctest0", "ctest0", 800, 600);
+        hexCorr->Fit(gaus_prefit, "RQN+", "", peak_pos - 0.5, peak_pos + 0.5);
+        delete ctest0;
+
+        // Almacenar los parámetros del fit
+        std::vector<double> params = {
+            gaus_prefit->GetParameter(0), // amplitud
+            gaus_prefit->GetParameter(1), // media
+            gaus_prefit->GetParameter(2)  // sigma
+        };
+        prefit_params.push_back(params);
+        delete gaus_prefit;  // Limpieza de memoria
+    }
+
+    // First sort prefit_params by mean value (index 1)
+    std::sort(prefit_params.begin(), prefit_params.end(),
+        [](const auto& a, const auto& b) { return a[1] < b[1]; });
+
+   
+    double initParams[16];  // Declarar el array fuera del condicional
+
+    // Ordenar los picos por posición
+    std::sort(prefit_params.begin(), prefit_params.end(),
+        [](const auto& a, const auto& b) { return a[1] < b[1]; });
+
+    // Verificar el número de picos encontrados e inicializar initParams
+    // Usar los parámetros del pre-fit
+    initParams[0] = prefit_params[0][0];  // Primera gaussiana
+    initParams[1] = prefit_params[0][1];
+    initParams[2] = prefit_params[0][2];
+    initParams[3] = prefit_params[1][0];  // Segunda gaussiana
+    initParams[4] = prefit_params[1][1];
+    initParams[5] = prefit_params[1][2];
+    initParams[6] = prefit_params[2][0];  // Primer BW
+    initParams[7] = prefit_params[2][1];
+    initParams[8] = 0.2;
+    initParams[9] = prefit_params[3][0];  // Segundo BW
+    initParams[10] = prefit_params[3][1];
+    initParams[11] = 0.4;
+    initParams[12] = prefit_params[4][0]; // Tercer BW
+    initParams[13] = prefit_params[4][1];
+    initParams[14] = 0.2;
+    initParams[15] = 0.00036;            // Phase space
+    */
+
+    // Imprimir los parámetros para verificación
+    /*for (int i = 0; i < 16; ++i) {
+        cout << "param[" << i << "] = " << initParams[i] << "\n";
+    }*/
+
+    /*double initParams[16] = {400, 0.57,0.218, 
+        500, 1.31, 0.218,
+        220, 3.9, 0.2,
+        50, 5.5, 0.2, 
+        25, 6.9, 0.2, 0.0005}; //BW: amplitude mean width 0.0001
+    */
+
+    /*auto *ctest = new TCanvas("ctest", "ctest", 800, 600);
+    TF1* model = CreateSpectralModelWithPS("fExSpectra", h_PS_1n);
+
+    model->SetParLimits(2, -0.3, 0.3);    // Límites para anchura de Gaussian 1
+    model->SetParLimits(10, 5.0, 6.);   // Límites para mean de BW 2
+    model->SetParLimits(13, 6.5, 7.2);   // Límites para mean de BW 3
+
+    // Parámetros iniciales (ajústalos según tu caso)
+    model->SetParameters(initParams) ;       // fondo PS
+    hexCorr->Fit(model, "RN"); // "R" para rango, "Q" para modo silencioso
+    delete ctest;
+
+    // Extraer parámetros ajustados
+    std::vector<double> finalParams;
+    for (int i = 0; i < model->GetNpar(); ++i){
+        finalParams.push_back(model->GetParameter(i));
+    // cout << "Fitted p[" << i << "] = " << model->GetParameter(i) << std::endl;
+    }*/
+
+   TSpectrum* spec = new TSpectrum(5);
+   spec->Search(hHex[i], 2, "", 0.2); // Ajusta sensibilidad si es necesario
+
+   std::vector<double> initParams = GenerateInitialParams(hHex[i], spec);
+
+   TF1* model = CreateSpectralModelWithPS(Form("model_%d", i), h_PS_1n);
+   model->SetParameters(initParams.data());
+
+   hHex[i]->Fit(model, "RQ");
+   finalParams[i] = initParams;
+
+   delete spec;
+
+
 
 //---------------- Plots ----------------//
 
-TCanvas *c_AngEner = new TCanvas("AngEner", "Energy as a function of #theta", 1200, 800);
+/*TCanvas *c_AngEner = new TCanvas("AngEner", "Energy as a function of #theta", 1200, 800);
 Ang_Ener->SetMarkerStyle(20);
 Ang_Ener->SetMarkerSize(0.5);
 Ang_Ener->Draw("col");
@@ -580,13 +744,14 @@ auto legend0 = new TLegend(0.65, 0.65, 0.88, 0.88);
 for (size_t i = 0; i < graphs.size(); i++) {
     legend0->AddEntry(graphs[i], labels[i].c_str(), "l");
 }
-legend0->Draw();
+legend0->Draw();*/
 
 // Excitation energy spectrum with fits --------------------------------------
 
-   TCanvas *c_ExEner = new TCanvas("ExEner", "Corrected Excited Energy spectra", 1200, 800);
-   hexCorr->Draw();
-
+  
+TCanvas *c_ExEner = new TCanvas("ExEner", "Corrected Excited Energy spectra", 1200, 800);
+   c_ExEner->cd();
+   hexCorr->Fit(model, "RQ");
    hexCorr->GetXaxis()->SetTitle("Excitation Energy (MeV)");
    hexCorr->GetYaxis()->SetTitle("Counts");
    
@@ -618,7 +783,13 @@ legend0->Draw();
    TF1 *bw3 = new TF1("bw3", "[0]*TMath::BreitWigner(x,[1],[2])", -5, 14);
    bw3->SetParameters(finalParams[12], finalParams[13], finalParams[14]);
    bw3->SetLineColor(kOrange+7);
-   bw3->Draw("same HIST");
+   bw3->Draw("same l");
+
+   // Phase Space
+   h_PS_1n->Scale(finalParams[15]); // Escala el histograma con el parámetro del fit
+   h_PS_1n->SetLineColor(kBlack);
+   h_PS_1n->SetLineWidth(2);
+   h_PS_1n->Draw("same"); 
 
    TLegend* legend2 = new TLegend(0.7, 0.15, 0.9, 0.3); // (x1, y1, x2, y2) en coordenadas del canvas
    //legend2->SetBorderSize(0); // sin borde
@@ -629,51 +800,30 @@ legend0->Draw();
    legend2->AddEntry(bw1, "Breit-Wigner 1", "l");
    legend2->AddEntry(bw2, "Breit-Wigner 2", "l");
    legend2->AddEntry(bw3, "Breit-Wigner 3", "l");
-   //legend2->AddEntry(h_PS, "Phase Space Background", "l");
+   legend2->AddEntry(h_PS_1n, "Phase Space Background", "l");
    legend2->Draw();
 
    c_ExEner->Update();
 
    //--------------------------------------------------------------------------------------------------
-
-   TCanvas *c_ExenerCorr = new TCanvas("ExenerCorr", "Excited Energy spectra corrected", 1200, 800);
+  /* TCanvas *c_ExenerCorr = new TCanvas("ExenerCorr", "Excited Energy spectra corrected", 1200, 800);
+   hexCorr->Sumw2(); // activa almacenamiento de errores
    c_ExenerCorr->cd();
    c_ExenerCorr->Divide(2, 1);
-   c_ExenerCorr->Draw();
    c_ExenerCorr->cd(1);
-   hexCorr->Draw();
+   hexCorr->Draw("E1");
    c_ExenerCorr->cd(2);
    ExCorrvsZpos->Draw("zcol");
-
-   TH1 *hexClone = (TH1*)hex->Clone("hexClone");
-   hexClone->GetListOfFunctions()->Clear(); // This removes the fit line
-   hexClone->SetLineColor(kBlue);
-   hexCorr->SetLineColor(kRed);
-
-   TCanvas *c_test = new TCanvas("test", "comparison correction hex", 1200, 800);
-   c_test->cd();
-   hexClone->Draw();
-   hexCorr->Draw("same");
-   double normFactor = hexCorr->Integral() / h_PS->Integral();
-   double scale = normFactor*0.25;
-   h_PS->Scale(scale); // ajusta visualmente
-   h_PS->SetLineColor(kGray+2);
-   h_PS->SetLineWidth(2);
-   h_PS->Draw("same");
-
-   TLegend *legendtest = new TLegend(0.7, 0.7, 0.9, 0.85); // x1, y1, x2, y2 (normalized coordinates)
-   legendtest->AddEntry(hexClone, "Original Spectrum", "l");   // "l" for line style
-   legendtest->AddEntry(hexCorr, "Corrected Spectrum", "l");
-   legendtest->Draw();
-
 
    TCanvas *c_AngDistr = new TCanvas("AngDistr", "Angular Distribution", 1200, 600);
    c_AngDistr->cd();
    c_AngDistr->Divide(2, 1);
    c_AngDistr->cd(1);
-   AngDistr->Draw();
+   AngDistr->Sumw2();
+   AngDistr->Draw("E1");
    c_AngDistr->cd(2);
-   AngDistrCM->Draw();
+   AngDistrCM->Sumw2();
+   AngDistrCM->Draw("E1");
    AngDistrCM->GetXaxis()->SetTitle("Angle (deg)");
    AngDistrCM->GetYaxis()->SetTitle("#frac{d#sigma}{d#Omega} (a.u.)");
 
@@ -689,115 +839,139 @@ legend0->Draw();
    ExvsTrackLength->GetXaxis()->SetTitle("Excitation Energy (MeV)");
    ExvsTrackLength->GetYaxis()->SetTitle("Track Length (cm)");
 
-   TCanvas *c_redchi2 = new TCanvas();
-   c_redchi2->Divide(2, 1);
-   c_redchi2->cd(1);
-   hredchi2->Draw("zcol");
-   c_redchi2->cd(2);
-   hbredchi2->Draw("zcol");
-
    TCanvas *kin = new TCanvas( "kin", "kin", 1200, 800);
-    KineticEnergy->Draw("");
+   KineticEnergy->Sumw2();
+   kin->cd();
+   KineticEnergy->Draw("E1");*/
 
-   TCanvas *basura = new TCanvas( "basura", "basura", 1200, 800);
-    ExvsTrackLength->Draw("zcol");
-   
-// Angular distribution 
+std::vector<std::vector<double>> all_fit_params(hHex.size(), std::vector<double>(15, 0.0));
 
-/*std::vector<std::vector<double>> all_fit_params(hHex.size(), std::vector<double>(15, 0.0));
+cout << "\n";
+cout << "Starting fits for " << hHex.size() << " histograms.\n";
 
 for (int i = 0; i < hHex.size(); i++) {
     fExSpectra_vec[i] = new TF1(Form("fExSpectra%d", i+1),
         "gaus(0) + gaus(3) + [6]*TMath::BreitWigner(x,[7],[8]) + [9]*TMath::BreitWigner(x,[10],[11]) + [12]*TMath::BreitWigner(x,[13],[14])", -5, 14);
-        fExSpectra_vec[i]->SetParameters(params);
+        TSpectrum* spec_bin = new TSpectrum(5);
+         spec_bin->Search(hHex[i], 2, "", 0.2);
+         std::vector<double> initParams_bin = GenerateInitialParams(hHex[i], spec_bin);
+         delete spec_bin;
+
+         auto initParams = GenerateInitialParams(hHex[i]);
+
+        //fExSpectra_vec[i]->SetParameters(initParams);
         // Set width constraints BEFORE fitting
    
    if (hHex[i]->GetEntries() < 100) {
         fExSpectra_vec[i] = nullptr; // Optional: mark as skipped
         continue; // Skip fitting this histogram
     }
-    hHex[i]->Fit(fExSpectra_vec[i]);
+    auto *c_temp = new TCanvas(Form("c_temp_%d", i), Form("Fit for hHex%d", i+1), 800, 600);
+      
+      hHex[i]->Fit(fExSpectra_vec[i]);
 
-    for (int p = 0; p < 15; ++p) {
-        all_fit_params[i][p] = fExSpectra_vec[i]->GetParameter(p);
-        
-    }
-}*/
+      int status = hHex[i]->Fit(fExSpectra_vec[i], "RQ");
+
+      delete c_temp;
+
+      for (int p = 0; p < 15; ++p) {
+         all_fit_params[i][p] = fExSpectra_vec[i]->GetParameter(p);
+         
+      }
+}
+
+std::cout << hHex.size() << " histograms processed.\n";
+
 // Print fit parameters for each angular bin
-/*TCanvas *c_hex_segmented1 = new TCanvas("c_hex_segmented1", "Hex Spectra 1 to 9", 1200, 800);
-c_hex_segmented1->cd();
-c_hex_segmented1->Divide(3, 3);
+auto *c_hex_segmented1 = new TCanvas("c_hex_segmented1", "Hex Spectra", 1200, 800);
+c_hex_segmented1->Divide(3, 2); //(3,3)
 
-TCanvas *c_hex_segmented2 = new TCanvas("c_hex_segmented2", "Hex Spectra 10 to 18", 1200, 800);
-c_hex_segmented2->cd();
-c_hex_segmented2->Divide(3, 3);
+for (int i = 0; i < 5; ++i) { //9
+    if (i >= hHex.size()) continue; // Safety check
 
-// First canvas
-for (int i = 0; i < 9; i++) {
-   c_hex_segmented1->cd(i + 1);
-   if (hHex[i]) hHex[i]->Draw();
-   if (fExSpectra_vec[i]) fExSpectra_vec[i]->Draw("same");
+    double thetaMin = angularBins[i].first;
+    double thetaMax = angularBins[i].second;
+
+    c_hex_segmented1->cd(i + 1); // Switch to pad (pads are 1-indexed)
+    hHex[i]->Sumw2();
+    hHex[i]->Draw("E1");
+
+   // Gaussian 1
+   TF1 *gaus1 = new TF1("gaus1", "gaus(0)", -5, 14);
+   gaus1->SetParameters(finalParams[0], finalParams[1], finalParams[2]);
+   gaus1->SetLineColor(kViolet);
+   gaus1->Draw("same");
+
+   // Gaussian 2
+   TF1 *gaus2 = new TF1("gaus2", "gaus(0)", -5, 14);
+   gaus2->SetParameters(finalParams[3], finalParams[4], finalParams[5]);
+   gaus2->SetLineColor(kBlue);
+   gaus2->Draw("same");
+
+   // Breit-Wigner 1
+   TF1 *bw1 = new TF1("bw1", "[0]*TMath::BreitWigner(x,[1],[2])", -5, 14);
+   bw1->SetParameters(finalParams[6], finalParams[7], finalParams[8]);
+   bw1->SetLineColor(kGreen+2);
+   bw1->Draw("same");
+
+   // Breit-Wigner 2
+   TF1 *bw2 = new TF1("bw2", "[0]*TMath::BreitWigner(x,[1],[2])", -5, 14);
+   bw2->SetParameters(finalParams[9], finalParams[10], finalParams[11]);
+   bw2->SetLineColor(kMagenta);
+   bw2->Draw("same");
+
+   // Breit-Wigner 3
+   TF1 *bw3 = new TF1("bw3", "[0]*TMath::BreitWigner(x,[1],[2])", -5, 14);
+   bw3->SetParameters(finalParams[12], finalParams[13], finalParams[14]);
+   bw3->SetLineColor(kOrange+7);
+   bw3->Draw("same l");
+
+   // Phase Space
+   h_PS_1n->Scale(finalParams[15]); // Escala el histograma con el parámetro del fit
+   h_PS_1n->SetLineColor(kBlack);
+   h_PS_1n->SetLineWidth(2);
+   h_PS_1n->Draw("same"); 
+
+   TLegend* legend2 = new TLegend(0.7, 0.15, 0.9, 0.3); // (x1, y1, x2, y2) en coordenadas del canvas
+   //legend2->SetBorderSize(0); // sin borde
+   legend2->SetFillStyle(0);  // fondo transparente
+   legend2->AddEntry(hexCorr, "hexCorr", "l");
+   legend2->AddEntry(gaus1, "gaus(0)", "l");
+   legend2->AddEntry(gaus2, "gaus(1)", "l");
+   legend2->AddEntry(bw1, "Breit-Wigner 1", "l");
+   legend2->AddEntry(bw2, "Breit-Wigner 2", "l");
+   legend2->AddEntry(bw3, "Breit-Wigner 3", "l");
+   legend2->AddEntry(h_PS_1n, "Phase Space Background", "l");
+   legend2->Draw("same");
+
+   
+    //if (fExSpectra_vec[i]) {
+      //  fExSpectra_vec[i]->SetLineColor(kRed); // Optional: distinguish fit
+      //  fExSpectra_vec[i]->Draw("same");
+    //}
+
+    //gPad->Update(); // Force update of current pad
 }
-// Second canvas
 
-for (int i = 9; i < 18; i++) {
-   c_hex_segmented2->cd(i - 8);
-   if (hHex[i]) hHex[i]->Draw();
-   if (fExSpectra_vec[i]) fExSpectra_vec[i]->Draw("same");
-}
-
-c_hex_segmented1->Update();
-c_hex_segmented2->Update();*/
-
-TCanvas *c1 = (TCanvas*)gROOT->GetListOfCanvases()->FindObject("c1");
-if (c1) c1->Close();
+//c_hex_segmented1->Update(); // ← actualiza todo el canvas
 
 
-gROOT->SetSelectedPad(nullptr);
-gROOT->SetSelectedPrimitive(nullptr);
-
-//c_hex_segmented2->cd();
-gPad->Modified();
-gPad->Update();
-gROOT->SetSelectedPad(nullptr);
-
-if (gROOT->FindObject("basura")) {
-    ((TCanvas*)gROOT->FindObject("basura"))->Close();
-}
-
-cout << "Normfactor: " << scale << "\n";
-
-// last_20cm.close();
-
-
+//---------------- Save plots ----------------//
 std::string nombre_pdf = "plots_C16_pd_C15.pdf";
 
 if (guardar_en_pdf) {
-    c_AngEner->Print((nombre_pdf + "(").c_str()); // abre el PDF multipágina
-    /*c_AngEner_Corr->Print(nombre_pdf.c_str());
-    c_test->Print(nombre_pdf.c_str());*/
-    c_PS->Print(nombre_pdf.c_str());
-    c_ExEner->Print(nombre_pdf.c_str());
-    /*c_redchi2->Print(nombre_pdf.c_str());
-    c_ExenerCorr->Print(nombre_pdf.c_str());
-    c_AngDistr->Print(nombre_pdf.c_str());
-    c_ExvsZpos->Print(nombre_pdf.c_str());*/
+    //c_ExEner->Print((nombre_pdf + "(").c_str()); // abre el PDF multipágina
+    //c_AngEner_Corr->Print(nombre_pdf.c_str());
+    //c_AngEner->Print(nombre_pdf.c_str());
+    //c_redchi2->Print(nombre_pdf.c_str());
+    //c_ExenerCorr->Print(nombre_pdf.c_str());
+    //c_AngDistr->Print(nombre_pdf.c_str());
+    //c_ExvsZpos->Print(nombre_pdf.c_str());
     //c_hex_segmented1->Print(nombre_pdf.c_str());
-    //c_hex_segmented2->Print(nombre_pdf.c_str());
-    kin->Print((nombre_pdf + ")").c_str()); // cierra el PDF multipágina
+    //kin->Print((nombre_pdf + ")").c_str()); // cierra el PDF multipágina
 
-    gSystem->Exec(("xdg-open " + nombre_pdf).c_str()); // abre el PDF automáticamente
-} else {
-    c_AngEner->Draw();
-    c_AngEner_Corr->Draw();
-    c_ExEner->Draw();
-    c_redchi2->Draw();
-    c_ExenerCorr->Draw();
-    c_AngDistr->Draw();
-    c_ExvsZpos->Draw();
-    //c_hex_segmented1->Draw();
-    //c_hex_segmented2->Draw();
-}
+    //gSystem->Exec(("xdg-open " + nombre_pdf).c_str()); // abre el PDF automáticamente
+} 
 
 }
 
