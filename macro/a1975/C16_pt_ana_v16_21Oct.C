@@ -606,7 +606,6 @@ Ang_Ener_Corr->Draw("col");
 Ang_Ener_Corr->GetXaxis()->SetTitle("#theta_lab (deg)");
 Ang_Ener_Corr->GetYaxis()->SetTitle("Energy (MeV)"); //Energy (MeV)
 
-
 // Draw all kinematics graphs from the loop
 for (size_t i = 0; i < graphs.size(); i++) {
     graphs[i]->Draw("L SAME");  // "L SAME" draws as a line on the same canvas
@@ -749,7 +748,6 @@ for (int i = 0; i < hHex.size(); ++i) {
     /*TSpectrum *spec = new TSpectrum(5); // max 5 peaks
     int nFound = spec->Search(hHex[i], 2, "", 0.1); // sigma=2, threshold=0.1
     nPeaksFound[i] = nFound;
-
 
     // Optional: print peak positions
     

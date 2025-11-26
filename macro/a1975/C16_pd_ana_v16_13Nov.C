@@ -1,6 +1,46 @@
 #include <fstream>
 #include <iostream>
 
+   double Ebin_max = 10.0 ;
+	double Ebin_min = -2.0 ;
+	int NumberBins = 100; //100
+	int NumberBinsAux = 200 ;
+
+   class SpectralModel {
+   public:
+      TGraph* g_PS;   // Phase-space TGraph
+
+      SpectralModel(TGraph* g) : g_PS(g) {}
+
+      double operator()(double* x, double* p) {
+         double val = 0;
+         val += p[0] * TMath::Gaus(        x[0], p[1],  p[2],  false);
+         val += p[3] * TMath::Gaus(        x[0], p[4],  p[5],  false);
+         val += p[6] * TMath::BreitWigner( x[0], p[7],  p[8] );
+         val += p[9] * TMath::BreitWigner( x[0], p[10], p[11] );
+         val += p[12]* TMath::BreitWigner( x[0], p[13], p[14] );
+
+         // Phase space from TGraph
+         double ps_val = g_PS->Eval(x[0]);
+         val += p[15] * ps_val;
+
+         return val;
+      }
+   };
+
+ TGraph* histoToTgraph(TH1F* h) {
+
+    auto g = new TGraph();
+    for(int i = 1; i <= h->GetNbinsX(); i++ ) {
+        g->SetPoint(i-1,
+                    h->GetBinCenter(i),
+                    h->GetBinContent(i));
+    }
+
+    g->SetName("g_PS_1n");
+    return g;
+}
+
 
 double TotalVerticalError(TH1F* hExp, TGraphErrors* gTheory, double scale) {
    double errorSum = 0.0;
@@ -85,28 +125,72 @@ kine_2b(Double_t m1, Double_t m2, Double_t m3, Double_t m4, Double_t K_proj, Dou
 
 void GetEnergy(Double_t M, Double_t IZ, Double_t BRO, Double_t &E);
 
-TF1* CreateSpectralModelWithPS(const char* name, TH1F* h_PS_1n) {
+/*TF1* CreateSpectralModelWithPS(const char* name, TGraph* h_PS_1n) {
     TF1* fModel = new TF1(name, [=](double* x, double* p) {
         double val = 0;
-        val += p[0] * TMath::Gaus(x[0], p[1], p[2], true);
-        val += p[3] * TMath::Gaus(x[0], p[4], p[5], true);
+        val += p[0] * TMath::Gaus(x[0], p[1], p[2], false);
+        val += p[3] * TMath::Gaus(x[0], p[4], p[5], false);
         val += p[6]  * TMath::BreitWigner(x[0], p[7],  p[8]);
         val += p[9]  * TMath::BreitWigner(x[0], p[10], p[11]);
         val += p[12] * TMath::BreitWigner(x[0], p[13], p[14]);
 
-        int bin = h_PS_1n->FindBin(x[0]);
-        if (bin >= 1 && bin <= h_PS_1n->GetNbinsX())
-            val += p[15] * h_PS_1n->GetBinContent(bin);
-
-        return val;
-    }, -5, 14, 16);
+         // Phase space contribution
+         double ps_val = h_PS_1n->TGraph::Eval(x[0]);
+         val += p[15] * ps_val;
+         return val;
+    }, 0.4, 8.8, 16); //16
 
     fModel->SetNpx(1000);
     return fModel;
+}*/
+
+
+
+double myVoigt(double *x, double *par)
+{
+    double mean  = par[0];
+    double sigma = par[1];
+    double gamma = par[2];
+
+    return par[3] * TMath::Voigt(x[0] - mean, sigma, gamma);
+}
+
+void FitVoigt_TH1(TH1* h, double xmin, double xmax,
+                  double mean0, double sigma0, double gamma0,
+                  const char* tag)
+{
+    TF1* f = new TF1("fvoigt", myVoigt, xmin, xmax, 4);
+
+    f->SetParNames("mean","sigma","gamma","norm");
+    f->SetParameters(mean0, sigma0, gamma0, h->GetMaximum());
+
+    h->Fit(f, "R");
+
+    f->SetLineColor(kRed);
+    f->SetLineWidth(2);
+
+    h->Draw("E");
+    f->Draw("same");
+
+    //printf("Fit %s completed.\n", tag);
+}
+
+double BW_func(double* x, double* p) {
+    return p[0] * TMath::BreitWigner(x[0], p[1], p[2]);
+}
+
+TF1* BW_pefit(const char* name, double xmin, double xmax)
+{
+    TF1* fBW = new TF1(name, BW_func, xmin, xmax, 3);
+
+    fBW->SetParNames("A", "mean", "gamma");
+    fBW->SetNpx(1000);
+    return fBW;
 }
 
 
-void C16_pd_ana_v16_1Nov()
+
+void C16_pd_ana_v16_13Nov()
 {
    bool guardar_en_pdf = false; // ← cambia a false si quieres solo verlos en pantalla
 
@@ -117,29 +201,7 @@ if (guardar_en_pdf) {
     gROOT->SetBatch(kFALSE); // ← esto permite ver los canvas en pantalla
 }
 
-/*TFile *fout = new TFile("event_data.root", "RECREATE");
-if (!fout || fout->IsZombie()) {
-    std::cerr << "ERROR: No se pudo crear el archivo event_data.root" << std::endl;
-    return;
-}
-fout->cd();
-
-TTree *tEvents = new TTree("eventTree", "Datos completos por evento");
-
-Double_t thetacm_corr, ex_corr, thetalab_corr;
-Int_t eventID;
-
-tEvents->Branch("thetacm_corr", &thetacm_corr, "thetacm_corr/D");
-tEvents->Branch("ex_corr", &ex_corr, "ex_corr/D");
-tEvents->Branch("thetalab_corr", &thetalab_corr, "thetalab_corr/D");
-tEvents->Branch("eventID", &eventID, "eventID/I");*/
-
    // FairRunAna *run = new FairRunAna();
-
-   double Ebin_max = 10.0 ;
-	double Ebin_min = -3.0 ;
-	int NumberBins = 100; //100
-	int NumberBinsAux = 200 ;
 
    TH2F *Ang_Ener = new TH2F("Ang_Ener", "Ang_Ener", 720, 10, 60, 1000, 0, 60.0); //14.0
    TH2F *Ang_Ener_Corr = new TH2F("Ang_Ener_Corr", "Ang_Ener_Corr",720, 10, 60, 1000, 0, 60.0);
@@ -156,7 +218,7 @@ tEvents->Branch("eventID", &eventID, "eventID/I");*/
    TH1F* hGS_ExEnergy = new TH1F("hGS_ExEnergy", "Excitation Energy (Ground State Cut)", NumberBins, Ebin_min, Ebin_max);
 
    auto *AngDistr = new TH1F("Ang_Distr", "Ang_Distr", 128, 0, 120);
-   auto *AngDistrCM = new TH1F("Ang_Distr_CM", "Ang_Distr_CM", 90, 0, 180);
+   auto *AngDistrCM = new TH1F("Ang_Distr_CM", "Ang_Distr_CM", NumberBins, 0, 180);
    auto *ExvsZpos = new TH2F("ExvsZpos", "ExvsZpos", 1000, -5, 15, 200, -20, 150);
    auto *ExvsTrackLength = new TH2F("ExvsTrackLength", "ExvsTrackLength", 1000, -5, 15, 200, -20, 150);
    auto *ExCorrvsZpos = new TH2F("ExCorrvsZpos", "ExCorrvsZpos", 1000, -10, 10, 200, -100, 100);
@@ -223,9 +285,10 @@ tEvents->Branch("eventID", &eventID, "eventID/I");*/
     int thetaMax = angularBins[i].second;
     TString histTitle = Form("Excitation Energy (%.1d deg - %.1d deg)", thetaMin, thetaMax);
     TString histName = Form("hex_%d_%d", thetaMin, thetaMax);
-    std::cout << "Procesando ángulos entre " << thetaMin << " y " << thetaMax << " grados.\n";
+    //std::cout << "Procesando ángulos entre " << thetaMin << " y " << thetaMax << " grados.\n";
+    //std::cout << NumberBins << " " << Ebin_min << " " << Ebin_max << "\n";
      
-      hHex[i] = new TH1F(histName, histTitle, 90, -5, 14); //90, -5, 14
+      hHex[i] = new TH1F(histName, histTitle, NumberBins, Ebin_min, Ebin_max); //90, -5, 14
    }
 
    // ELoss tables.
@@ -470,7 +533,7 @@ tEvents->Branch("eventID", &eventID, "eventID/I");*/
 
 	TH1F *h_PS_1n = new TH1F("h_PS_1n","h_PS_1n", NumberBins, Ebin_min, Ebin_max ) ; 
 
-	for( int i = 0 ; i < t_PS->GetEntries() ; i++ ) {
+   for( int i = 0 ; i < t_PS->GetEntries() ; i++ ) {
 		t_PS -> GetEntry(i) ;
 		if ( ThetaCM_cal > ThetaCM_min && ThetaCM_cal < ThetaCM_max ) {
 			h_PS_1n -> Fill( Ex_cal, Weight_sim ) ;	
@@ -529,112 +592,245 @@ for (size_t i = 0; i < files.size(); i++) {
     ROOT::Math::MinimizerOptions::SetDefaultMinimizer("Minuit2");
     TFile *filePS = new TFile("PhaseSpace_16C_pd_1n.root", "READ");
     TTree *treePS = (TTree*) filePS->Get("simulated_tree");
+    TGraph* g_PS = histoToTgraph(h_PS_1n);
 
-    // Búsqueda de picos con TSpectrum
-    auto *cps = new TCanvas("cps", "cps", 800, 600);
-    cps->cd();
-    int nPeaksToSearch = 5;
-    TSpectrum *spec = new TSpectrum(nPeaksToSearch);
-    int nFound = spec->Search(hexCorr, 2, "", 0.1);
-    delete cps;
+
+   TCanvas *c_spec= new TCanvas("gausPrefit", "gaus prefit", 1200, 800);
+   c_spec->cd();
+
+   TSpectrum *sp = new TSpectrum(5); // 5 maxima search
+   int nfound = sp->Search(hexCorr, 2, "", 0.05); // 2 = sigma of smoothing, last = threshold
+   Double_t *xpeaks = sp->GetPositionX();
+
+   // copy into a vector<double>
+   std::vector<double> sorted_peaks(xpeaks, xpeaks + nfound);
+
+   // sort them
+   std::sort(sorted_peaks.begin(), sorted_peaks.end());
+
+   TCanvas *c_gausPrefit = new TCanvas("gausPrefit", "gaus prefit", 1200, 800);
+   c_gausPrefit->cd();
+   // Define a two-gaussian TF1 (ROOT built-in gaus uses amplitude = height)
+   TF1 *f2g = new TF1("f2g", "gaus(0) + gaus(3)", 0.4, 1.7);
+   double m1 = sorted_peaks[0];
+   double m2 = sorted_peaks[1];
+
+   // Peak 1
+   f2g->SetParameter(1, m1);   // mean of gaus(0)
+   f2g->SetParameter(2, 0.2);  // sigma guess
+   f2g->SetParameter(0, hexCorr->GetBinContent( hexCorr->FindBin(m1) ));  // amplitude guess
+
+   // Peak 2
+   f2g->SetParameter(4, m2);   // mean of gaus(3)
+   f2g->SetParameter(5, 0.2);  // sigma guess
+   f2g->SetParameter(3, hexCorr->GetBinContent( hexCorr->FindBin(m2) ));   // amplitude guess
+
+   hexCorr->Fit(f2g, "R");   // R = use the range you specified, 0 no plot, M minuit
+   f2g->SetLineColor(kViolet);
   
-    // Vector para almacenar los parámetros de los pre-fits
-    std::vector<std::vector<double>> prefit_params;
+   hexCorr->Draw();
+   f2g->Draw("same");     // <--- REQUIRED so the fit curve is drawn
 
-    // Para cada pico encontrado, hacer un fit gaussiano local
-    for (int i = 0; i < nFound; i++) {
-        double peak_pos = spec->GetPositionX()[i];
-        double peak_height = hexCorr->GetBinContent(hexCorr->FindBin(peak_pos));
-        
-        // Crear una gaussiana para el pre-fit
-        TF1 *gaus_prefit = new TF1(Form("gaus_prefit_%d", i), "gaus", peak_pos - 0.5, peak_pos + 0.5);
-        
-        // Parámetros iniciales para la gaussiana
-        gaus_prefit->SetParameters(peak_height, peak_pos, 0.2);
-        
-        // Hacer el fit en un rango limitado alrededor del pico
-        auto *ctest0 = new TCanvas("ctest0", "ctest0", 800, 600);
-        hexCorr->Fit(gaus_prefit, "RQN+", "", peak_pos - 0.5, peak_pos + 0.5);
-        delete ctest0;
+   // Breit-Wigner 1
+   TCanvas* c_BW = new TCanvas("BW", "BW ", 1200, 800);
+   c_BW->cd();
+   TF1 *bwprefit1 = new TF1("bw1", "[0]*TMath::BreitWigner(x,[1],[2])", 3.3, 4.3);
+   TF1 *bwprefit2 = new TF1("bw2", "[0]*TMath::BreitWigner(x,[1],[2])", 4.5,6.25);
+   TF1 *bwprefit3 = new TF1("bw3", "[0]*TMath::BreitWigner(x,[1],[2])", 6.5, 8.);
 
-        // Almacenar los parámetros del fit
-        std::vector<double> params = {
-            gaus_prefit->GetParameter(0), // amplitud
-            gaus_prefit->GetParameter(1), // media
-            gaus_prefit->GetParameter(2)  // sigma
-        };
-        prefit_params.push_back(params);
-        delete gaus_prefit;  // Limpieza de memoria
-    }
+   double m3 = sorted_peaks[3];
+   double m4 = sorted_peaks[4];
+   double m5 = sorted_peaks[5];
 
-    // First sort prefit_params by mean value (index 1)
-    std::sort(prefit_params.begin(), prefit_params.end(),
-        [](const auto& a, const auto& b) { return a[1] < b[1]; });
+   bwprefit1->SetParameters(230,m3,0.5);
+   hexCorr->Fit(bwprefit1, "R0");
+   bwprefit2->SetParameters(150,m4,2.);
+   hexCorr->Fit(bwprefit2, "R0+");
+   bwprefit3->SetParameters(100,m5,0.5);
+   hexCorr->Fit(bwprefit3, "R0+");
 
+   hexCorr->Draw();
+
+   bwprefit1->SetLineColor(kRed);
+   bwprefit2->SetLineColor(kBlue);
+   bwprefit3->SetLineColor(kGreen);
+
+   bwprefit1->Draw("same");
+   bwprefit2->Draw("same");
+   bwprefit3->Draw("same");
+
+   double A1    = bwprefit1->GetParameter(0);
+   double mean1 = bwprefit1->GetParameter(1);
+   double gamma1= bwprefit1->GetParameter(2);
+
+   double A2    = bwprefit2->GetParameter(0);
+   double mean2 = bwprefit2->GetParameter(1);
+   double gamma2= bwprefit2->GetParameter(2);
+
+   double A3    = bwprefit3->GetParameter(0);
+   double mean3 = bwprefit3->GetParameter(1);
+   double gamma3= bwprefit3->GetParameter(2);
+
+   //--------------------------------------------------------------------------------------------
+   TCanvas *c_ExEner = new TCanvas("ExEner", "Corrected Excited Energy spectra", 1200, 800);
+   c_ExEner->cd();
    
-    double initParams[16];  // Declarar el array fuera del condicional
+   //TF1* fModel = CreateSpectralModelWithPS("fModel", h_PS_1n);
+   
+  SpectralModel* model = new SpectralModel(g_PS);
+   TF1* fModel = new TF1("fModel",
+                        model,
+                        0.4, 8.8, 16,
+                        "SpectralModel");
 
-    // Ordenar los picos por posición
-    std::sort(prefit_params.begin(), prefit_params.end(),
-        [](const auto& a, const auto& b) { return a[1] < b[1]; });
 
-    // Verificar el número de picos encontrados e inicializar initParams
-    // Usar los parámetros del pre-fit
-    initParams[0] = prefit_params[0][0];  // Primera gaussiana
-    initParams[1] = prefit_params[0][1];
-    initParams[2] = prefit_params[0][2];
-    initParams[3] = prefit_params[1][0];  // Segunda gaussiana
-    initParams[4] = prefit_params[1][1];
-    initParams[5] = prefit_params[1][2];
-    initParams[6] = prefit_params[2][0];  // Primer BW
-    initParams[7] = prefit_params[2][1];
-    initParams[8] = prefit_params[2][2]; //0.2
-    initParams[9] = prefit_params[3][0];  // Segundo BW
-    initParams[10] = prefit_params[3][1];
-    initParams[11] = prefit_params[3][2];
-    initParams[12] = prefit_params[4][0]; // Tercer BW
-    initParams[13] = prefit_params[4][1];
-    initParams[14] = prefit_params[4][2];
-    initParams[15] = 0.0005;            // Phase space 0.0005
+   double finalParams[16];
+   fModel->SetParameter(0, f2g->GetParameter(0));   // Amp1
+   fModel->SetParameter(1, f2g->GetParameter(1));   // Mean1
+   fModel->SetParameter(2, f2g->GetParameter(2));   // Sigma1
 
-    /*double initParams[16] = {400, 0.57,0.218, 
-        500, 1.31, 0.218,
-        220, 3.9, 0.2,
-        50, 5.5, 0.2, 
-        25, 6.9, 0.2, 0.0005}; //BW: amplitude mean width 0.0001
-    */
-    auto *ctest = new TCanvas("ctest", "ctest", 800, 600);
-    TF1* model = CreateSpectralModelWithPS("fExSpectra", h_PS_1n);
+   fModel->SetParameter(3, f2g->GetParameter(3));   // Amp2
+   fModel->SetParameter(4, f2g->GetParameter(4));   // Mean2
+   fModel->SetParameter(5, f2g->GetParameter(5));   // Sigma2
 
-     /*model->SetParLimits(2, -0.3, 0.3);    // Límites para anchura de Gaussian 1
-     model->SetParLimits(10, 5.0, 6.);   // Límites para mean de BW 2
-     model->SetParLimits(11, 1.5, 2.3);   // Límites para width de BW 2
-     model->SetParLimits(13, 6.5, 7.2);*/   // Límites para mean de BW 3
-   /// model->SetParLimits(14, 0.1, 0.5);   // Límites para width de BW 3
-   model->SetParLimits(2, -0.1, 0.25);   
+   /*fModel->SetParameter(6,  250);       // Amp BW1
+   fModel->SetParameter(7,  sorted_peaks[2]);  // Mean BW1
+   fModel->SetParameter(8,  0.3);       // Gamma BW1
 
-    // Parámetros iniciales (ajústalos según tu caso)
-    
-    model->SetParameters(initParams) ;       // fondo PS
-    hexCorr->Fit("fExSpectra","", "", 0.4, 8.5); // "R" para rango, "Q" para modo silencioso
-    delete ctest;
+   fModel->SetParameter(9,  130);       // Amp BW2
+   fModel->SetParameter(10, sorted_peaks[3]);  // Mean BW2
+   fModel->SetParameter(11, 1.7);       // Gamma BW2
 
-    // Extraer parámetros ajustados
-    std::vector<double> finalParams;
-    for (int i = 0; i < model->GetNpar(); ++i){
-        finalParams.push_back(model->GetParameter(i));
-    // cout << "Fitted p[" << i << "] = " << model->GetParameter(i) << std::endl;
-    }
+   fModel->SetParameter(12, 30);       // Amp BW3
+   fModel->SetParameter(13, sorted_peaks[4]);  // Mean BW3
+   fModel->SetParameter(14, 0.3);       // Gamma BW3
+   */
 
-    std::ofstream out("fit_params_16Cpd15C.txt");
-   for (size_t i = 0; i < finalParams.size(); ++i) {
-      out << finalParams[i] << "\n";
+   fModel->SetParameter(6,  A1);       // Amp BW1
+   fModel->SetParameter(7,  mean1);  // Mean BW1
+   fModel->SetParameter(8,  gamma1);       // Gamma BW1
+
+   fModel->SetParameter(9,  A2);       // Amp BW2
+   fModel->SetParameter(10, mean2);  // Mean BW2
+   fModel->SetParameter(11, gamma2);       // Gamma BW2
+
+   fModel->SetParameter(12, A3);       // Amp BW3
+   fModel->SetParameter(13, mean3);  // Mean BW3
+   fModel->SetParameter(14, gamma3);       // Gamma BW3
+
+   fModel->SetParLimits(11,0.7,1.9);
+   //fModel->SetParLimits(14,0.1,1.0);
+
+   fModel->SetParameter(15, 0.0001);
+   //fModel->FixParameter(15, 0.0003);*/
+
+   hexCorr->Fit(fModel, "R");
+
+   // --- Save final parameters ---
+  
+   for (int i = 0; i < 16; i++){
+      finalParams[i] = fModel->GetParameter(i);
+      cout << "finalParams, " << i << "  :" << fModel->GetParameter(i) << endl;
    }
-   out.close();
+
+   hexCorr->SetStats(0);
+   //hexCorr->Sumw2(); // activa almacenamiento de errores
+   //hexCorr->Fit(model, "RQ");
+   hexCorr->Sumw2();
+   hexCorr->GetXaxis()->SetTitle("Excitation Energy (MeV)");
+   hexCorr->GetYaxis()->SetTitle("Counts");
+   c_ExEner->cd();
+   hexCorr->Draw("E1"); //E1
+   
+   // Gaussian 1
+   TF1 *gaus1 = new TF1("gaus1", "gaus(0)", Ebin_min, Ebin_max);
+   gaus1->SetParameters(finalParams[0], finalParams[1], finalParams[2]);
+   gaus1->SetNpx(1000);
+   gaus1->SetLineColor(kViolet);
+   gaus1->Draw("same");
+
+   // Gaussian 2
+   TF1 *gaus2 = new TF1("gaus2", "gaus(0)",Ebin_min, Ebin_max);
+   gaus2->SetParameters(finalParams[3], finalParams[4], finalParams[5]);
+   gaus2->SetNpx(1000);
+   gaus2->SetLineColor(kBlue);
+   gaus2->Draw("same");
+
+
+   // Breit-Wigner 1
+   TF1 *bw1 = new TF1("bw1", "[0]*TMath::BreitWigner(x,[1],[2])", Ebin_min, Ebin_max);
+   bw1->SetParameters(finalParams[6], finalParams[7], finalParams[8]);
+   bw1->SetNpx(1000);
+   bw1->SetLineColor(kGreen+2);
+   bw1->Draw("same");
+
+   // Breit-Wigner 2
+   TF1 *bw2 = new TF1("bw2", "[0]*TMath::BreitWigner(x,[1],[2])", Ebin_min, Ebin_max);
+   bw2->SetParameters(finalParams[9], finalParams[10], finalParams[11]);
+   bw2->SetNpx(1000);
+   bw2->SetLineColor(kMagenta);
+   bw2->Draw("same");
+
+   // Breit-Wigner 3
+   TF1 *bw3 = new TF1("bw3", "[0]*TMath::BreitWigner(x,[1],[2])",Ebin_min, Ebin_max);
+   bw3->SetParameters(finalParams[12], finalParams[13], finalParams[14]);
+   bw3->SetLineColor(kOrange+7);
+   bw3->SetNpx(1000);
+   bw3->Draw("same l");
+
+   // Phase Space
+   h_PS_1n->Scale(finalParams[15]); // Escala el histograma con el parámetro del fit
+   h_PS_1n->SetLineColor(kBlack);
+   h_PS_1n->SetLineWidth(2);
+   h_PS_1n->Draw("same"); 
+
+   TLegend* legend2 = new TLegend(0.7, 0.7, 0.9, 0.9); // (x1, y1, x2, y2) en coordenadas del canvas
+   //legend2->SetBorderSize(0); // sin borde
+   legend2->SetFillStyle(0);  // fondo transparente
+   legend2->AddEntry(hexCorr, "hexCorr", "l");
+   legend2->AddEntry(gaus1, "gaus(0)", "l");
+   legend2->AddEntry(gaus2, "gaus(1)", "l");
+   legend2->AddEntry(bw1, "Breit-Wigner 1", "l");
+   legend2->AddEntry(bw2, "Breit-Wigner 2", "l");
+   legend2->AddEntry(bw3, "Breit-Wigner 3", "l");
+   legend2->AddEntry(h_PS_1n, "Phase Space Background", "l");
+   legend2->Draw("same");
+
+   c_ExEner->Update();
+
+   /*TCanvas* c_test =new TCanvas("test", "thestttttt", 1200, 800);
+   c_test->cd();
+   TF1* fModel2 = CreateSpectralModelWithPS("fModel2", h_PS_1n);
+
+   fModel2->FixParameter(0, finalParams[0]);   // Amp1
+   fModel2->FixParameter(1, finalParams[1]);   // Mean1
+   fModel2->FixParameter(2, finalParams[2]);   // Sigma1
+
+   fModel2->FixParameter(3, finalParams[3]);   // Amp2
+   fModel2->FixParameter(4, finalParams[4]);   // Mean2
+   fModel2->FixParameter(5, finalParams[5]);   // Sigma2
+
+   fModel2->FixParameter(6, finalParams[6]);       // Amp BW1
+   fModel2->FixParameter(7, finalParams[7]);  // Mean BW1
+   fModel2->FixParameter(8, finalParams[8]);       // Gamma BW1
+
+   fModel2->FixParameter(9,  finalParams[9]);       // Amp BW2
+   fModel2->FixParameter(10, finalParams[10]);  // Mean BW2
+   fModel2->FixParameter(11, finalParams[11]);       // Gamma BW2
+
+   fModel2->FixParameter(12,finalParams[12]);       // Amp BW3
+   fModel2->FixParameter(13, finalParams[13]);  // Mean BW3
+   fModel2->FixParameter(14, finalParams[14]);       // Gamma BW3
+
+   fModel2->FixParameter(15,finalParams[15]);
+
+   hexCorr->Fit(fModel2, "R");
+   c_test->Draw();*/
+ 
 
 //---------------- Plots ----------------//
 
-/*TCanvas *c_AngEner = new TCanvas("AngEner", "Energy as a function of #theta", 1200, 800);
+TCanvas *c_AngEner = new TCanvas("AngEner", "Energy as a function of #theta", 1200, 800);
 Ang_Ener->SetMarkerStyle(20);
 Ang_Ener->SetMarkerSize(0.5);
 Ang_Ener->Draw("col");
@@ -670,26 +866,26 @@ auto legend0 = new TLegend(0.65, 0.65, 0.88, 0.88);
 for (size_t i = 0; i < graphs.size(); i++) {
     legend0->AddEntry(graphs[i], labels[i].c_str(), "l");
 }
-legend0->Draw();*/
+legend0->Draw();
 
 // Excitation energy spectrum with fits --------------------------------------
   
-/*TCanvas *c_hex = new TCanvas("hex", "Excited Energy spectra", 1200, 800);
+TCanvas *c_hex = new TCanvas("hex", "Excited Energy spectra", 1200, 800);
    c_hex->cd();
    hex->GetXaxis()->SetTitle("Excitation Energy (MeV)");
    hex->GetYaxis()->SetTitle("Counts");
    hex->SetLineColor(kRed);
    hex->Draw("hist");
    //hexCorr->SetLineColor(kRed);
-   hexCorr->Draw("hist same");*/
+   hexCorr->Draw("hist same");
 
-   TCanvas* hGS_energy = new TCanvas("hGS_ExEnergy", "Ground State Excitation Energy", 1000, 600);
+   /*TCanvas* hGS_energy = new TCanvas("hGS_ExEnergy", "Ground State Excitation Energy", 1000, 600);
    hGS_energy->cd();
    hGS_ExEnergy->GetXaxis()->SetTitle("Excitation Energy (MeV)");
    hGS_ExEnergy->GetYaxis()->SetTitle("Counts");
    hGS_ExEnergy->SetLineColor(kBlue+2);
    hGS_ExEnergy->SetLineWidth(2);
-   hGS_ExEnergy->Draw();
+   hGS_ExEnergy->Draw();*/
   
    /*TCanvas* cAngGS = new TCanvas("cAngGS", "Ground State Angular Distribution", 1000, 600);
    cAngGS->cd();
@@ -706,7 +902,7 @@ legend0->Draw();*/
 
 
 //-----------------------------------------------------------------------------------------
-auto* g = new TGraphErrors("/home/georgina/twofnr/21.groundState", "%lg %lg");
+/*auto* g = new TGraphErrors("/home/georgina/twofnr/21.groundState", "%lg %lg");
 double bestScale = 1.0;
 double minError = 1e9;
 
@@ -747,85 +943,12 @@ g->Draw("same P");
 auto *legend = new TLegend(0.6, 0.7, 0.88, 0.88);
 legend->AddEntry(hGS_AngularDistr, "Angular distribution ground state", "l");
 legend->AddEntry(g, "twofnr, OMP: Chapel and Daehnick", "lp");
-legend->Draw();
+legend->Draw();*/
 
-//-----------------------------------------------------------------------------------------
-
-   TCanvas *c_ExEner = new TCanvas("ExEner", "Corrected Excited Energy spectra", 1200, 800);
-   c_ExEner->cd();
-   hexCorr->SetStats(0);
-   //hexCorr->Sumw2(); // activa almacenamiento de errores
-   //hexCorr->Fit(model, "RQ");
-   hexCorr->GetXaxis()->SetTitle("Excitation Energy (MeV)");
-   hexCorr->GetYaxis()->SetTitle("Counts");
-   hexCorr->Draw(); //E1
-   
-   // Gaussian 1
-   TF1 *gaus1 = new TF1("gaus1", "gaus(0)", -5, 14);
-   gaus1->SetParameters(finalParams[0], finalParams[1], finalParams[2]);
-   gaus1->SetLineColor(kViolet);
-   gaus1->SetNpx(1000);
-   gaus1->Draw("same");
-
-   // Gaussian 2
-   TF1 *gaus2 = new TF1("gaus2", "gaus(0)", -5, 14);
-   gaus2->SetParameters(finalParams[3], finalParams[4], finalParams[5]);
-   gaus2->SetLineColor(kBlue);
-   gaus2->SetNpx(1000);
-   gaus2->Draw("same");
-
-   //---------------------------------------------------------------------
-
-   cout << " Integral total fit: " << model->Integral(0, 2)/hexCorr->GetBinWidth(0) << "\n";
-   cout << " Integral gaus 1: " << gaus1->Integral(-5, 14)/hexCorr->GetBinWidth(0) << "\n";
-   cout << " Integral gaus 2: " << gaus2->Integral(-5, 14)/hexCorr->GetBinWidth(0)  << "\n";
-   cout << "hexCorr Integral: " << hexCorr->Integral(48,66) << "\n";
-   //---------------------------------------------------------------------
-
-   // Breit-Wigner 1
-   TF1 *bw1 = new TF1("bw1", "[0]*TMath::BreitWigner(x,[1],[2])", -5, 14);
-   bw1->SetParameters(finalParams[6], finalParams[7], finalParams[8]);
-   bw1->SetLineColor(kGreen+2);
-   bw1->SetNpx(1000);
-   bw1->Draw("same");
-
-   // Breit-Wigner 2
-   TF1 *bw2 = new TF1("bw2", "[0]*TMath::BreitWigner(x,[1],[2])", -5, 14);
-   bw2->SetParameters(finalParams[9], finalParams[10], finalParams[11]);
-   bw2->SetLineColor(kMagenta);
-   bw2->SetNpx(1000);
-   bw2->Draw("same");
-
-   // Breit-Wigner 3
-   TF1 *bw3 = new TF1("bw3", "[0]*TMath::BreitWigner(x,[1],[2])", -5, 14);
-   bw3->SetParameters(finalParams[12], finalParams[13], finalParams[14]);
-   bw3->SetLineColor(kOrange+7);
-   bw3->SetNpx(1000);
-   bw3->Draw("same l");
-
-   // Phase Space
-   h_PS_1n->Scale(finalParams[15]); // Escala el histograma con el parámetro del fit
-   h_PS_1n->SetLineColor(kBlack);
-   h_PS_1n->SetLineWidth(2);
-   h_PS_1n->Draw("same"); 
-
-   TLegend* legend2 = new TLegend(0.7, 0.7, 0.9, 0.9); // (x1, y1, x2, y2) en coordenadas del canvas
-   //legend2->SetBorderSize(0); // sin borde
-   legend2->SetFillStyle(0);  // fondo transparente
-   legend2->AddEntry(hexCorr, "hexCorr", "l");
-   legend2->AddEntry(gaus1, "gaus(0)", "l");
-   legend2->AddEntry(gaus2, "gaus(1)", "l");
-   legend2->AddEntry(bw1, "Breit-Wigner 1", "l");
-   legend2->AddEntry(bw2, "Breit-Wigner 2", "l");
-   legend2->AddEntry(bw3, "Breit-Wigner 3", "l");
-   legend2->AddEntry(h_PS_1n, "Phase Space Background", "l");
-   legend2->Draw();
-
-   c_ExEner->Update();
 
    //--------------------------------------------------------------------------------------------------
 
-   TCanvas *c_ExenerCorr = new TCanvas("ExenerCorr", "Excited Energy spectra corrected", 1200, 800);
+ TCanvas *c_ExenerCorr = new TCanvas("ExenerCorr", "Excited Energy spectra corrected", 1200, 800);
    c_ExenerCorr->cd();
    c_ExenerCorr->Divide(2, 1);
    c_ExenerCorr->cd(1);
