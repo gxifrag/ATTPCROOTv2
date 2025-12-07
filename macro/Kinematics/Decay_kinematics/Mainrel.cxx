@@ -29,7 +29,7 @@ int Mainrel()
 {
 
    std::ofstream kineStr;
-   kineStr.open("C16_pd_C15_6.841MeV_Ebeam11_5.txt");
+   kineStr.open("C16_pt_C14_GS_Ebeam12_25.txt");
    //kineStr.open("C15_dt_gs_Ebeam11_5.txt");;
 
    Int_t a = 1;
@@ -49,7 +49,7 @@ int Mainrel()
 
    // cout<<El2<<endl;
 
-   int A3 = 15; // mass0 of the scattered particle
+   int A3 = 14; // mass0 of the scattered particle
    int Z3 = 6;  // charge of the scattered particle
    char *El3 = new char[2];
 
@@ -57,7 +57,7 @@ int Mainrel()
 
    // cout<<El3<<endl;
 
-   int A4 = 2; // mass0 of the recoil
+   int A4 = 3; // mass0 of the recoil
    int Z4 = 1; // charge of the recoil
    char *El4 = new char[2];
 
@@ -76,13 +76,13 @@ int Mainrel()
    double ex1 = 0;    // excitation energy of the incident particle
    double ex2 = 0;    // excitation energy of the target
    //double ex3= 0;
-   //double ex3 = 0.740;// first excited state C15
+   //double ex3 = 0.740;// first excited state C15
    //double ex3 = 3.103; // second excited state C15
    //double ex3 = 4.780; // third excited state C15
-   double ex3 = 6.841; // fourth state C15;
+   double ex3 = 0; // fourth state C15;
    double ex4 = 0;  // excitation energy of the recoil
 
-   double tbt = 184.0/16.; // incident energy (total Lab energy in MeV) 184/16 = 11.5 MeV per nucleon
+   double tbt = 12.25*16/16.; // incident energy (total Lab energy in MeV) 184/16 = 11.5 MeV per nucleon
    double Energyrdec, Anglerdec;
 
    //  cout<<" Mass of the incident particle A1"<<endl;
