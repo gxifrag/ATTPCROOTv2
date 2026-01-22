@@ -8,7 +8,7 @@ bool reduceFunc(AtRawEvent *evt)
    return (evt->GetNumPads() > 0) && evt->IsGood();
 }
 
-void unpack_a1975(TString fileName = "run_0116")
+void unpack_a1975(TString fileName = "run_0047")
 {
 
    // Load the library for unpacking and reconstruction
@@ -17,9 +17,9 @@ void unpack_a1975(TString fileName = "run_0116")
    TStopwatch timer;
    timer.Start();
 
-   TString parameterFile = "ATTPC.a1954.par";
+   TString parameterFile = "ATTPC.a1975_deuterium.par";
    TString mappath = "";
-   TString filepath = "/media/yassid/bdcb3c81-adb9-4a9d-9172-0bd5935c1dd5/data/a1957/";
+   TString filepath = "/home/georgina/fair_install/ATTPCROOTv2/macro/Unpack_HDF5/a1975/";
    TString fileExt = ".h5";
    TString inputFile = filepath + fileName + fileExt;
    TString scriptfile = "ANL2023.xml";
@@ -29,10 +29,10 @@ void unpack_a1975(TString fileName = "run_0116")
    TString dataDir = dir + "/macro/data/";
    TString geomDir = dir + "/geometry/";
    gSystem->Setenv("GEOMPATH", geomDir.Data());
-   TString outputFile = fileName + ".root";
+   TString outputFile = fileName + "_2.root";
    TString loggerFile = dataDir + "ATTPCLog.log";
    TString digiParFile = dir + "/parameters/" + parameterFile;
-   TString geoManFile = dir + "/geometry/ATTPC_H1bar.root";
+   TString geoManFile = dir + "/geometry/ATTPC_D300torr_v2.root";
 
    // Specific paths for three LUT for electric field correction
    TString zlutFile = dir + "/resources/corrections/a1954/zLUT.txt";
@@ -64,7 +64,8 @@ void unpack_a1975(TString fileName = "run_0116")
    unpacker->SetBaseLineSubtraction(true);
 
    auto unpackTask = new AtUnpackTask(std::move(unpacker));
-   unpackTask->SetPersistence(false);
+  // unpackTask->SetVerbosity(false);
+   unpackTask->SetPersistence(true);
 
    AtFilterSubtraction *filter = new AtFilterSubtraction(fAtMapPtr);
    filter->SetThreshold(50);
@@ -74,7 +75,7 @@ void unpack_a1975(TString fileName = "run_0116")
    filterTask->SetPersistence(false);
    filterTask->SetFilterAux(false);
 
-   auto threshold = 20;
+   auto threshold = 50;
 
    // auto psa = new AtPSASimple2();
    auto psa = new AtPSAMax();
@@ -102,8 +103,8 @@ void unpack_a1975(TString fileName = "run_0116")
    run->AddTask(unpackTask);
    // run->AddTask(filterTask);
    run->AddTask(psaTask);
-   run->AddTask(SCTask);
-   run->AddTask(praTask);
+   /*run->AddTask(SCTask);
+   run->AddTask(praTask);*/
 
    std::cout << "***** Starting Init ******" << std::endl;
    run->Init();

@@ -203,9 +203,9 @@ if (guardar_en_pdf) {
 
    auto *AngDistr = new TH1F("Ang_Distr", "Ang_Distr", 128, 0, 120);
    auto *AngDistrCM = new TH1F("Ang_Distr_CM", "Ang_Distr_CM", NumberBins, 0, 180);
-   auto *ExvsZpos = new TH2F("ExvsZpos", "ExvsZpos", 1000, -5, 15, 200, -20, 150);
+   auto *ExvsZpos = new TH2F("ExvsZpos", "ExvsZpos", 1000, -5, 10, 200, -5, 80);
    auto *ExvsTrackLength = new TH2F("ExvsTrackLength", "ExvsTrackLength", 1000, -5, 15, 200, -20, 150);
-   auto *ExCorrvsZpos = new TH2F("ExCorrvsZpos", "ExCorrvsZpos", 1000, -10, 10, 200, -100, 100);
+   auto *ExCorrvsZpos = new TH2F("ExCorrvsZpos", "ExCorrvsZpos", 1000, -5, 10, 200, -5, 80);
    auto *KineticEnergy = new TH1F("KineticEnergy", "KineticEnergy", 100, 0, 100);
 
    TH1F *h_PS_1n_plot = new TH1F("h_PS_1n_plot","h_PS_1n_plot",NumberBins, Ebin_min, Ebin_max); 
@@ -213,7 +213,7 @@ if (guardar_en_pdf) {
    /*auto *hredchi2 = new TH1F("redchi2", "redchi2", 1000, 0, 0.0001);
    auto *hbredchi2 = new TH1F("bredchi2", "bredchi2", 1000, 0, 5);*/
 
-   auto *hexvstheta = new TH2F("hexVStheta", "hexVStheta", 1000, -5, 15, 90, 0, 90);
+   auto *hexvstheta = new TH2F("hexVStheta", "hexVStheta", 100, -2, 10, 100, 0, 50);
 
    Double_t nc_tot[200];
    Double_t nc_PS_1n[200];
@@ -499,8 +499,8 @@ if (guardar_en_pdf) {
 
          AngDistr->Fill(theta * TMath::RadToDeg());
          AngDistrCM->Fill(theta_cm);
-         hexvstheta->Fill(ex_energy, theta * TMath::RadToDeg());
-         ExvsTrackLength->Fill(ex_energy, arclength);
+         hexvstheta->Fill(ex_energy_corr_shifted, theta * TMath::RadToDeg());
+         ExvsTrackLength->Fill(ex_energy_corr_shifted, arclength);
 
         /*for (size_t i = 0; i < angularBins.size(); ++i) {
          int thetaMin = angularBins[i].first;
@@ -732,6 +732,12 @@ if (!graphPS)     { std::cerr << "graphPS is null\n"; return; }
    hexCorr2->GetXaxis()->SetTitle("Excitation Energy (MeV)");
    hexCorr2->GetYaxis()->SetTitle("Counts");
    hexCorr2->Draw("E1"); //E1
+
+   TLine *vline0 = new TLine(1.218, 0, 1.218, 380);
+   vline0->SetLineColor(kRed);   // opcional
+   vline0->SetLineStyle(2);       // opcional: línea discontinua
+   vline0->SetLineWidth(3);       // opcional
+   vline0->Draw("SAME");
    
    // Gaussian 1
    TF1 *gaus1 = new TF1("gaus1", "gaus(0)", Ebin_min, Ebin_max);
@@ -821,6 +827,12 @@ for (size_t i = 0; i < graphs.size(); i++) {
     legend->AddEntry(graphs[i], labels[i].c_str(), "l");
 }
 legend->Draw();
+
+TCanvas * c_check2 = new TCanvas("check2", "check2", 1200, 800);
+c_check2->cd();
+hexvstheta->GetXaxis()->SetTitle("Excitation Energy (MeV)");
+hexvstheta->GetYaxis()->SetTitle("#theta_{lab} (deg)");
+hexvstheta->Draw("colz");
 
 // Excitation energy spectrum with fits --------------------------------------
 
@@ -1064,7 +1076,7 @@ legend9->Draw();
    AngDistrCM->GetXaxis()->SetTitle("Angle (deg)");
    AngDistrCM->GetYaxis()->SetTitle("#frac{d#sigma}{d#Omega} (a.u.)");*/
 
-   TCanvas *c_ExvsZpos = new TCanvas( "ExvsZpos", "Excitation Energy vs z position and track length", 1200, 800);
+   /*TCanvas *c_ExvsZpos = new TCanvas( "ExCorrvsZpos", "Excitation Energy vs z position and track length", 800, 1200);
    c_ExvsZpos->cd();
    c_ExvsZpos->Divide(2, 1);
    c_ExvsZpos->cd(1);
@@ -1072,14 +1084,23 @@ legend9->Draw();
    ExvsZpos->GetXaxis()->SetTitle("Excitation Energy (MeV)");
    ExvsZpos->GetYaxis()->SetTitle("z (cm)");
    c_ExvsZpos->cd(2);
-   ExvsTrackLength->Draw("zcol");
+   ExCorrvsZpos->Draw("zcol");*/
+   /*ExvsTrackLength->Draw("zcol");
    ExvsTrackLength->GetXaxis()->SetTitle("Excitation Energy (MeV)");
-   ExvsTrackLength->GetYaxis()->SetTitle("Track Length (cm)");
+   ExvsTrackLength->GetYaxis()->SetTitle("Track Length (cm)");*/
 
   /* TCanvas *kin = new TCanvas( "kin", "kin", 1200, 800);
    KineticEnergy->Sumw2();
    kin->cd();
    KineticEnergy->Draw("E1");*/
+
+   TCanvas *c_ExvsZpos = new TCanvas( "ExCorrvsZpos", "Excitation Energy vs z position and track length", 1200, 800);
+   c_ExvsZpos->cd();
+   ExCorrvsZpos->GetXaxis()->SetTitle("Excitation Energy (MeV)");
+   ExCorrvsZpos->GetYaxis()->SetTitle("z (cm)");
+   
+   gPad->SetRightMargin(0.20);
+   ExCorrvsZpos->Draw("zcol");
 
 cout << "\n";
 cout << "Starting fits for " << hHex.size() << " histograms.\n";

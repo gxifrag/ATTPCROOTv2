@@ -1,14 +1,14 @@
-void run_eve(TString InputDataFileName = "./C16_dd_data/run_0011")
+void run_eve(TString InputDataFileName = "run_0047")
 {
 
-   TString InputDataFile = InputDataFileName + ".root";
+   TString InputDataFile = InputDataFileName + "_2.root";
 
    TString OutputDataFile = InputDataFileName + ".reco_display.root";
-   TString unpackDir = "/macro/Unpack_HDF5/a1975/C16_dd_data/";
+   TString unpackDir = "./";
 
    TString dir = getenv("VMCWORKDIR");
-   TString geoFile = "ATTPC_H1bar_geomanager.root";
-   TString mapFile = "e12014_pad_mapping.xml";
+   TString geoFile = "ATTPC_D300torr_v2_geomanager.root";
+   TString mapFile = "ANL2023.xml";
 
    TString InputDataPath = InputDataFile;
    TString OutputDataPath = OutputDataFile;

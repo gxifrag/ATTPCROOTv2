@@ -167,20 +167,27 @@ if (guardar_en_pdf) {
    auto *hexCorr3 = new TH1F("hexCorr3", " ", NumberBins, Ebin_min, Ebin_max);
 
    TH1F* hGS_AngularDistr = new TH1F("hGS_AngularDistr", "Ground State Angular Distribution", 30, 0, 180);
+   TH1F* h1st_AngularDistr = new TH1F("h1st_AngularDistr", "1st Excited State Angular Distribution", 30, 0, 180);
+   TH1F* h2nd_AngularDistr = new TH1F("h2nd_AngularDistr", "2nd Excited State Angular Distribution", 30, 0, 180);
+   TH1F* h3rd_AngularDistr = new TH1F("h3rd_AngularDistr", "3rd Excited State Angular Distribution", 30, 0, 180);
 
    TH1F* hGS_ExEnergy = new TH1F("hGS_ExEnergy", "Excitation Energy (Ground State Cut)", NumberBins, Ebin_min, Ebin_max);
+   TH1F* h1st_ExEnergy = new TH1F("h1st_ExEnergy", "Excitation Energy (1st Cut)", NumberBins, Ebin_min, Ebin_max);
+   TH1F* h2nd_ExEnergy = new TH1F("h2nd_ExEnergy", "Excitation Energy (2nd Cut)", NumberBins, Ebin_min, Ebin_max);
+   TH1F* h3rd_ExEnergy = new TH1F("h3rd_ExEnergy", "Excitation Energy (3rd Cut)", NumberBins, Ebin_min, Ebin_max);
 
    auto *AngDistr = new TH1F("Ang_Distr", "Ang_Distr", 128, 0, 120);
    auto *AngDistrCM = new TH1F("Ang_Distr_CM", "Ang_Distr_CM", NumberBins, 0, 180);
    auto *ExvsZpos = new TH2F("ExvsZpos", "ExvsZpos", 1000, -5, 15, 100, -10, 90);
    auto *ExvsTrackLength = new TH2F("ExvsTrackLength", "ExvsTrackLength", 1000, -5, 15, 200, -20, 150);
-   auto *ExCorrvsZpos = new TH2F("ExCorrvsZpos", "ExCorrvsZpos", 1000, -5, 15, 100, -10, 90);
-   auto *ExCorrFitvsZpos = new TH2F("ExCorrFitvsZpos", "ExCorrFitvsZpos", 1000, -5, 15, 100, -10, 90);
-   auto *ExCorrvsZposFit = new TH2F("ExCorrvsZposFit", "ExCorrvsZposFit", 1000, -5, 15, 100, -10, 90);
+   auto *ExCorrvsZpos = new TH2F("ExCorrvsZpos", "ExCorrvsZpos", 1000, -5, 15, 100, -10, 70);
+   //auto *ExCorrFitvsZpos = new TH2F("ExCorrFitvsZpos", "", 1000, -5, 15, 100, -10, 90);
+   auto *ExCorrFitvsZpos = new TH2F("ExCorrFitvsZpos", "ExCorrFitvsZpos", 1000, -5, 15, 100, 0, 70);
+   auto *ExCorrvsZposFit = new TH2F("ExCorrvsZposFit", "", 1000, -5, 15, 100, 0, 70);
    auto *KineticEnergy = new TH1F("KineticEnergy", "KineticEnergy", 100, 0, 100);
 
    TH1F *h_PS_1n_plot = new TH1F("h_PS_1n_plot","h_PS_1n_plot",NumberBins, Ebin_min, Ebin_max); 
-   auto *hexvstheta = new TH2F("hexVStheta", "hexVStheta", 1000, -5, 15, 90, 0, 90);
+   auto *hexvstheta = new TH2F("hexVStheta", "hexVStheta", 100, -5, 15, 100, 0, 90);
 
    Double_t nc_tot[200];
    Double_t nc_PS_1n[200];
@@ -392,10 +399,61 @@ if (guardar_en_pdf) {
             hexCorr2->Fill(ex_energy_fit);//ex_ener_fit 
             hexCorr3->Fill(ex_energy_corr);
             ExCorrvsZposFit->Fill(ex_energy_corr, zPos*100.0);
-            ExCorrFitvsZpos->Fill(ex_energy_fit, zPos*100.0);
+            //if (ex_energy_fit < 2.0){
+               ExCorrFitvsZpos->Fill(ex_energy_fit, zPos*100.0);
+            //}
          }
          
          //Cross section with energies -------------------------------------------------------------------------
+
+         Double_t theta_deg_lower = 25.0;
+         Double_t theta_deg_upper = 100.0;
+
+         Double_t energyCutGS_lower = 0.1;
+         Double_t energyCutGS_upper = 0.9;
+
+         if (ex_energy_fit > energyCutGS_lower && ex_energy_fit < energyCutGS_upper &&
+             theta_cm_corr > theta_deg_lower && theta_cm_corr < theta_deg_upper) {
+            Double_t theta_deg = theta_cm_corr;
+            hGS_AngularDistr->Fill(theta_deg);
+            hGS_ExEnergy->Fill(ex_energy_fit);
+
+         }
+         //First Excited State -------------------------------------------------------------------------
+
+         Double_t energyCut1st_lower = 6.7914510;
+         Double_t energyCut1st_upper = 7.879789;
+
+         if (ex_energy_fit > energyCut1st_lower && ex_energy_fit < energyCut1st_upper &&
+             theta_cm_corr > theta_deg_lower && theta_cm_corr < theta_deg_upper) {
+            Double_t theta_deg = theta_cm_corr;
+            h1st_AngularDistr->Fill(theta_deg);
+            h1st_ExEnergy->Fill(ex_energy_fit);
+
+         }
+           
+         //Second Excited State -------------------------------------------------------------------------
+         Double_t energyCut2nd_lower = 8.5;
+         Double_t energyCut2nd_upper = 9.5;   
+
+         if (ex_energy_fit > energyCut2nd_lower && ex_energy_fit < energyCut2nd_upper &&
+             theta_cm_corr > theta_deg_lower && theta_cm_corr < theta_deg_upper) {
+            Double_t theta_deg = theta_cm_corr;
+            h2nd_AngularDistr->Fill(theta_deg);
+            h2nd_ExEnergy->Fill(ex_energy_fit);
+
+         }
+
+         //Third Excited State -------------------------------------------------------------------------
+         Double_t energyCut3rd_lower = 9.6848000;
+         Double_t energyCut3rd_upper = 12.684800;   
+         if (ex_energy_fit > energyCut3rd_lower && ex_energy_fit < energyCut3rd_upper &&
+             theta_cm_corr > theta_deg_lower && theta_cm_corr < theta_deg_upper) {
+            Double_t theta_deg = theta_cm_corr;
+            h3rd_AngularDistr->Fill(theta_deg);
+            h3rd_ExEnergy->Fill(ex_energy_fit);
+
+         }
 
          // Histograms
 
@@ -406,7 +464,7 @@ if (guardar_en_pdf) {
 
          AngDistr->Fill(theta * TMath::RadToDeg());
          AngDistrCM->Fill(theta_cm);
-         hexvstheta->Fill(ex_energy, theta * TMath::RadToDeg());
+         hexvstheta->Fill(ex_energy_fit, theta * TMath::RadToDeg());
          //ExvsTrackLength->Fill(ex_energy, arclength);
          
          //tEvents->Fill();
@@ -448,14 +506,15 @@ if (guardar_en_pdf) {
 std::vector<std::string> files = {
    "C16_pt_14C_gs_Ebeam11_5.txt",
    "C16_pt_14C_1st_Ebeam11_5.txt",
-   "C16_pt_14C_2nd_Ebeam11_5.txt"
+   "C16_pt_14C_2nd_Ebeam11_5.txt",
+   "C16_pt_14C_3rd_Ebeam11_5.txt"
 };
    std::vector<std::string> labels = {
-      "Ground State", "first Excited State", "second Excited State"
+      "Ground State", "1st Excited State", "2nd Excited State", "3rd Excited State"
    };
 
 // Colors for each line (ROOT color codes: 2=red,4=blue,8=green, etc.)
-std::vector<int> colors = {kOrange+7, kBlue, kGreen+2};
+std::vector<int> colors = {kOrange+7, kBlue,kRed, kMagenta};
 std::vector<TGraph*> graphs;
 
 for (size_t i = 0; i < files.size(); i++) {
@@ -609,7 +668,7 @@ for (size_t i = 0; i < files.size(); i++) {
    hexCorr2->GetXaxis()->SetTitle("Excitation Energy (MeV)");
    hexCorr2->GetYaxis()->SetTitle("Counts");
    hexCorr2->GetYaxis()->SetRangeUser(0,200); // <--- CORRECT
-   hexCorr2->Draw("PE"); //E1
+   hexCorr2->Draw("E1"); //E1
 
    hexCorr2->Fit(fModel, "R");
      
@@ -650,7 +709,7 @@ for (size_t i = 0; i < files.size(); i++) {
    gaus2->SetLineColor(kBlue); //kBlue
    gaus2->Draw("same");
 
-   // Breit-Wigner 1
+   // Breit-Wigner fModel1
    TF1 *bw1 = new TF1("bw1", "[0]*TMath::BreitWigner(x,[1],[2])", Ebin_min, Ebin_max);
    bw1->SetParameters(globalParamsFinals[6], globalParamsFinals[7], globalParamsFinals[8]);
    bw1->SetNpx(1000);
@@ -674,11 +733,11 @@ for (size_t i = 0; i < files.size(); i++) {
    h_PS_1n->Draw("same S"); */
 
 
+     // 1. Convert the (scaled) histogram to a TGraph
    if (h_PS_1n->GetNbinsX() > 0) {
       h_PS_1n->Scale(globalParamsFinals[12]);
    }
    
-   // 1. Convert the (scaled) histogram to a TGraph
    TGraph* g_PS_1n = histoToTgraph(h_PS_1n);
    
    // 2. Set style for the TGraph (TGraphs use LineColor/Width like TF1)
@@ -700,7 +759,7 @@ for (size_t i = 0; i < files.size(); i++) {
    latex.SetTextSize(0.03);     // smaller than legend text
    latex.DrawLatex(0.20, 0.85, Form("#chi^{2}/NDF = %.2f", chi2Ndf));
 
-  TLegend* legend2 = new TLegend(0.65, 0.60, 0.90, 0.90);
+  TLegend* legend2 = new TLegend(0.65, 0.80, 0.90, 0.90);
    legend2->SetTextFont(42);
    legend2->AddEntry(hexCorr2, "Spectrum", "l");
    legend2->AddEntry(gaus1, "Ground State", "l");
@@ -740,7 +799,7 @@ for (size_t i = 0; i < graphs.size(); i++) {
 }
 
 // Optional: add a legend
-auto legend = new TLegend(0.45, 0.80, 0.90, 0.90);
+auto legend = new TLegend(0.45, 0.70, 0.90, 0.90);
 for (size_t i = 0; i < graphs.size(); i++) {
     legend->AddEntry(graphs[i], labels[i].c_str(), "l");
 }
@@ -751,97 +810,126 @@ TCanvas *c_compare = new TCanvas("compare", "Comparison Excitation Energy Spectr
 c_compare->cd();
 hexCorr3->GetXaxis()->SetTitle("Excitation Energy (MeV)");
 hexCorr3->GetYaxis()->SetTitle("Counts");
-hexCorr3->SetLineColor(kGreen);
+hexCorr3->SetLineColor(kBlue+2);
 hexCorr3->SetLineWidth(2);
 hexCorr3->Draw();
-hexCorr2->SetLineColor(kBlue+2);
+hexCorr2->SetLineColor(kGreen+2);
 hexCorr2->Draw("SAME"); 
+
+TLegend *legend6 = new TLegend(0.60, 0.75, 0.90, 0.85);
+legend6->AddEntry(hexCorr3, "Uncorrected Spectrum", "l"); 
+legend6->AddEntry(hexCorr2, "Corrected Spectrum", "l"); 
+legend6->Draw("same l");
+
+// Optional: Clean up the legend's appearance
+legend6->SetFillStyle(0); // Make the background transparent
+
+
+TCanvas * c_check = new TCanvas("check", "check", 1200, 800);
+c_check->cd();
+hexCorr->Draw(); 
+hGS_ExEnergy->Draw("SAME");
+h1st_ExEnergy->Draw("SAME");
+h2nd_ExEnergy->Draw("SAME");
+h3rd_ExEnergy->Draw("SAME");
+
+TCanvas * c_check2 = new TCanvas("check2", "check2", 1200, 800);
+c_check2->cd();
+hexvstheta->Draw("colz");
+
 //-----------------------------------------------------------------------------------
 // Excitation energy spectrum with fits --------------------------------------
 
-  /* TCanvas* hGS_energy = new TCanvas("hGS_ExEnergy", "Ground State Excitation Energy", 1000, 600);
+   /*TCanvas* hGS_energy = new TCanvas("hGS_ExEnergy", "Ground State Excitation Energy", 1000, 600);
    hGS_energy->cd();
    hGS_ExEnergy->GetXaxis()->SetTitle("Excitation Energy (MeV)");
    hGS_ExEnergy->GetYaxis()->SetTitle("Counts");
-   hGS_ExEnergy->SetLineColor(kBlue+2);
+   hGS_ExEnergy->SetLineColor(kRed+1);
    hGS_ExEnergy->SetLineWidth(2);
-   hGS_ExEnergy->Draw();
+   hGS_ExEnergy->Draw()*/
   
-   TCanvas* cAngGS = new TCanvas("cAngGS", "Ground State Angular Distribution", 1000, 600);
+  /* TCanvas* cAngGS = new TCanvas("cAngGS", "Ground State Angular Distribution", 1000, 600);
    cAngGS->cd();
-   //gPad->SetLogy();
-   // Histograma experimental primero
+   gPad->SetLogy();
+ 
    hGS_AngularDistr->Sumw2();
    hGS_AngularDistr->Scale(0.5);  // ← se aplica correctamente
-   hGS_AngularDistr->SetLineColor(kBlue+2);
+   hGS_AngularDistr->SetLineColor(kRed+1);
    hGS_AngularDistr->SetLineWidth(2);
    hGS_AngularDistr->GetXaxis()->SetTitle("#theta_cm (deg)");
    hGS_AngularDistr->GetYaxis()->SetTitle("Counts");
-   hGS_AngularDistr->Draw("E1");  // ← define el marco
-   
+   hGS_AngularDistr->Draw("E1");  // ← define el marco*/
 
-   TCanvas* h740_energy = new TCanvas("h740_ExEnergy", "Ground State Excitation Energy", 1000, 600);
-   h740_energy->cd();
-   h740_ExEnergy->GetXaxis()->SetTitle("Excitation Energy (MeV)");
-   h740_ExEnergy->GetYaxis()->SetTitle("Counts");
-   h740_ExEnergy->SetLineColor(kBlue+2);
-   h740_ExEnergy->SetLineWidth(2);
-   h740_ExEnergy->Draw();
-  
-   TCanvas* cAng740 = new TCanvas("cAng740", "740keV Angular Distribution", 1000, 600);
-   cAng740->cd();
-   //gPad->SetLogy();
-   h740_AngularDistr->Sumw2();
-   h740_AngularDistr->Scale(0.5);  // ← se aplica correctamente
-   h740_AngularDistr->SetLineColor(kBlue+2);
-   h740_AngularDistr->SetLineWidth(2);
-   h740_AngularDistr->GetXaxis()->SetTitle("#theta_cm (deg)");
-   h740_AngularDistr->GetYaxis()->SetTitle("Counts");
-   h740_AngularDistr->Draw("E1");  // ← define el marco
-   
+  /* TCanvas* h1st_energy = new TCanvas("h1st_ExEnergy", "1st Excited State Excitation Energy", 1000, 600);
+   h1st_energy->cd();
+   // Assuming your histogram for the 1st ES is named h1st_ExEnergy
+   h1st_ExEnergy->GetXaxis()->SetTitle("Excitation Energy (MeV)");
+   h1st_ExEnergy->GetYaxis()->SetTitle("Counts");
+   h1st_ExEnergy->SetLineColor(kRed+1);
+   h1st_ExEnergy->SetLineWidth(2);
+   h1st_ExEnergy->Draw();*/
+
+   // --- 2. Angular Distribution for the 1st Excited State ---
+   /*TCanvas* cAng1st = new TCanvas("cAng1st", "1st Excited State Angular Distribution", 1000, 600);
+   cAng1st->cd();
+   gPad->SetLogy();
+   h1st_AngularDistr->Sumw2();
+   h1st_AngularDistr->Scale(0.5);
+   h1st_AngularDistr->SetLineColor(kRed+1);
+   h1st_AngularDistr->SetLineWidth(2);
+   h1st_AngularDistr->GetXaxis()->SetTitle("#theta_cm (deg)");
+   h1st_AngularDistr->GetYaxis()->SetTitle("Counts");
+   h1st_AngularDistr->Draw("E1");*/
+
+   /*TCanvas* h2nd_energy = new TCanvas("h2nd_ExEnergy", "2nd Excited State Excitation Energy", 1000, 600);
+   h2nd_energy->cd();
+   // Assuming your histogram for the 2nd ES is named h2nd_ExEnergy
+   h2nd_ExEnergy->GetXaxis()->SetTitle("Excitation Energy (MeV)");
+   h2nd_ExEnergy->GetYaxis()->SetTitle("Counts");
+   h2nd_ExEnergy->SetLineColor(kRed+1);
+   h2nd_ExEnergy->SetLineWidth(2);
+   h2nd_ExEnergy->Draw();*/
+
+// Angular Distribution
+/*TCanvas* cAng2nd = new TCanvas("cAng2nd", "2nd Excited State Angular Distribution", 1000, 600);
+   cAng2nd->cd();
+   gPad->SetLogy();
+   // Assuming your angular distribution histogram for the 2nd ES is named h2nd_AngularDistr
+   h2nd_AngularDistr->Sumw2();
+   h2nd_AngularDistr->Scale(0.5);
+   h2nd_AngularDistr->SetLineColor(kRed+1);
+   h2nd_AngularDistr->SetLineWidth(2);
+   h2nd_AngularDistr->GetXaxis()->SetTitle("#theta_cm (deg)");
+   h2nd_AngularDistr->GetYaxis()->SetTitle("Counts");
+   h2nd_AngularDistr->Draw("E1");*/
 
 
-   TCanvas* h3103_energy = new TCanvas("h3103_ExEnergy",  "Excitation Energy", 1000, 600);
-   h3103_energy->cd();
-   h3103_ExEnergy->GetXaxis()->SetTitle("Excitation Energy (MeV)");
-   h3103_ExEnergy->GetYaxis()->SetTitle("Counts");
-   h3103_ExEnergy->SetLineColor(kBlue+2);
-   h3103_ExEnergy->SetLineWidth(2);
-   h3103_ExEnergy->Draw();
-  
-   TCanvas* cAng3103 = new TCanvas("cAng3103", "3103keV Angular Distribution", 1000, 600);
-   cAng3103->cd();
-   //gPad->SetLogy();
-   h3103_AngularDistr->Sumw2();
-   h3103_AngularDistr->Scale(0.5);  // ← se aplica correctamente
-   h3103_AngularDistr->SetLineColor(kBlue+2);
-   h3103_AngularDistr->SetLineWidth(2);
-   h3103_AngularDistr->GetXaxis()->SetTitle("#theta_cm (deg)");
-   h3103_AngularDistr->GetYaxis()->SetTitle("Counts");
-   h3103_AngularDistr->Draw("E1");  // ← define el marco
-
-   TCanvas* h4780_energy = new TCanvas("h4780_ExEnergy",  "Excitation Energy", 1000, 600);
-   h4780_energy->cd();
-   h4780_ExEnergy->GetXaxis()->SetTitle("Excitation Energy (MeV)");
-   h4780_ExEnergy->GetYaxis()->SetTitle("Counts");
-   h4780_ExEnergy->SetLineColor(kBlue+2);
-   h4780_ExEnergy->SetLineWidth(2);
-   h4780_ExEnergy->Draw();
-  
-   TCanvas* cAng4780 = new TCanvas("cAng4780", "4780keV Angular Distribution", 1000, 600);
-   cAng4780->cd();
-   //gPad->SetLogy();
-   h4780_AngularDistr->Sumw2();
-   h4780_AngularDistr->Scale(0.5);  // ← se aplica correctamente
-   h4780_AngularDistr->SetLineColor(kBlue+2);
-   h4780_AngularDistr->SetLineWidth(2);
-   h4780_AngularDistr->GetXaxis()->SetTitle("#theta_cm (deg)");
-   h4780_AngularDistr->GetYaxis()->SetTitle("Counts");
-   h4780_AngularDistr->Draw("E1");  // ← define el marco
-
+// Excitation Energy Spectrum
+/*TCanvas* h3rd_energy = new TCanvas("h3rd_ExEnergy", "3rd Excited State Excitation Energy", 1000, 600);
+   h3rd_energy->cd();
+   // Assuming your histogram for the 3rd ES is named h3rd_ExEnergy
+   h3rd_ExEnergy->GetXaxis()->SetTitle("Excitation Energy (MeV)");
+   h3rd_ExEnergy->GetYaxis()->SetTitle("Counts");
+   h3rd_ExEnergy->SetLineColor(kRed+1);
+   h3rd_ExEnergy->SetLineWidth(2);
+   h3rd_ExEnergy->Draw();
 */
+// Angular Distribution
+/*TCanvas* cAng3rd = new TCanvas("cAng3rd", "3rd Excited State Angular Distribution", 1000, 600);
+   cAng3rd->cd();
+   gPad->SetLogy();
+   // Assuming your angular distribution histogram for the 3rd ES is named h3rd_AngularDistr
+   h3rd_AngularDistr->Sumw2();
+   h3rd_AngularDistr->Scale(0.5);
+   h3rd_AngularDistr->SetLineColor(kRed+1);
+   h3rd_AngularDistr->SetLineWidth(2);
+   h3rd_AngularDistr->GetXaxis()->SetTitle("#theta_cm (deg)");
+   h3rd_AngularDistr->GetYaxis()->SetTitle("Counts");
+   h3rd_AngularDistr->Draw("E1");*/
+   
+
 //-----------------------------------------------------------------------------------------
-/*auto* g1 = new TGraphErrors("/home/georgina/twofnr/21.groundState", "%lg %lg");
+auto* g1 = new TGraphErrors("/home/georgina/twofnr/21.16C_pt_gs", "%lg %lg");
 double bestScale = 1.0;
 double minError = 1e9;
 
@@ -858,32 +946,33 @@ TCanvas* cAngGS_overlay = new TCanvas("cAngGS_overlay", "Ground State Angular Di
 cAngGS_overlay->cd();
 
 cAngGS_overlay->SetLogy(); 
- // Histograma experimental primero
 hGS_AngularDistr->Sumw2();
-hGS_AngularDistr->SetLineColor(kRed);
+/*hGS_AngularDistr->SetLineColor(kRed);
 hGS_AngularDistr->SetLineWidth(2);
 hGS_AngularDistr->SetMarkerStyle(20);       // marcador redondo sólido
 hGS_AngularDistr->SetMarkerColor(kRed);     // color del marcador
 hGS_AngularDistr->SetMarkerSize(1.2);       // tamaño del marcador
+*/
+hGS_AngularDistr->GetXaxis()->SetRangeUser(20,100);
+hGS_AngularDistr->GetYaxis()->SetRangeUser(0.001, 10);  
 
 hGS_AngularDistr->GetXaxis()->SetTitle("#theta_CM (deg)");
 hGS_AngularDistr->GetYaxis()->SetTitle("d#sigma/d#Omega (mb/sr)");
 hGS_AngularDistr->Scale(bestScale);  // ← se aplica el ajuste automático
 hGS_AngularDistr->Draw("E1");
 
-g1->SetStats(0);
+/*g1->SetStats(0);
 g1->SetLineWidth(2);
 g1->SetMarkerStyle(20);
-g1->GetYaxis()->SetRangeUser(0.1, 1000);  
 g1->SetMarkerColor(kBlack);
-g1->SetLineColor(kBlack);
-g1->Draw("same P L");  // "P" for markers, "L" for line
+g1->SetLineColor(kBlack);*/
+g1->Draw("same L");  // "P" for markers, "L" for line
 
 auto *legend8 = new TLegend(0.75, 0.75, 0.88, 0.88);
-legend8->AddEntry(hGS_AngularDistr, "GS: s_{1/2}^{+}", "p");  // use h740_AngularDistr here
+legend8->AddEntry(hGS_AngularDistr, "GS", "p");  // use h740_AngularDistr here
 
 legend8->AddEntry(g1, "twofnr", "lp");
-legend8->Draw();*/
+legend8->Draw();
 
 //----------------------------------------------------------------------------
 
@@ -963,18 +1052,18 @@ cout << "best scale 1st excited: " << bestScale << endl;*/
    AngDistrCM->GetXaxis()->SetTitle("Angle (deg)");
    AngDistrCM->GetYaxis()->SetTitle("#frac{d#sigma}{d#Omega} (a.u.)");*/
 
-   /*TCanvas *c_ExvsZpos = new TCanvas( "ExvsZpos", "Excitation Energy ", 1600, 800); //vs z position and track length
+   TCanvas *c_ExvsZpos = new TCanvas( "ExvsZpos", "Excitation Energy ", 1600, 800); //vs z position and track length
    c_ExvsZpos->cd();
-   c_ExvsZpos->Divide(3, 1);
+   /*c_ExvsZpos->Divide(3, 1);
    c_ExvsZpos->cd(1);
    ExvsZpos->Draw("zcol");
    ExvsZpos->GetXaxis()->SetTitle("Excitation Energy (MeV)");
    ExvsZpos->GetYaxis()->SetTitle("z (cm)");
    c_ExvsZpos->cd(2);
    ExCorrvsZpos->Draw("zcol");
-   ExCorrvsZpos->GetXaxis()->SetTitle("Corrected excitation Energy (MeV)");
+   ExCorrvsZpos->GetXaxis()->SetTitle("Excitation Energy (MeV)");
    ExCorrvsZpos->GetYaxis()->SetTitle("z (cm)");
-   c_ExvsZpos->cd(3);
+   c_ExvsZpos->cd(3);*/
    ExCorrFitvsZpos->Draw("zcol");
    ExCorrFitvsZpos->GetXaxis()->SetTitle("Corrected excitation Energy (MeV)");
    ExCorrFitvsZpos->GetYaxis()->SetTitle("z (cm)");
@@ -983,8 +1072,9 @@ cout << "best scale 1st excited: " << bestScale << endl;*/
    c_ExvsZposFit->cd();
    c_ExvsZposFit->Divide(2, 1);
    c_ExvsZposFit->cd(1);
+   gPad->SetRightMargin(0.15);
    ExCorrvsZposFit->Draw("zcol");
-   ExCorrvsZposFit->GetXaxis()->SetTitle("Corrected excitation Energy (MeV)");
+   ExCorrvsZposFit->GetXaxis()->SetTitle("Excitation Energy (MeV)");
    ExCorrvsZposFit->GetYaxis()->SetTitle("z (cm)");
    double mfit = -0.00983519;
    double bfit = 0.493186;
@@ -999,8 +1089,10 @@ cout << "best scale 1st excited: " << bestScale << endl;*/
 
    c_ExvsZposFit->cd(2);
    ExCorrFitvsZpos->Draw("zcol");
+   gPad->SetRightMargin(0.2);
    ExCorrFitvsZpos->GetXaxis()->SetTitle("Corrected excitation Energy (MeV)");
-   ExCorrFitvsZpos->GetYaxis()->SetTitle("z (cm)");*/
+   ExCorrFitvsZpos->GetYaxis()->SetTitle("z (cm)");
+   c_ExvsZposFit->Update(); // Update the whole canvas to reflect margin changes
 
    /*ExvsTrackLength->Draw("zcol");
    ExvsTrackLength->GetXaxis()->SetTitle("Excitation Energy (MeV)");SS
