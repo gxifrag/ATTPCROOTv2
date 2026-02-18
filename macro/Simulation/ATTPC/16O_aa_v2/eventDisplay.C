@@ -1,9 +1,9 @@
 void eventDisplay()
 {
    //-----User Settings:-----------------------------------------------
-   TString InputDataFile = "./data/attpcsim.root";
-   TString ParFile = "./data/attpcpar.root";
-   TString OutputDataFile = "./data/attpcsimout.root";
+   TString InputDataFile = "/home/georgina/fair_install/ATTPCROOTv2_KF/macro/Simulation/ATTPC/16O_aa_v2/data/attpcsim_O16_4alpha.root";
+   TString ParFile = "/home/georgina/fair_install/ATTPCROOTv2_KF/macro/Simulation/ATTPC/16O_aa_v2/data/attpcpar_O16_4alpha.root";
+   TString OutputDataFile = "/home/georgina/fair_install/ATTPCROOTv2_KF/macro/Simulation/ATTPC/16O_aa_v2/data/attpcsimout.root";
 
    // -----   Reconstruction run   -------------------------------------------
 

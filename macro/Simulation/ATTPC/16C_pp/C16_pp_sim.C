@@ -1,13 +1,13 @@
-void C16_pp_sim(Int_t nEvents = 10000, TString mcEngine = "TGeant4")
+void C16_pp_sim(Int_t nEvents = 10, TString mcEngine = "TGeant4")
 {
 
    TString dir = getenv("VMCWORKDIR");
 
    // Output file name
-   TString outFile = "./data/attpcsim.root";
+   TString outFile = "./data/attpcsim_Bfield.root";
 
    // Parameter file name
-   TString parFile = "./data/attpcpar.root";
+   TString parFile = "./data/attpcpar_Bfield.root";
 
    // -----   Timer   --------------------------------------------------------
    TStopwatch timer;
@@ -40,7 +40,7 @@ void C16_pp_sim(Int_t nEvents = 10000, TString mcEngine = "TGeant4")
    run->AddModule(pipe);*/
 
    FairDetector *ATTPC = new AtTpc("ATTPC", kTRUE);
-   ATTPC->SetGeometryFileName("ATTPC_H300torr.root");
+   ATTPC->SetGeometryFileName("/home/georgina/fair_install/ATTPCROOTv2_KF/geometry/ATTPC_H300torr.root");
    // ATTPC->SetModifyGeometry(kTRUE);
    run->AddModule(ATTPC);
 
@@ -66,10 +66,10 @@ void C16_pp_sim(Int_t nEvents = 10000, TString mcEngine = "TGeant4")
                  // maximum multiplicity has been set to 10 particles.
    Double_t px = 0.000 / a; // X-Momentum / per nucleon!!!!!!
    Double_t py = 0.000 / a; // Y-Momentum / per nucleon!!!!!!
-   Double_t pz = 2.297 / a; // Z-Momentum / per nucleon!!!!!!
+   Double_t pz = 2.297 / a; //GeV/c: Z-Momentum / per nucleon!!!!!! 11MeV/u
    Double_t BExcEner = 0.0;
    Double_t Bmass = 16.014701;
-   Double_t NomEnergy = 0;
+   Double_t NomEnergy = 5.7151; // Nominal Energy in MeV/u
 
    AtTPCIonGenerator *ionGen = new AtTPCIonGenerator("Ion", z, a, q, m, px, py, pz, BExcEner, Bmass, NomEnergy);
    ionGen->SetSpotRadius(0, -100, 0);
@@ -97,7 +97,8 @@ void C16_pp_sim(Int_t nEvents = 10000, TString mcEngine = "TGeant4")
 
    mult = 4; // Number of Nuclei involved in the reaction (Should be always 4) THIS DEFINITION IS MANDATORY (and the
              // number of particles must be the same)
-   ResEner = 40.0; // MeV
+  // ResEner = 40.0; // MeV
+  ResEner = 11.0 * a; // MeV
 
    // ---- Beam ----
    Zp.push_back(z); // 40Ar TRACKID=0
@@ -139,8 +140,8 @@ void C16_pp_sim(Int_t nEvents = 10000, TString mcEngine = "TGeant4")
    Mass.push_back(1.0078250322); // uma
    ExE.push_back(0.0);           // In MeV
 
-   Double_t ThetaMinCMS = 20.0;
-   Double_t ThetaMaxCMS = 20.0;
+   Double_t ThetaMinCMS = 0.0;
+   Double_t ThetaMaxCMS = 180.0;
 
    AtTPC2Body *TwoBody =
       new AtTPC2Body("TwoBody", &Zp, &Ap, &Qp, mult, &Pxp, &Pyp, &Pzp, &Mass, &ExE, ResEner, ThetaMinCMS, ThetaMaxCMS);

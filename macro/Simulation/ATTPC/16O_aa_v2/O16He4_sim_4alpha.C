@@ -1,13 +1,13 @@
-void O16He4_sim_4alpha(Int_t nEvents = 1000, TString mcEngine = "TGeant4")
+void O16He4_sim_4alpha(Int_t nEvents = 10, TString mcEngine = "TGeant4")
 {
 
    TString dir = getenv("VMCWORKDIR");
 
    // Output file name
-   TString outFile = "./data/attpcsim_O16_4alpha.root";
+   TString outFile = "/home/georgina/fair_install/ATTPCROOTv2_KF/macro/Simulation/ATTPC/16O_aa_v2/data/attpcsim_O16_4alpha.root";
 
    // Parameter file name
-   TString parFile = "./data/attpcpar_O16_4alpha.root";
+   TString parFile = "/home/georgina/fair_install/ATTPCROOTv2_KF/macro/Simulation/ATTPC/16O_aa_v2/data/attpcpar_O16_4alpha.root";
 
    // -----   Timer   --------------------------------------------------------
    TStopwatch timer;
@@ -38,7 +38,7 @@ void O16He4_sim_4alpha(Int_t nEvents = 1000, TString mcEngine = "TGeant4")
    run->AddModule(pipe);*/
 
    FairDetector *ATTPC = new AtTpc("ATTPC", kTRUE);
-   ATTPC->SetGeometryFileName("ATTPC_He600torr_v2.root");
+   ATTPC->SetGeometryFileName("/home/georgina/fair_install/ATTPCROOTv2_KF/geometry/ATTPC_He1bar_v2.root"); //ATTPC_He600torr_v2.root");
    // ATTPC->SetModifyGeometry(kTRUE);
    run->AddModule(ATTPC);
 
@@ -67,7 +67,7 @@ void O16He4_sim_4alpha(Int_t nEvents = 1000, TString mcEngine = "TGeant4")
    Double_t pz = 2.189 / a; // Z-Momentum / per nucleon!!!!!!
    Double_t BExcEner = 0.0;
    Double_t Bmass = 15.99491461956;
-   Double_t NomEnergy = 40.0;
+   Double_t NomEnergy = 40.0;//
 
    AtTPCIonGenerator *ionGen = new AtTPCIonGenerator("Ion", z, a, q, m, px, py, pz, BExcEner, Bmass, NomEnergy);
    ionGen->SetSpotRadius(0, -100, 0);
@@ -77,7 +77,7 @@ void O16He4_sim_4alpha(Int_t nEvents = 1000, TString mcEngine = "TGeant4")
 
    // primGen->SetBeam(1,1,0,0); //These parameters change the position of the vertex of every track
    // added to the Primary Generator
-   // primGen->SetTarget(30,0);
+    primGen->SetTarget(50,50); // (30,0)
 
    // Variables for 2-Body kinematics reaction
    std::vector<Int_t> Zp;      // Zp
@@ -95,10 +95,10 @@ void O16He4_sim_4alpha(Int_t nEvents = 1000, TString mcEngine = "TGeant4")
 
    mult = 4; // Number of Nuclei involved in the reaction (Should be always 4) THIS DEFINITION IS MANDATORY (and the
              // number of particles must be the same)
-   ResEner = 40.0; // MeV
+   ResEner = 640.; // MeV
 
    // ---- Beam ----
-   Zp.push_back(z); // 40Ar TRACKID=0
+   Zp.push_back(z); // 
    Ap.push_back(a); //
    Qp.push_back(q);
    Pxp.push_back(px);
@@ -142,7 +142,7 @@ void O16He4_sim_4alpha(Int_t nEvents = 1000, TString mcEngine = "TGeant4")
 
    AtTPC2Body *TwoBody =
       new AtTPC2Body("TwoBody", &Zp, &Ap, &Qp, mult, &Pxp, &Pyp, &Pzp, &Mass, &ExE, ResEner, ThetaMinCMS, ThetaMaxCMS);
-   TwoBody->SetSequentialDecay(kTRUE);
+   TwoBody->SetSequentialDecay(kFALSE); //TRUE);
    primGen->AddGenerator(TwoBody);
 
    // Setting decay
@@ -171,7 +171,7 @@ void O16He4_sim_4alpha(Int_t nEvents = 1000, TString mcEngine = "TGeant4")
    aB = 16;
    massDecayB = 15.99491461956;
    massTarget = 0.0;
-   exEnergy = 0.0; // NB: Set to zero for sequential decay
+   exEnergy = 15.0; // NB: Set to zero for sequential decay, there was a 0.0 before but it is not correct since the decay will happen from an excited state of 16O
 
    for (auto i = 0; i < 4; ++i) { // 4 alpha particles
       zDecay.at(0).push_back(2);
@@ -182,7 +182,7 @@ void O16He4_sim_4alpha(Int_t nEvents = 1000, TString mcEngine = "TGeant4")
 
    AtTPCIonDecay *decay =
       new AtTPCIonDecay(&zDecay, &aDecay, &qDecay, &massDecay, zB, aB, massDecayB, massTarget, exEnergy, &SepEne);
-   decay->SetSequentialDecay(kTRUE);
+   decay->SetSequentialDecay(kFALSE); //Ktrue
    primGen->AddGenerator(decay);
 
    run->SetGenerator(primGen);

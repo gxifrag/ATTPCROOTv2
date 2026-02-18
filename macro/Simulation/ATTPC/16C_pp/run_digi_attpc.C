@@ -2,7 +2,7 @@ bool reduceFunc(AtRawEvent *evt);
 
 void run_digi_attpc()
 {
-   TString inOutDir = "./data/";
+   TString inOutDir = "/home/georgina/fair_install/ATTPCROOTv2_KF/macro/Simulation/ATTPC/16C_pp/data/";
    TString outputFile = inOutDir + "output_digi.root";
    TString scriptfile = "Lookup20150611.xml";
    TString paramFile = "ATTPC.e20009_sim.par";
@@ -23,7 +23,8 @@ void run_digi_attpc()
 
    // __ Run ____________________________________________
    FairRunAna *fRun = new FairRunAna();
-   FairFileSource *source = new FairFileSource(mcFile);
+   //leer eventos de un ROOT file
+   FairFileSource *source = new FairFileSource(mcFile); 
    fRun->SetSource(source);
    fRun->SetOutputFile(outputFile);
 
@@ -36,16 +37,17 @@ void run_digi_attpc()
    auto mapping = std::make_shared<AtTpcMap>();
    mapping->ParseXMLMap(mapParFile.Data());
    mapping->GeneratePadPlane();
-   mapping->ParseInhibitMap("./data/inhibit.txt", AtMap::InhibitType::kTotal);
+   //mapping->ParseInhibitMap("./data/inhibit.txt", AtMap::InhibitType::kTotal);
 
-   AtClusterizeTask *clusterizer = new AtClusterizeTask();
+   //Clusterize → Pulse → PSA → PRA
+   AtClusterizeTask *clusterizer = new AtClusterizeTask(); //agrupa señales vecinas
    clusterizer->SetPersistence(kFALSE);
 
-   AtPulseTask *pulse = new AtPulseTask(std::make_shared<AtPulse>(mapping));
+   AtPulseTask *pulse = new AtPulseTask(std::make_shared<AtPulse>(mapping)); //convierte las señales en pulsos físicos
    pulse->SetPersistence(kTRUE);
    pulse->SetSaveMCInfo();
 
-   auto psa = std::make_unique<AtPSAMax>();
+   auto psa = std::make_unique<AtPSAMax>(); //Extrae posición/tiempo/carga → hits.
    psa->SetThreshold(0);
 
    // Create PSA task
@@ -53,7 +55,8 @@ void run_digi_attpc()
    psaTask->SetPersistence(kTRUE);
 
    AtPRAtask *praTask = new AtPRAtask();
-   praTask->SetPersistence(kTRUE);
+   praTask->SetPersistence(kTRUE); //Reconstrucción de trayectorias.
+   
 
    fRun->AddTask(clusterizer);
    fRun->AddTask(pulse);
@@ -61,11 +64,13 @@ void run_digi_attpc()
    fRun->AddTask(praTask);
 
    //  __ Init and run ___________________________________
+   //loop de eventos
    fRun->Init();
 
    timer.Start();
-   fRun->Run(0, 10000);
+   fRun->Run(0, 1000);
    timer.Stop();
+
 
    std::cout << std::endl << std::endl;
    std::cout << "Macro finished succesfully." << std::endl << std::endl;
@@ -79,7 +84,7 @@ void run_digi_attpc()
    // ------------------------------------------------------------------------
 }
 
-bool reduceFunc(AtRawEvent *evt)
+bool reduceFunc(AtRawEvent *evt) //se evalua justo antes de ejecutar las tasks
 {
    return (evt->GetNumPads() > 0) && evt->IsGood();
 }

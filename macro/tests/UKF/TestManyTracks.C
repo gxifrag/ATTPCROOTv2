@@ -2,9 +2,11 @@ std::string getEnergyPath()
 {
    auto env = std::getenv("VMCWORKDIR");
    if (env == nullptr) {
-      return "../../resources/energy_loss/HinH.txt"; // Default path assuming cwd is build/AtTools
+      //return "../../resources/energy_loss/HinH_better.txt"; // Default path assuming cwd is build/AtTools
+      return "resources/energy_loss/Carbon_H.txt"; // Default path assuming cwd is project root
    }
-   return std::string(env) + "/resources/energy_loss/HinH.txt"; // Use environment variable
+   //return std::string(env) + "/resources/energy_loss/HinH_better.txt"; // Use environment variable
+   return std::string(env) + "/resources/energy_loss/Carbon_H.txt"; // Use environment variable
 }
 using ROOT::Math::XYZPoint;
 using ROOT::Math::XYZVector;
@@ -54,9 +56,13 @@ void TestManyTracks(int n, double bias = 0)
    LoadHits();
    CreateUKF();
 
-   XYZPoint fTruePos(-3.40046e-04, -1.49863e-04, 1.0018);
+   /*XYZPoint fTruePos(-3.40046e-04, -1.49863e-04, 1.0018);
    XYZVector fTrueMom(0.00935463, -0.0454279, 0.00826042);
-   fTrueMom *= 1e3;
+   fTrueMom *= 1e3;*/
+
+   XYZPoint fTruePos(x_sim[0], y_sim[0], z_sim[0]); // Convert to mm
+   XYZVector fTrueMom(8.04337, 90.5095, 35.3257); // Start momentum in MeV/c
+
    double fSigmaMom = fTrueMom.R() * sigma_mom_sample;
 
    hMom = new TH1F("hMom", "Reconstructed Momentum (MeV/c)", 100, fTrueMom.R() - 4 * fSigmaMom,
@@ -72,6 +78,8 @@ void TestManyTracks(int n, double bias = 0)
          std::cout << "On iteration " << i << std::endl;
 
       double pSampled = gRandom->Gaus(fTrueMom.R(), sigma_mom_sample * fTrueMom.R());
+
+      cout << "pSampled before bias: " << pSampled << endl;
       pSampled += bias;
       hMomSampled->Fill(pSampled);
 
@@ -115,7 +123,8 @@ void LoadHits()
    if (x_sim.size() != 0)
       return;
    Eloss_sim.clear();
-   std::ifstream infile("hits.txt");
+   //std::ifstream infile("hits.txt");
+   std::ifstream infile("/home/georgina/fair_install/ATTPCROOTv2_KF/macro/tests/UKF/hits_attpcsim_all_events_momentum.txt");
    double xi, yi, zi, Ei;
    int i = 0;
    double eLoss = 0;
@@ -128,7 +137,7 @@ void LoadHits()
    z_sim.push_back(zi * 10); // Convert to mm
 
    while (infile >> xi >> yi >> zi >> Ei) {
-      // Ei *= 1e3; // Convert to MeV
+       Ei *= 1e3; // Convert to MeV
 
       if (++i % pointsToCluster != 0) {
          eLoss += Ei;

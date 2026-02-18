@@ -2,9 +2,9 @@ std::string getEnergyPath()
 {
    auto env = std::getenv("VMCWORKDIR");
    if (env == nullptr) {
-      return "../../resources/energy_loss/HinH.txt"; // Default path assuming cwd is build/AtTools
+      return "../../resources/energy_loss/HinH_better.txt"; // Default path assuming cwd is build/AtTools
    }
-   return std::string(env) + "/resources/energy_loss/HinH.txt"; // Use environment variable
+   return std::string(env) + "/resources/energy_loss/HinH_better.txt"; // Use environment variable
 }
 
 const double mass_p = 938.272;           // Mass of proton in MeV/c^2
@@ -19,7 +19,7 @@ void AtPropagator()
    std::vector<double> x, y, z;
    std::vector<double> x2, y2, z2;
 
-   std::ifstream infile("hits.txt");
+   std::ifstream infile("test_Bfield_1ptrack.txt");
    double xi, yi, zi, Ei;
    while (infile >> xi >> yi >> zi >> Ei) {
       x.push_back(xi * 10);
@@ -37,7 +37,7 @@ void AtPropagator()
    auto elossModel2 = std::make_unique<AtTools::AtELossCATIMA>(3.553e-5);
    elossModel2->SetProjectile(1, 1, 1);
    std::vector<std::tuple<int, int, int>> mat;
-   mat.push_back({1, 1, 1});
+   mat.push_back({1, 1, 0});
    elossModel2->SetMaterial(mat);
 
    AtTools::AtPropagator propagator(charge, mass, std::move(elossModel2));
@@ -45,9 +45,11 @@ void AtPropagator()
    propagator.SetBField({0, 0, 2.85}); // Magnetic field
    AtTools::AtRK4Stepper stepper;
 
-   XYZPoint startPos(-3.40046e-05, -1.49863e-05, 0.10018); // Start position in cm
+   //XYZPoint startPos(-3.40046e-05, -1.49863e-05, 0.10018); // Start position in cm
+   XYZPoint startPos(0.00171786, 0.00212915, 11.7002); // Start position in cm
    startPos *= 10;                                         // Convert to mm
-   XYZVector startMom(0.00935463, -0.0454279, 0.00826042); // Start momentum in GeV/c
+   //XYZVector startMom(0.00935463, -0.0454279, 0.00826042); // Start momentum in GeV/c
+   XYZVector startMom(-0.112081,-0.0750623,0.132321); // Start momentum in GeV/c
    startMom *= 1e3;                                        // Convert to MeV/c
 
    propagator.SetState(startPos, startMom);

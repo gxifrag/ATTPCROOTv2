@@ -164,6 +164,12 @@ void AtPRAtask::Exec(Option_t *option)
 
    std::cout << "  -I- AtPRAtask -  Event Number :  " << event.GetEventID() << "\n";
 
+   // DEBUG: cuántos hits tiene este evento
+std::cout << "[DEBUG] Event " << event.GetEventID()
+          << " has " << hitArray.size()
+          << " hits" << std::endl;
+
+
    try {
 
       if (hitArray.size() > fMinNumHits && hitArray.size() < fMaxNumHits) {

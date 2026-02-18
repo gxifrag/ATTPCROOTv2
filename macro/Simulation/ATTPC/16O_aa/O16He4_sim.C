@@ -16,7 +16,7 @@ void O16He4_sim(Int_t nEvents = 1000, TString mcEngine = "TGeant4")
 
   //gSystem->Load("libAtGen.so");
 
-  AtVertexPropagator* vertex_prop = new AtVertexPropagator();
+  //AtVertexPropagator* vertex_prop = new AtVertexPropagator();
 
 
   // -----   Create simulation run   ----------------------------------------
@@ -44,7 +44,7 @@ void O16He4_sim(Int_t nEvents = 1000, TString mcEngine = "TGeant4")
   run->AddModule(pipe);*/
 
   FairDetector* ATTPC = new AtTpc("ATTPC", kTRUE);
-  ATTPC->SetGeometryFileName("ATTPC_He1bar_v2.root");
+  ATTPC->SetGeometryFileName("/home/georgina/fair_install/ATTPCROOTv2_KF/geometry/ATTPC_He1bar_v2.root");
   //ATTPC->SetModifyGeometry(kTRUE);
   run->AddModule(ATTPC);
 
