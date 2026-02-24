@@ -132,7 +132,7 @@ void runKalman(const std::vector<double>& hX, const std::vector<double>& hY, con
 
    TMatrixD cov_meas(3, 3); cov_meas.UnitMatrix(); cov_meas *= (sigma_pos * sigma_pos);
 
-   // 4. Bucle de Hits (Usa hX.size() passat per argument)
+   //Bucle de Hits
    ROOT::Math::XYZVector lastMom = startMom;
    for (size_t i = 1; i < hX.size(); ++i) {
       if (i % 100 == 0) { 
@@ -163,7 +163,7 @@ void runKalman(const std::vector<double>& hX, const std::vector<double>& hY, con
       sigmap2.push_back(std::sqrt(currentCov(3, 3)));
    }
 
-   // 5. Smoothing
+   // Smoothing
    ukf.smoothUKF();
    auto smoothedStates = ukf.GetSmoothedStates();
    auto smoothedCov = ukf.GetSmoothedCovariances();
@@ -174,8 +174,6 @@ void runKalman(const std::vector<double>& hX, const std::vector<double>& hY, con
       zSmooth.push_back(smoothedStates[i][2]);
       pSmooth.push_back(smoothedStates[i][3]);
    }
-
-   // 6. Resum de resultats (el bloc que t'agrada per a la captura)
    double E_sim = Kinematics::KE(beginMom, mass);
    double E_rec = Kinematics::KE(smoothedStates[0][3], mass);
    double sumElossMC = std::accumulate(hEloss.begin(), hEloss.end(), 0.0);

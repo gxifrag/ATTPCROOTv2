@@ -1,9 +1,9 @@
 void eventDisplay()
 {
    //-----User Settings:-----------------------------------------------
-   TString InputDataFile = "/home/georgina/fair_install/ATTPCROOTv2_KF/macro/Simulation/ATTPC/pions/data/attpcsim_Bfield.root";
-   TString ParFile = "/home/georgina/fair_install/ATTPCROOTv2_KF/macro/Simulation/ATTPC/pions/data/attpcpar_Bfield.root";
-   TString OutputDataFile = "/home/georgina/fair_install/ATTPCROOTv2_KF/macro/Simulation/ATTPC/pions/data/attpctest_Bfield.root";
+   TString InputDataFile = "/home/georgina/fair_install/ATTPCROOTv2_KF/macro/Simulation/ATTPC/protons/data/protonssim_2T_H300torr_50MeV.root";
+   TString ParFile = "/home/georgina/fair_install/ATTPCROOTv2_KF/macro/Simulation/ATTPC/protons/data/protonspar_2T_H300torr_50MeV.root";
+   TString OutputDataFile = "/home/georgina/fair_install/ATTPCROOTv2_KF/macro/Simulation/ATTPC/protons/data/protonsctest_2T_H300torr_50MeV.root";
 
 
 

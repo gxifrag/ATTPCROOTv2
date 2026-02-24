@@ -52,7 +52,7 @@ void Config()
    /// create the Specific stack
    AtStack *stack = new AtStack(1000);
    // stack->StoreSecondaries(kTRUE);
-   // stack->SetMinPoints(0);
+   stack->SetMinPoints(0);
    geant4->SetStack(stack);
 
    /// Customise Geant4 setting
@@ -63,6 +63,6 @@ void Config()
    cout << " -I g4Config() using g4conf  macro: " << configm1 << endl;
 
    // set geant4 specific stuff
-   geant4->SetMaxNStep(5E3); // default is 30000
+   geant4->SetMaxNStep(30000); // default is 30000
    geant4->ProcessGeantMacro(configm1.Data());
 }

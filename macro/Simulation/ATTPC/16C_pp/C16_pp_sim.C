@@ -1,4 +1,4 @@
-void C16_pp_sim(Int_t nEvents = 10, TString mcEngine = "TGeant4")
+void C16_pp_sim(Int_t nEvents = 100, TString mcEngine = "TGeant4")
 {
 
    TString dir = getenv("VMCWORKDIR");
@@ -58,6 +58,7 @@ void C16_pp_sim(Int_t nEvents = 10, TString mcEngine = "TGeant4")
    // -----   Create PrimaryGenerator   --------------------------------------
    FairPrimaryGenerator *primGen = new FairPrimaryGenerator();
 
+   
    // Beam Information
    Int_t z = 6;  // Atomic number
    Int_t a = 16; // Mass number
@@ -69,17 +70,41 @@ void C16_pp_sim(Int_t nEvents = 10, TString mcEngine = "TGeant4")
    Double_t pz = 2.297 / a; //GeV/c: Z-Momentum / per nucleon!!!!!! 11MeV/u
    Double_t BExcEner = 0.0;
    Double_t Bmass = 16.014701;
-   Double_t NomEnergy = 5.7151; // Nominal Energy in MeV/u
+   Double_t NomEnergy = 5.7151; // Nominal Energy in GeV/u
 
    AtTPCIonGenerator *ionGen = new AtTPCIonGenerator("Ion", z, a, q, m, px, py, pz, BExcEner, Bmass, NomEnergy);
    ionGen->SetSpotRadius(0, -100, 0);
-   // add the ion generator
-
    primGen->AddGenerator(ionGen);
-
-   // primGen->SetBeam(1,1,0,0); //These parameters change the position of the vertex of every track added to the
+   primGen->SetBeam(1,1,0,0); //These parameters change the position of the vertex of every track added to the
    // Primary Generator
-   //  primGen->SetTarget(30,0);
+   primGen->SetTarget(30,0);
+   
+
+// Beam Information - 25F (Fluorine-25)
+   /*Int_t z = 9;   // Atomic number (Flúor)
+   Int_t a = 25;  // Mass number (Isótopo 25)
+   Int_t q = 0;   // Charge State (0 si es neutro, 9 si es totalmente ionizado. Pon lo mismo que usabas para el Carbono)
+   Int_t m = 1;   // Multiplicity
+
+   // Kinematics: Calculado para 11 MeV/u (como tu ejemplo original)
+   // p_nucleon ≈ 0.144 GeV/c para 11 MeV/u
+   Double_t px = 0.000; 
+   Double_t py = 0.000; 
+   Double_t pz = 0.144; // GeV/c: Z-Momentum por nucleón
+   
+   Double_t BExcEner = 0.0;
+   
+   // Masa del 25F en u (Atomic Mass Units)
+   // Valor aproximado de tablas nucleares (AME2020)
+   Double_t Bmass = 25.01846; 
+   
+   // Energía Nominal Total en GeV
+   // Si es 11 MeV/u -> 25 * 0.011 = 0.275 GeV
+   Double_t NomEnergy = 0.275; 
+
+   // Generador
+   AtTPCIonGenerator *ionGen = new AtTPCIonGenerator("Ion", z, a, q, m, px, py, pz, BExcEner, Bmass, NomEnergy);
+   ionGen->SetSpotRadius(0, -100, 0);*/
 
    // Variables for 2-Body kinematics reaction
    std::vector<Int_t> Zp;      // Zp

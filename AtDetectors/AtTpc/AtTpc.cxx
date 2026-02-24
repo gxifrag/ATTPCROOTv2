@@ -171,6 +171,7 @@ bool AtTpc::reactionOccursHere()
 }
 Bool_t AtTpc::ProcessHits(FairVolume *vol)
 {
+   //std::cout << "Processing hit in volume: " << fVolName << std::endl;
    /** This method is called from the MC stepping */
 
    auto *stack = dynamic_cast<AtStack *>(gMC->GetStack());
@@ -178,15 +179,28 @@ Bool_t AtTpc::ProcessHits(FairVolume *vol)
    fVolumeID = vol->getMCid();
    fDetCopyID = vol->getCopyNo();
 
+   
+
    if (gMC->IsTrackEntering())
       trackEnteringVolume();
 
+         
+
+
    getTrackParametersFromMC();
+
+
+   //std::cout << gMC->IsTrackExiting() << " " << gMC->IsTrackStop() << " " << gMC->IsTrackDisappeared() << std::endl;
+
 
    if (gMC->IsTrackExiting() || gMC->IsTrackStop() || gMC->IsTrackDisappeared())
       getTrackParametersWhileExiting();
 
+
+
    addHit();
+
+   
 
    // Reaction Occurs here
    if (reactionOccursHere())
