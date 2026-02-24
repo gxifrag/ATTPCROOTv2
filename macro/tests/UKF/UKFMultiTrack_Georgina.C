@@ -1,9 +1,10 @@
 struct UKFResult {
-    int trackID;
-    double p_rec;      // Momento reconstruido [MeV/c]
-    double E_rec;      // Energía cinética reconstruida [MeV]
-    double sumEloss;   // Pérdida de energía total [MeV]
-    double p_true;     // Momento inicial de la simulación (para comparar luego)
+   int eventID;
+   int trackID;
+   double p_rec;      // Momento reconstruido [MeV/c]
+   double E_rec;      // Energía cinética reconstruida [MeV]
+   double sumEloss;   // Pérdida de energía total [MeV]
+   double p_true;     // Momento inicial de la simulación (para comparar luego)
 };
 
 std::string getEnergyPath()
@@ -16,6 +17,7 @@ std::string getEnergyPath()
    //return std::string(env) + "/resources/energy_loss/HinH_better.txt"; // Use environment variable
    return std::string(env) + "/resources/energy_loss/HinH.txt"; // Use environment variable
 }
+
 const double mass_p = 938.272;           // Mass of proton in MeV/c^2
 const double charge_p = 1.602176634e-19; // Charge of proton
 
@@ -30,32 +32,22 @@ std::map<int, ROOT::Math::XYZVector> initialMom;
 
 int pointsToCluster= 5; 
 
-void LoadHitsROOT(const char* filename = "/home/georgina/fair_install/ATTPCROOTv2_KF/macro/Simulation/ATTPC/protons/data/protonssim_2T_H300torr_70MeV.root", int targetEvent = 80) 
+void LoadHitsROOT(TTree* tree, TClonesArray* tpcPoints, int targetEvent)
 {
     posX.clear(); 
     posY.clear(); 
     posZ.clear(); 
     Eloss.clear();
+    initialMom.clear();
 
-   TFile* file = TFile::Open(filename, "READ");
-   if (!file || file->IsZombie()) {
-        std::cerr << "ERROR: No se pudo abrir el archivo ROOT " << filename << std::endl;
-        return;
-   }
-
-   TTree* tree = (TTree*)file->Get("cbmsim");
-    if (!tree) return;
-
-   TClonesArray* tpcPoints = new TClonesArray("AtMCPoint");
-   tree->SetBranchAddress("AtTpcPoint", &tpcPoints);
+    cout << "Loading hits for event " << targetEvent << "..." << endl;
 
    if (targetEvent >= tree->GetEntries()) return;
 
+   tpcPoints->Clear("C");
    tree->GetEntry(targetEvent);
-
    int nPoints = tpcPoints->GetEntriesFast();
     
-    // Necesitamos llevar la cuenta del clustering de forma INDEPENDIENTE para cada track
    std::map<int, int> hitCount;           
    std::map<int, double> currentELoss;
 
@@ -82,6 +74,8 @@ void LoadHitsROOT(const char* filename = "/home/georgina/fair_install/ATTPCROOTv
             double py = point->GetPy() * 1000.0;
             double pz = point->GetPz() * 1000.0;
             initialMom[trackID] = ROOT::Math::XYZVector(px, py, pz);
+            cout << "eventID: " << targetEvent << " - TrackID: " << trackID 
+                 << " - Initial Momentum (MeV/c): (" << px << ", " << py << ", " << pz << ")" << endl;
 
             
             currentELoss[trackID] = Ei;
@@ -120,14 +114,10 @@ void LoadHitsROOT(const char* filename = "/home/georgina/fair_install/ATTPCROOTv
                   << vectorHits.size() << " clustered hits saved.\n";
     }
     std::cout << "======================================================\n\n";
-
-    // Final cleanup (these lines should already be at the end of your function)
-    file->Close();
-    delete tpcPoints;
 }
 
-void runKalman(const std::vector<double>& hX, const std::vector<double>& hY, const std::vector<double>& hZ, const std::vector<double>& hEloss,
-                double mass, double charge, int Z, int A, ROOT::Math::XYZVector initialMom, int trackID)
+UKFResult runKalman(const std::vector<double>& hX, const std::vector<double>& hY, const std::vector<double>& hZ, const std::vector<double>& hEloss,
+                double mass, double charge, int Z, int A, ROOT::Math::XYZVector initialMom, int trackID, bool drawPlots = true)
 {
    using namespace AtTools;
 
@@ -144,7 +134,7 @@ void runKalman(const std::vector<double>& hX, const std::vector<double>& hY, con
    // 2. Propagator i UKF
    AtTools::AtPropagator propagator(charge, mass, std::move(elossModel));
    propagator.SetEField({0, 0, 0});
-   propagator.SetBField({0, 0, 2.00});//2.85 T
+   propagator.SetBField({0, 0, 3.});//2.85 T
    auto stepper = std::make_unique<AtTools::AtRK4Stepper>();
    kf::TrackFitterUKF ukf(std::move(propagator), std::move(stepper));
 
@@ -166,23 +156,43 @@ void runKalman(const std::vector<double>& hX, const std::vector<double>& hY, con
    TMatrixD cov_meas(3, 3); cov_meas.UnitMatrix(); cov_meas *= (sigma_pos * sigma_pos);
 
    // 4. Bucle de Hits (Usa hX.size() passat per argument)
+
    ROOT::Math::XYZVector lastMom = startMom;
    for (size_t i = 1; i < hX.size(); ++i) {
-      if (i % 100 == 0) { 
+      if (i % 200 == 0) { 
          std::cout << "Processing hit " << i << " of " << hX.size() << std::endl; 
       }
     
       XYZPoint point(hX[i], hY[i], hZ[i]);
+
+      double currentKE = Kinematics::KE(lastMom, mass);
+      
+      if (currentKE < 0.05) { 
+          std::cout << "[DEBUG] Energia critica (" << currentKE << " MeV). Deteniendo propagacion para evitar cuelgue." << std::endl;
+          break; 
+      }
       ukf.SetMeasCov(cov_meas);
-      ukf.predictUKF(point);
-      ukf.correctUKF(point);
+
+      try {
+          ukf.predictUKF(point);
+          ukf.correctUKF(point);
+      } catch (...) {
+          // Si la matemática explota aquí, salimos del bucle limpiamente
+          break; 
+      }
 
       auto state = ukf.vecX();
+      if (state.size() < 6) break; //condition to avoid crash if UKF fails and stops updating states (we will check this later in the smoothed states)
+
       auto currentCov = ukf.matP();
       ROOT::Math::XYZPoint pos(state[0], state[1], state[2]);
 
       ROOT::Math::Polar3DVector momPolar(state[3], state[4], state[5]);
       ROOT::Math::XYZVector mom(momPolar);
+
+      if (std::isnan(mom.R()) || mom.R() < 1e-4 || std::isnan(currentCov(3,3)) || currentCov(3,3) < 0) {
+          break; // Salimos del bucle inmediatamente, la partícula no da para más
+      }
 
       double KE_in = Kinematics::KE(lastMom, mass);
       double KE_out = Kinematics::KE(mom, mass);
@@ -199,11 +209,43 @@ void runKalman(const std::vector<double>& hX, const std::vector<double>& hY, con
                              std::pow(pos.Y() - point.Y(), 2) + 
                              std::pow(pos.Z() - point.Z(), 2));
       residual.push_back(res);
+   } 
+   
+   if (x2.size() < 4) {
+       UKFResult failResult;
+       failResult.trackID = trackID;
+       failResult.p_rec = -999.0;
+       failResult.E_rec = -999.0;
+       failResult.sumEloss = -999.0;
+       failResult.p_true = initialMom.R();
+       return failResult;
    }
 
-   // 5. Smoothing
-   ukf.smoothUKF();
+   // Smoothing
+    try {
+        ukf.smoothUKF();
+    } catch (...) {
+        std::cout << "[DEBUG] Abortado: Fallo matematico en el Smoothing." << std::endl;
+        UKFResult failResult; failResult.p_rec = -999.0; return failResult;
+    }
    auto smoothedStates = ukf.GetSmoothedStates();
+
+   if (smoothedStates.empty()) {
+       // Si no pasamos drawPlots, silenciamos el print para no inundar la terminal
+       if (drawPlots) {
+           std::cout << "[WARNING] Track " << trackID << " abortada por el UKF (se detuvo antes de tiempo)." << std::endl;
+       }
+       
+       // Devolvemos un resultado "falso" con valores -999 para identificar el fallo
+       UKFResult failResult;
+       failResult.trackID = trackID;
+       failResult.p_rec = -999.0; 
+       failResult.E_rec = -999.0;
+       failResult.sumEloss = -999.0;
+       failResult.p_true = initialMom.R();
+       return failResult; // Salimos de la función inmediatamente
+   }
+
    auto smoothedCov = ukf.GetSmoothedCovariances();
 
    for (size_t i = 0; i < smoothedStates.size(); ++i) {
@@ -227,7 +269,8 @@ void runKalman(const std::vector<double>& hX, const std::vector<double>& hY, con
 
    // 6. Resum de resultats (el bloc que t'agrada per a la captura)
    double E_sim = Kinematics::KE(beginMom, mass);
-   double E_rec = Kinematics::KE(smoothedStates[0][3], mass);
+   double p_reco_val = smoothedStates[0][3];
+   double E_rec_val = Kinematics::KE(p_reco_val, mass);
    double sumElossMC = std::accumulate(hEloss.begin(), hEloss.end(), 0.0);
    double sumElossUKF = std::accumulate(Eloss2.begin(), Eloss2.end(), 0.0);
 
@@ -235,7 +278,9 @@ void runKalman(const std::vector<double>& hX, const std::vector<double>& hY, con
    // PLOTS: MULTIPLOT POR TRACK
    // =========================================================================
    
-   // Creamos nombres únicos para los objetos de ROOT usando el trackID
+   if (drawPlots==true) 
+   {
+   gROOT->cd();
    TString canvasName = Form("c_Track%d", trackID);
    TString canvasTitle = Form("UKF Results - Track %d", trackID);
 
@@ -383,8 +428,9 @@ void runKalman(const std::vector<double>& hX, const std::vector<double>& hY, con
 
    // Actualizamos el canvas para que dibuje todo
    cAll->Update();
+  // cAll->SaveAs(Form("UKF_Plot_Track_%d.png", trackID));
 
-   //------------------------------------------------------------------------------------------
+   } //if drawPlots
 
    // --- RESUMEN FINAL POR TERMINAL ---
    std::cout << "\n\n" << std::string(65, '=') << std::endl;
@@ -398,8 +444,8 @@ void runKalman(const std::vector<double>& hX, const std::vector<double>& hY, con
 
    std::printf("  KINETIC ENERGY (T):\n");
    std::printf("    - Simulated (MC):       %10.4f MeV\n", E_sim);
-   std::printf("    - Reconstructed (UKF):  %10.4f MeV\n", E_rec);
-   std::printf("    - Relative Error:       %10.4f %%\n\n", (E_rec - E_sim)/E_sim * 100);
+   std::printf("    - Reconstructed (UKF):  %10.4f MeV\n", E_rec_val);
+   std::printf("    - Relative Error:       %10.4f %%\n\n", (E_rec_val - E_sim)/E_sim * 100);
 
    std::printf("  ENERGY LOSS VALIDATION (Total dE):\n");
    std::printf("    - Sum Eloss (MC):       %10.4f MeV\n", sumElossMC);
@@ -410,10 +456,110 @@ void runKalman(const std::vector<double>& hX, const std::vector<double>& hY, con
    std::cout << "  NUMERICAL STABILITY:     EXCELLENT (nTouch = 0)" << std::endl;
    std::cout << "  STATUS:                  CONVERGED" << std::endl;
    std::cout << std::string(65, '=') << "\n\n" << std::endl;
+
+//--------------------------------------------------------------------------------------------------------------------
+   UKFResult result;
+   result.trackID = trackID;
+   result.p_rec = p_reco_val;
+   result.E_rec = E_rec_val;
+   result.sumEloss = sumElossUKF;
+   result.p_true = initialMom.R(); // Guardamos el true para que sea fácil analizar luego
+
+   return result;
 }
 
+void UKFMultiTrack_Georgina(const char* simFilename = "/home/georgina/fair_install/ATTPCROOTv2_KF/macro/Simulation/ATTPC/protons/data/protonssim_3T_H300torr_40MeV_theta30.root", int eventToDraw = 1) 
+{
+    // === A. PREPARAR ARCHIVO DE SALIDA ===
+    TFile* outFile = new TFile("reco_ukf_output.root", "RECREATE");
+    TTree* outTree = new TTree("UKFTree", "Resultados del UKF");
 
-void UKFSingleTrack_3protons() { 
+    UKFResult res; // Usando el struct que definimos antes
+    outTree->Branch("eventID", &res.eventID, "eventID/I");
+    outTree->Branch("trackID", &res.trackID, "trackID/I");
+    outTree->Branch("p_rec", &res.p_rec, "p_rec/D");
+    outTree->Branch("E_rec", &res.E_rec, "E_rec/D");
+    outTree->Branch("sumEloss", &res.sumEloss, "sumEloss/D");
+    outTree->Branch("p_true", &res.p_true, "p_true/D");
+
+    int totalTracksProcessed = 0;
+    int successfulFits = 0;
+    int failedStoppedTracks = 0;
+
+    // === B. ABRIR ARCHIVO DE SIMULACIÓN (UNA SOLA VEZ) ===
+    TFile* simFile = TFile::Open(simFilename, "READ");
+    TTree* simTree = (TTree*)simFile->Get("cbmsim");
+    TClonesArray* tpcPoints = new TClonesArray("AtMCPoint"); 
+    simTree->SetBranchAddress("AtTpcPoint", &tpcPoints);
+
+    int numEventos = simTree->GetEntries();
+    std::cout << "initializing" << numEventos << " events..." << std::endl;
+
+    // === C. BUCLE PRINCIPAL ===
+    for (int ev = 0; ev < numEventos; ev++) {
+        
+        // 1. Delegamos el trabajo de cargar hits a tu función
+        LoadHitsROOT(simTree, tpcPoints, ev);
+
+        // 2. Procesamos las trazas que LoadHitsROOT ha dejado en los mapas globales
+        for (auto const& [trackID, xVector] : posX) {
+            
+            if (xVector.size() < 5) continue; // Protección Kalman
+            totalTracksProcessed++;
+
+            bool drawPlots = (ev == eventToDraw);
+
+            // Llamamos a tu filtro (Asegúrate de que runKalman devuelva el struct UKFResult)
+
+            UKFResult result_parcial = runKalman(posX[trackID], posY[trackID], posZ[trackID], Eloss[trackID], 
+                                                 mass_p, charge_p, 1, 1, initialMom[trackID], trackID, drawPlots);
+
+            if (result_parcial.p_rec <= 0.0 || result_parcial.p_rec == -999.0) {
+            failedStoppedTracks++;
+            continue; // Skip to the next track
+            }
+            
+            std::cout << "DEBUG: Event " << ev << " p_rec value: " << result_parcial.p_rec << std::endl;
+            
+            // Llenamos el árbol de salida
+            res.eventID  = ev;
+            res.trackID  = result_parcial.trackID;
+            res.p_rec    = result_parcial.p_rec;
+            res.E_rec    = result_parcial.E_rec;
+            res.sumEloss = result_parcial.sumEloss;
+            res.p_true   = result_parcial.p_true;
+
+            outTree->Fill();
+            successfulFits++;
+        }    
+        
+        if (ev % 100 == 0) std::cout << "Processed " << ev << " events..." << std::endl;
+    }
+
+   
+    // === D. FINAL SUMMARY AND SAVE ===
+    std::cout << "\n===============================================" << std::endl;
+    std::cout << "       UKF RECONSTRUCTION SUMMARY" << std::endl;
+    std::cout << "===============================================" << std::endl;
+    std::cout << "Total tracks analyzed:      " << totalTracksProcessed << std::endl;
+    std::cout << "Successful fits:            " << successfulFits << std::endl;
+    std::cout << "Tracks stopped (Bragg Peak): " << failedStoppedTracks << std::endl;
+    
+    if (totalTracksProcessed > 0) {
+        double efficiency = (100.0 * successfulFits) / totalTracksProcessed;
+        std::cout << "Reconstruction Efficiency:  " << efficiency << "%" << std::endl;
+    }
+    std::cout << "===============================================\n" << std::endl;
+
+    outFile->cd();
+    outTree->Write();
+    outFile->Close();
+    simFile->Close();
+
+    std::cout << "\n << 'reco_ukf_output.root' saved" << std::endl;
+}
+
+/*void UKFSingleTrack_protons() { 
    
    pointsToCluster = 5; 
    LoadHitsROOT(); // Carga las posiciones y el initialMom de TODAS las trazas
@@ -433,5 +579,5 @@ void UKFSingleTrack_3protons() {
        // Ejecutamos el Kalman pasándole los vectores y el momento de ESTA traza
        runKalman(posX[trackID], posY[trackID], posZ[trackID], Eloss[trackID], mass_p, charge_p, 1, 1, momP, trackID);
    }
-}
+}*/
 
