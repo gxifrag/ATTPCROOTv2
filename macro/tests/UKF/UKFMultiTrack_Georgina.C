@@ -3,8 +3,12 @@ struct UKFResult {
    int trackID;
    double p_rec;      // Momento reconstruido [MeV/c]
    double E_rec;      // Energía cinética reconstruida [MeV]
+   double theta_rec;  // Ángulo polar reconstruido [rad]
+   double phi_rec;    // Ángulo azimutal reconstruido [rad]
    double sumEloss;   // Pérdida de energía total [MeV]
    double p_true;     // Momento inicial de la simulación (para comparar luego)
+   double theta_true;  // Ángulo polar verdadero (para comparar luego)
+   double phi_true;    // Ángulo azimutal verdadero (para comparar luego)
 };
 
 std::string getEnergyPath()
@@ -464,6 +468,10 @@ UKFResult runKalman(const std::vector<double>& hX, const std::vector<double>& hY
    result.E_rec = E_rec_val;
    result.sumEloss = sumElossUKF;
    result.p_true = initialMom.R(); // Guardamos el true para que sea fácil analizar luego
+   result.theta_rec = smoothedStates[0][4]; // Ángulo polar reconstruido
+   result.phi_rec = smoothedStates[0][5];   // Ángulo azimutal reconstruido
+   result.theta_true = std::atan2(std::sqrt(initialMom.X()*initialMom.X() + initialMom.Y()*initialMom.Y()), initialMom.Z()); // Ángulo polar verdadero
+   result.phi_true = std::atan2(initialMom.Y(), initialMom.X()); // Ángulo azimutal verdadero
 
    return result;
 }
@@ -478,9 +486,13 @@ void UKFMultiTrack_Georgina(const char* simFilename = "/home/georgina/fair_insta
     outTree->Branch("eventID", &res.eventID, "eventID/I");
     outTree->Branch("trackID", &res.trackID, "trackID/I");
     outTree->Branch("p_rec", &res.p_rec, "p_rec/D");
+    outTree->Branch("theta_rec", &res.theta_rec, "theta_rec/D");
+    outTree->Branch("phi_rec", &res.phi_rec, "phi_rec/D");
     outTree->Branch("E_rec", &res.E_rec, "E_rec/D");
     outTree->Branch("sumEloss", &res.sumEloss, "sumEloss/D");
     outTree->Branch("p_true", &res.p_true, "p_true/D");
+    outTree->Branch("theta_true", &res.theta_true, "theta_true/D");
+    outTree->Branch("phi_true", &res.phi_true, "phi_true/D");
 
     int totalTracksProcessed = 0;
     int successfulFits = 0;
@@ -497,6 +509,13 @@ void UKFMultiTrack_Georgina(const char* simFilename = "/home/georgina/fair_insta
 
     // === C. BUCLE PRINCIPAL ===
     for (int ev = 0; ev < numEventos; ev++) {
+
+        //if (ev == 3120 || ev == 3440 || ev ==5501) { 
+        /*if (ev == 2200) {
+            std::cout << "\n>>> [MANUAL SKIP] Skipping Event 3120 because it freezes the propagator." << std::endl;
+            failedStoppedTracks++;
+            continue; // This jumps straight to event 3121
+        }*/
         
         // 1. Delegamos el trabajo de cargar hits a tu función
         LoadHitsROOT(simTree, tpcPoints, ev);
@@ -509,29 +528,45 @@ void UKFMultiTrack_Georgina(const char* simFilename = "/home/georgina/fair_insta
 
             bool drawPlots = (ev == eventToDraw);
 
-            // Llamamos a tu filtro (Asegúrate de que runKalman devuelva el struct UKFResult)
-
+            try {
+            // This function call will now "jump" to the 'catch' block 
+            // as soon as the C++ code hits a 'throw'
             UKFResult result_parcial = runKalman(posX[trackID], posY[trackID], posZ[trackID], Eloss[trackID], 
-                                                 mass_p, charge_p, 1, 1, initialMom[trackID], trackID, drawPlots);
+                                                mass_p, charge_p, 1, 1, initialMom[trackID], trackID, drawPlots);
 
-            if (result_parcial.p_rec <= 0.0 || result_parcial.p_rec == -999.0) {
-            failedStoppedTracks++;
-            continue; // Skip to the next track
+            // If it didn't throw, we check the result and fill
+           if (result_parcial.p_rec > 0 && result_parcial.p_rec != -999.0) {
+                res.eventID  = ev;
+                res.trackID  = result_parcial.trackID;
+                res.p_rec    = result_parcial.p_rec;
+                res.E_rec    = result_parcial.E_rec;
+                res.sumEloss = result_parcial.sumEloss;
+                res.p_true   = result_parcial.p_true;
+
+                res.theta_rec  = result_parcial.theta_rec * TMath::RadToDeg();
+                res.phi_rec    = result_parcial.phi_rec   * TMath::RadToDeg();
+                res.theta_true = result_parcial.theta_true * TMath::RadToDeg();
+                res.phi_true   = result_parcial.phi_true   * TMath::RadToDeg();
+
+                outTree->Fill();
+                successfulFits++;
+            } else {
+                failedStoppedTracks++;
+                std::cout << "Event " << ev << ", Track " << trackID << ": UKF failed to reconstruct (p_rec = " << result_parcial.p_rec << "). Likely stopped in Bragg Peak. Skipping..." << std::endl;
             }
-            
-            std::cout << "DEBUG: Event " << ev << " p_rec value: " << result_parcial.p_rec << std::endl;
-            
-            // Llenamos el árbol de salida
-            res.eventID  = ev;
-            res.trackID  = result_parcial.trackID;
-            res.p_rec    = result_parcial.p_rec;
-            res.E_rec    = result_parcial.E_rec;
-            res.sumEloss = result_parcial.sumEloss;
-            res.p_true   = result_parcial.p_true;
 
-            outTree->Fill();
-            successfulFits++;
-        }    
+            } catch (const std::exception& e) {
+                std::string msg = e.what();
+                if (msg == "ParticleStopped") {
+                    failedStoppedTracks++;
+                    std::cout << "Event " << ev << ": Track stopped in Bragg Peak. Skipping..." << std::endl;
+                } else {
+                    // Rethrow if it is a different, unexpected error
+                    throw;
+                }
+            
+            } 
+        }   
         
         if (ev % 100 == 0) std::cout << "Processed " << ev << " events..." << std::endl;
     }

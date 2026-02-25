@@ -4,11 +4,11 @@ void run_sim_protons(Int_t nEvents = 10000, TString mcEngine = "TGeant4")
    TString dir = getenv("VMCWORKDIR");
 
    // Output file name
-   TString outFile = "./data/protonssim_3T_H300torr_100MeV_theta30.root";
+   TString outFile = "./data/protonssim_3T_H300torr_40MeV_theta30.root";
 
 
    // Parameter file name
-   TString parFile = "./data/protonspar_3T_H300torr_100MeV_theta30.root";
+   TString parFile = "./data/protonspar_3T_H300torr_40MeV_theta30.root";
 
    // -----   Timer   --------------------------------------------------------
    TStopwatch timer;
@@ -58,8 +58,8 @@ void run_sim_protons(Int_t nEvents = 10000, TString mcEngine = "TGeant4")
    Int_t pdgCode = 2212; // Proton
    //Int_t pdgCode = 211; // Pion
    Int_t multiplicity = 1; // 1 proton por evento para ver las tracks claras
-   Double_t pMin = 0.1; // Momentum mínimo en GeV/c
-   Double_t pMax = 0.1; // Momentum máximo en GeV/c
+   Double_t pMin = 0.04; // Momentum mínimo en GeV/c
+   Double_t pMax = 0.04; // Momentum máximo en GeV/c
 
    FairBoxGenerator* boxGen = new FairBoxGenerator(pdgCode, multiplicity);
    
