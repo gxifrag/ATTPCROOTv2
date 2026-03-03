@@ -44,6 +44,8 @@ pulser-files.txt
 *.tar.gz
 *.zip
 
+# Test directory
+/macro/a1975/RawEvents16CH2/*
 
 # CMake
 CMakeCache.txt
