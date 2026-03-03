@@ -2342,6 +2342,12 @@ H_300torr	   1  1.007   1.   3.553e-5
 	       	    1	  1    20.  0.001
 		      	 0
 
+
+H_60torr       1  1.007   1.   6.6168e-6
+                1     1    20.  0.001
+                 0
+ 
+
 // ------------- end e12014
 
 // ----- Caution with putting materials below that line -----

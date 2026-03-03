@@ -129,8 +129,10 @@ UKFResult runKalman(const std::vector<double>& hX, const std::vector<double>& hY
    std::vector<double> x2, y2, z2, Eloss2, p2, sigmap2, lambda2, sigmalambda2, residual;
    std::vector<double> xSmooth, ySmooth, zSmooth, pSmooth, sigmapSmooth, residualSmooth, eLossSmooth;
 
-   // 1. Configuració del Model d'Energia
+   // CATIMA Hidrogeno 300torr
    auto elossModel = std::make_unique<AtTools::AtELossCATIMA>(3.3084e-5);
+   // CATIMA hidrogeno 60torr
+   //auto elossModel = std::make_unique<AtTools::AtELossCATIMA>(6.6168e-6);
    elossModel->SetProjectile(Z, A, mass / 931.494); // Convertim MeV/c2 a amu aprox.
    std::vector<std::tuple<int, int, int>> mat = {{1, 1, 2}}; // Hidrogen
    elossModel->SetMaterial(mat);
@@ -476,10 +478,10 @@ UKFResult runKalman(const std::vector<double>& hX, const std::vector<double>& hY
    return result;
 }
 
-void UKFMultiTrack_Georgina(const char* simFilename = "/home/georgina/fair_install/ATTPCROOTv2_KF/macro/Simulation/ATTPC/protons/data/protonssim_3T_H300torr_40MeV_theta30.root", int eventToDraw = 1) 
+void UKFMultiTrack_Georgina(const char* simFilename = "/home/georgina/fair_install/ATTPCROOTv2_KF/macro/Simulation/ATTPC/protons/data/protons_300torr/protonssim_3T_H300torr_40MeV_theta30.root", int eventToDraw = 1) 
 {
     // === A. PREPARAR ARCHIVO DE SALIDA ===
-    TFile* outFile = new TFile("reco_ukf_output.root", "RECREATE");
+    TFile* outFile = new TFile("reco_ukf_output_3T_H300torr_p40MeV_theta30.root", "RECREATE");
     TTree* outTree = new TTree("UKFTree", "Resultados del UKF");
 
     UKFResult res; // Usando el struct que definimos antes
@@ -508,14 +510,7 @@ void UKFMultiTrack_Georgina(const char* simFilename = "/home/georgina/fair_insta
     std::cout << "initializing" << numEventos << " events..." << std::endl;
 
     // === C. BUCLE PRINCIPAL ===
-    for (int ev = 0; ev < numEventos; ev++) {
-
-        //if (ev == 3120 || ev == 3440 || ev ==5501) { 
-        /*if (ev == 2200) {
-            std::cout << "\n>>> [MANUAL SKIP] Skipping Event 3120 because it freezes the propagator." << std::endl;
-            failedStoppedTracks++;
-            continue; // This jumps straight to event 3121
-        }*/
+    for (int ev = 0; ev < 10000; ev++) {
         
         // 1. Delegamos el trabajo de cargar hits a tu función
         LoadHitsROOT(simTree, tpcPoints, ev);
@@ -591,6 +586,7 @@ void UKFMultiTrack_Georgina(const char* simFilename = "/home/georgina/fair_insta
     outFile->Close();
     simFile->Close();
 
+    //std::cout << "\n << 'reco_ukf_output_3T_p40MeV_H300torr.root' saved" << std::endl;
     std::cout << "\n << 'reco_ukf_output.root' saved" << std::endl;
 }
 

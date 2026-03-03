@@ -153,12 +153,10 @@ Vector<TrackFitterUKF::TF_DIM_X> TrackFitterUKF::funcF(const Vector<TrackFitterU
    // Set the state of the propagator to the current state vector
    using namespace ROOT::Math;
 
-   if (x[3] < 5.0) {
-       LOG(warn) << ">>> PRE-PROPAGATION BREAK: Momentum too low (" << x[3] << "). Terminating track to avoid freeze.";
+   if (x[3] < 15.0) {
+       LOG(warn) << ">>> PRE-PROPAGATION BREAK: Momentum too low (" << x[3] << "), lower than 15MeV/c. Terminating track to avoid freeze.";
        throw std::runtime_error("ParticleStopped");
    }
-
-
 
    XYZPoint fPos(x[0], x[1], x[2]);      // Position from state vector
    Polar3DVector fMom(x[3], x[4], x[5]); // Momentum from state vector
@@ -173,16 +171,13 @@ Vector<TrackFitterUKF::TF_DIM_X> TrackFitterUKF::funcF(const Vector<TrackFitterU
 
    //---------------------added Georgina 24-Feb-------------------
 
-   if (fState.fMom.R() < 0.1) {
-       /*LOG(warn) << ">>> UKF Safety Break: Particle stopped during propagation. Flagging for macro.";
-       Vector<TF_DIM_X> stopVec = Vector<TF_DIM_X>::Zero();
-       stopVec[3] = -999.0; // Use -999 as a "stopped" flag for your macro
-       return stopVec;*/
 
-       LOG(warn) << ">>> Safety Break: Particle stopped physically. Terminating track.";
-       throw std::runtime_error("ParticleStopped");
-   }
-   //-------------------------------------------------------------------------
+    if (fState.fMom.R() < 0.1) {
+        LOG(warn) << ">>> Safety Break: Particle stopped during propagation. Terminating track.";
+        throw std::runtime_error("ParticleStopped"); 
+    }
+
+   //-------------------------------------------------------------------------
    Vector<TF_DIM_X> vecX{Vector<TF_DIM_X>::Zero()};
    vecX[0] = fState.fPos.X();     // X position
    vecX[1] = fState.fPos.Y();     // Y position

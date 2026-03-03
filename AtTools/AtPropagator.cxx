@@ -134,6 +134,8 @@ void AtPropagator::PropagateToMeasurementSurface(const AtMeasurementSurface &sur
          // enough energy to reach the surface.
          LOG(warning) << "------ Particle stopped before reaching measurement surface ------";
 
+         throw std::runtime_error("ParticleStopped"); //added by Georgina, 26Feb
+
          // Calculate how far to travel before stopping
          double KE_last = Kinematics::KE(fState.fLastMom, fState.fMass);
          double deltaE = KE_last - fStopTol;

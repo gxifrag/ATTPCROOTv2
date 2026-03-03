@@ -4,11 +4,11 @@ void run_sim_protons(Int_t nEvents = 10000, TString mcEngine = "TGeant4")
    TString dir = getenv("VMCWORKDIR");
 
    // Output file name
-   TString outFile = "./data/protonssim_3T_H300torr_40MeV_theta30.root";
+   TString outFile = "./data/protonssim_3T_H300torr_40MeV_theta60.root";
 
 
    // Parameter file name
-   TString parFile = "./data/protonspar_3T_H300torr_40MeV_theta30.root";
+   TString parFile = "./data/protonspar_3T_H300torr_40MeV_theta60.root";
 
    // -----   Timer   --------------------------------------------------------
    TStopwatch timer;
@@ -41,7 +41,7 @@ void run_sim_protons(Int_t nEvents = 10000, TString mcEngine = "TGeant4")
    run->AddModule(pipe);*/
 
    FairDetector *ATTPC = new AtTpc("ATTPC", kTRUE);
-   ATTPC->SetGeometryFileName("/home/georgina/fair_install/ATTPCROOTv2_KF/geometry/ATTPC_H300torr.root");
+   ATTPC->SetGeometryFileName("/home/georgina/fair_install/ATTPCROOTv2_KF/geometry/ATTPC_H60torr.root");
    //ATTPC->SetModifyGeometry(kTRUE);
    run->AddModule(ATTPC);
 
@@ -65,7 +65,7 @@ void run_sim_protons(Int_t nEvents = 10000, TString mcEngine = "TGeant4")
    
    boxGen->SetPRange(pMin, pMax);    // Momentum (GeV/c)
    boxGen->SetPhiRange(0., 360.);   // Cobertura azimutal completa
-   boxGen->SetThetaRange(30., 30.); // Cobertura polar completa
+   boxGen->SetThetaRange(60, 60.); // Cobertura polar completa
    boxGen->SetXYZ(0., 0., 0.);     // Origen (centro, desplazado ligeramente en Z)
 
    FairPrimaryGenerator* primGen = new FairPrimaryGenerator();
