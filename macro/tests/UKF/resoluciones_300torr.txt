@@ -1,0 +1,7 @@
+RESUMEN ANALISIS UKF - Archivo: reco_ukf_output_3T_H60torr_p40MeV_theta60.root
+-----------------------------------------------
+MOMENTO (p):   Sigma = 0.65008 %   | Bias = -0.227683 %
+THETA (theta): Sigma = 3.09948 mrad | Bias = 4.87967 mrad
+PHI (phi):     Sigma = 9.57693 mrad | Bias = 41.7244 mrad
+-----------------------------------------------
+Eficiencia Reconstruccion: 100 %
