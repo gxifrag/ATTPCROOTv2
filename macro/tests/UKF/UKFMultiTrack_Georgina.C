@@ -1,16 +1,39 @@
+// Struct to store and easily compare the Unscented Kalman Filter (UKF) 
+// reconstruction results against the Monte Carlo truth data.
+
 struct UKFResult {
-   int eventID;
-   int trackID;
-   double p_rec;      // Momento reconstruido [MeV/c]
-   double E_rec;      // Energía cinética reconstruida [MeV]
-   double theta_rec;  // Ángulo polar reconstruido [rad]
-   double phi_rec;    // Ángulo azimutal reconstruido [rad]
-   double sumEloss;   // Pérdida de energía total [MeV]
-   double p_true;     // Momento inicial de la simulación (para comparar luego)
-   double theta_true;  // Ángulo polar verdadero (para comparar luego)
-   double phi_true;    // Ángulo azimutal verdadero (para comparar luego)
+   int eventID = -1;
+   int trackID = -1;
+   
+   // Reconstructed variables
+   double p_rec = 0.0;      // Reconstructed momentum [MeV/c]
+   double E_rec = 0.0;      // Reconstructed kinetic energy [MeV]
+   double theta_rec = 0.0;  // Reconstructed polar angle [rad]
+   double phi_rec = 0.0;    // Reconstructed azimuthal angle [rad]
+   double sumEloss = 0.0;   // Total energy loss [MeV]
+   
+   // Monte Carlo truth variables (for comparison/validation)
+   double p_true = 0.0;     // True initial momentum from simulation [MeV/c]
+   double theta_true = 0.0; // True polar angle [rad]
+   double phi_true = 0.0;   // True azimuthal angle [rad]
 };
 
+// Helper function to safely wrap angles so they remain bounded between -pi and pi.
+// Using ATan2(Sin, Cos) gracefully handles phase wrapping without needing loops.
+
+double wrapAngle(double a){
+    return TMath::ATan2(TMath::Sin(a), TMath::Cos(a));
+}
+
+// Global vectors to accumulate angular residuals/differences across all processed events.
+// These are typically used to fill histograms for resolution analysis at the end.
+static std::vector<double> all_dtheta_rad;
+static std::vector<double> all_dtheta_fwd_rad;
+static std::vector<double> all_dtheta_sm_rad;
+static std::vector<double> all_dtheta_sm_minus_fwd_rad;
+
+// Dynamically resolves the path to the energy loss table (e.g., Proton in Hydrogen).
+// Checks the standard VMCWORKDIR environment variable first, then falls back to a relative path.
 std::string getEnergyPath()
 {
    auto env = std::getenv("VMCWORKDIR");
@@ -22,19 +45,21 @@ std::string getEnergyPath()
    return std::string(env) + "/resources/energy_loss/HinH.txt"; // Use environment variable
 }
 
-const double mass_p = 938.272;           // Mass of proton in MeV/c^2
-const double charge_p = 1.602176634e-19; // Charge of proton
+// Fundamental physics constants for the tracked particle
+const double mass_p = 938.272;           // Mass of proton in [MeV/c^2]
+const double charge_p = 1.602176634e-19; // Charge of proton in [Coulombs
 
-// We are gonna use maps (dictionary). The key is the trackID.
+// Dictionaries (maps) linking a specific track ID to its downsampled cluster data.
+// These store the grouped spatial coordinates [mm] and accumulated energy loss [MeV].
 std::map<int, std::vector<double>> posX;
 std::map<int, std::vector<double>> posY;
 std::map<int, std::vector<double>> posZ;
 std::map<int, std::vector<double>> Eloss;
 
-// NUEVO MAPA: Guardará un solo XYZVector (el momento inicial) por cada trackID
+// To save the XYZVector of the initial momentum for each track
 std::map<int, ROOT::Math::XYZVector> initialMom;
 
-int pointsToCluster= 5; 
+int pointsToCluster= 5; //5
 
 void LoadHitsROOT(TTree* tree, TClonesArray* tpcPoints, int targetEvent)
 {
@@ -55,25 +80,31 @@ void LoadHitsROOT(TTree* tree, TClonesArray* tpcPoints, int targetEvent)
    std::map<int, int> hitCount;           
    std::map<int, double> currentELoss;
 
+   // Iterate over all simulated TPC points to build particle tracks 
+   // and downsample the hits into discrete clusters.
+
    for (int i = 0; i < nPoints; i++) {
       AtMCPoint* point = (AtMCPoint*)tpcPoints->At(i);
       if (!point) continue;
 
       int trackID = point->GetTrackID();
 
-      // Extraemos las posiciones y la energía
+        // Extract position and energy loss, converting units
+        // Assuming framework native units are cm and GeV, converting to mm and MeV
         double mmX = point->GetX() * 10.0;
         double mmY = point->GetY() * 10.0;
         double mmZ = point->GetZ() * 10.0;
         double Ei = point->GetEnergyLoss() * 1000.0;   
 
       if (posX[trackID].empty()) { 
-            // Es el primer punto que vemos de esta partícula
+
+            // This is the first point that we have in the track. Initialize vectors.
             posX[trackID].push_back(mmX); 
             posY[trackID].push_back(mmY); 
             posZ[trackID].push_back(mmZ);
             Eloss[trackID].push_back(0.0);
             
+            // Convert initial momentum to MeV/c and store it
             double px = point->GetPx() * 1000.0;
             double py = point->GetPy() * 1000.0;
             double pz = point->GetPz() * 1000.0;
@@ -85,18 +116,23 @@ void LoadHitsROOT(TTree* tree, TClonesArray* tpcPoints, int targetEvent)
             currentELoss[trackID] = Ei;
             hitCount[trackID] = 0;
       } else {
-            // Ya teníamos puntos de esta partícula, seguimos sumando
+
+            // We add up the energy loss of this point to the present cluster
             currentELoss[trackID] += Ei;
             hitCount[trackID]++;
             
+            // Once we reach the target number of points, save the cluste
             if (hitCount[trackID] % pointsToCluster == 0) {
                 posX[trackID].push_back(mmX); 
                 posY[trackID].push_back(mmY); 
                 posZ[trackID].push_back(mmZ);
                 Eloss[trackID].push_back(currentELoss[trackID]);
                 
-                // Reseteamos el contador de energía para el siguiente cluster de esta partícula
+                // Reset the energy counter for the next cluster of this particle
                 currentELoss[trackID] = 0;
+
+                // NOTE: Any remaining energy in a cluster smaller than 'pointsToCluster' 
+                // at the end of the track is currently left in currentELoss[trackID].
             }
         }
    }  
@@ -125,44 +161,60 @@ UKFResult runKalman(const std::vector<double>& hX, const std::vector<double>& hY
 {
    using namespace AtTools;
 
-   // Vectors locals per a aquesta execució (així no es barregen amb l'anterior)
-   std::vector<double> x2, y2, z2, Eloss2, p2, sigmap2, lambda2, sigmalambda2, residual;
-   std::vector<double> xSmooth, ySmooth, zSmooth, pSmooth, sigmapSmooth, residualSmooth, eLossSmooth;
+   // 1. Local vectors for this execution 
+   // (Ensures data from previous tracks doesn't leak into the current one
 
-   // CATIMA Hidrogeno 300torr
+   std::vector<double> xForward, yForward, zForward, pForward, sigmapForward, residualForward,  eLossForward;
+   std::vector<double> xSmooth, ySmooth, zSmooth, pSmooth, sigmapSmooth, residualSmooth, eLossSmooth;
+   double pForward_early = 0.0;  // momentum at early stage (hit 1)
+   double pForward_late = 0.0;   // momentum at late stage (last hit)
+
+   // Set up the CATIMA energy loss model for Hydrogen gas at 300 torr.
+   // (The commented out line below is for 60 torr)
    auto elossModel = std::make_unique<AtTools::AtELossCATIMA>(3.3084e-5);
-   // CATIMA hidrogeno 60torr
    //auto elossModel = std::make_unique<AtTools::AtELossCATIMA>(6.6168e-6);
-   elossModel->SetProjectile(Z, A, mass / 931.494); // Convertim MeV/c2 a amu aprox.
+
+   // Convert mass from MeV/c^2 to approximate amu for CATIMA
+   elossModel->SetProjectile(Z, A, mass / 931.494); 
    std::vector<std::tuple<int, int, int>> mat = {{1, 1, 2}}; // Hidrogen
    elossModel->SetMaterial(mat);
 
-   // 2. Propagator i UKF
+   // 2. Propagator and UKF Setup
+   // Initializes the physical environment (E and B fields) and the Runge-Kutta stepper
+
    AtTools::AtPropagator propagator(charge, mass, std::move(elossModel));
    propagator.SetEField({0, 0, 0});
    propagator.SetBField({0, 0, 3.});//2.85 T
    auto stepper = std::make_unique<AtTools::AtRK4Stepper>();
    kf::TrackFitterUKF ukf(std::move(propagator), std::move(stepper));
 
-   // 3. Estat Inicial basat en els arguments
+   // 3. Initial State Setup
    XYZPoint startPos(hX[0], hY[0], hZ[0]);
    XYZPoint nextPos(hX[1], hY[1], hZ[1]);
-   XYZVector startMom = initialMom.R() * (nextPos - startPos).Unit(); // Direcció segons hits
+
+   // We are using the true initial momentum from the simulation directly as our starting seed.
+   // (Alternative: estimate direction using the first two hits, as commented out below)
+  // XYZVector startMom = initialMom.R() * (nextPos - startPos).Unit(); 
+
+   XYZVector startMom = initialMom; 
    double beginMom = initialMom.R();
 
-   // Incerteses i paràmetres
+   // Uncertainties and UKF tuning parameters
    double sigma_pos = 1.0; 
    double sigma_mom = 0.01 * startMom.R();
+    
+   // Initial covariance matrix (6x6: x, y, z, px, py, pz)
    TMatrixD cov(6, 6); cov.UnitMatrix(); 
    cov(3,3) = sigma_mom * sigma_mom;
    ukf.fEnableEnStraggling = true;
    ukf.setParameters(1e-3, 2, 0);
    ukf.SetInitialState(startPos, startMom, cov);
 
+
+   // Measurement covariance matrix (3x3: spatial coordinates only)
    TMatrixD cov_meas(3, 3); cov_meas.UnitMatrix(); cov_meas *= (sigma_pos * sigma_pos);
 
-   // 4. Bucle de Hits (Usa hX.size() passat per argument)
-
+   // 4. Hit Loop (Forward Filter)
    ROOT::Math::XYZVector lastMom = startMom;
    for (size_t i = 1; i < hX.size(); ++i) {
       if (i % 200 == 0) { 
@@ -173,22 +225,27 @@ UKFResult runKalman(const std::vector<double>& hX, const std::vector<double>& hY
 
       double currentKE = Kinematics::KE(lastMom, mass);
       
+      // Safety Check: If the particle loses almost all its energy, the energy loss 
+      // equations break down (Bragg peak singularity). We stop propagation to avoid crashing.
       if (currentKE < 0.05) { 
-          std::cout << "[DEBUG] Energia critica (" << currentKE << " MeV). Deteniendo propagacion para evitar cuelgue." << std::endl;
+          std::cout << "[DEBUG] Critical energy reached (" << currentKE << " MeV). Stopping propagation." << std::endl;
           break; 
       }
       ukf.SetMeasCov(cov_meas);
 
+      // Try-catch block protects against Kalman Filter math exceptions 
+      // (e.g., matrix inversion failures due to collinear points or extreme noise).
       try {
           ukf.predictUKF(point);
           ukf.correctUKF(point);
       } catch (...) {
-          // Si la matemática explota aquí, salimos del bucle limpiamente
+          // If the math blows up here, exit the loop cleanly rather than crashing the whole program.
           break; 
       }
 
       auto state = ukf.vecX();
-      if (state.size() < 6) break; //condition to avoid crash if UKF fails and stops updating states (we will check this later in the smoothed states)
+      // Condition to avoid crash if UKF fails and stops updating states
+      if (state.size() < 6) break;
 
       auto currentCov = ukf.matP();
       ROOT::Math::XYZPoint pos(state[0], state[1], state[2]);
@@ -196,28 +253,46 @@ UKFResult runKalman(const std::vector<double>& hX, const std::vector<double>& hY
       ROOT::Math::Polar3DVector momPolar(state[3], state[4], state[5]);
       ROOT::Math::XYZVector mom(momPolar);
 
+      // Safety Check: Ensure the updated momentum and covariances are physically valid numbers.
       if (std::isnan(mom.R()) || mom.R() < 1e-4 || std::isnan(currentCov(3,3)) || currentCov(3,3) < 0) {
-          break; // Salimos del bucle inmediatamente, la partícula no da para más
+          break; // Exit loop immediately, the particle cannot be tracked further.
       }
 
+      // Calculate step energy loss
       double KE_in = Kinematics::KE(lastMom, mass);
       double KE_out = Kinematics::KE(mom, mass);
       lastMom = mom;
 
-      x2.push_back(pos.X());
-      y2.push_back(pos.Y());
-      z2.push_back(pos.Z());
-      Eloss2.push_back(KE_in - KE_out);
-      p2.push_back(mom.R());
-      sigmap2.push_back(std::sqrt(currentCov(3, 3)));
+      // Store forward filter results
+      xForward.push_back(pos.X());
+      yForward.push_back(pos.Y());
+      zForward.push_back(pos.Z());
+      eLossForward.push_back(KE_in - KE_out);
+      pForward.push_back(mom.R());
+      sigmapForward.push_back(std::sqrt(currentCov(3, 3)));
 
+      // Calculate spatial residual (distance between true hit and filtered state)
       double res = std::sqrt(std::pow(pos.X() - point.X(), 2) + 
                              std::pow(pos.Y() - point.Y(), 2) + 
                              std::pow(pos.Z() - point.Z(), 2));
-      residual.push_back(res);
+      residualForward.push_back(res);
+      
+      // DEBUG: Print momentum at each step
+      double p_true_init = beginMom;
+      double dp_rel = (mom.R() - p_true_init) / p_true_init * 100.0;
+      
+      /*if (i % 5 == 1 || i < 3) {
+        std::printf("[FORWARD] Hit %zu: p_rec=%.4f MeV/c, p_true=%.4f MeV/c, (p_rec-p_true)/p_true=%.2f%%\n", 
+                    i, mom.R(), p_true_init, dp_rel);
+      }
+      */
+      // Store early and late momentum for later comparison
+      if (i == 1) pForward_early = mom.R();  // momentum at 2nd hit
+      pForward_late = mom.R();  // last momentum in forward pass
    } 
    
-   if (x2.size() < 4) {
+   // If the filter couldn't process enough points to make a meaningful track, flag as a failure.
+   if (xForward.size() < 4) {
        UKFResult failResult;
        failResult.trackID = trackID;
        failResult.p_rec = -999.0;
@@ -227,43 +302,99 @@ UKFResult runKalman(const std::vector<double>& hX, const std::vector<double>& hY
        return failResult;
    }
 
-   // Smoothing
-    try {
+     // 5. Smoothing (Backward Filter)
+     // This pass runs backwards along the track to improve the state estimates using all available future data.
+
+   
+        double phi_forward = wrapAngle(ukf.vecX()[5]);
+        double theta_forward =  ukf.vecX()[4];
+
         ukf.smoothUKF();
-    } catch (...) {
-        std::cout << "[DEBUG] Abortado: Fallo matematico en el Smoothing." << std::endl;
-        UKFResult failResult; failResult.p_rec = -999.0; return failResult;
-    }
-   auto smoothedStates = ukf.GetSmoothedStates();
+        auto smoothedStates = ukf.GetSmoothedStates();
 
-   if (smoothedStates.empty()) {
-       // Si no pasamos drawPlots, silenciamos el print para no inundar la terminal
-       if (drawPlots) {
-           std::cout << "[WARNING] Track " << trackID << " abortada por el UKF (se detuvo antes de tiempo)." << std::endl;
-       }
-       
-       // Devolvemos un resultado "falso" con valores -999 para identificar el fallo
-       UKFResult failResult;
-       failResult.trackID = trackID;
-       failResult.p_rec = -999.0; 
-       failResult.E_rec = -999.0;
-       failResult.sumEloss = -999.0;
-       failResult.p_true = initialMom.R();
-       return failResult; // Salimos de la función inmediatamente
-   }
+        if (smoothedStates.empty()) {
+        if (drawPlots) {
+            std::cout << "[WARNING] Track " << trackID 
+                    << " aborted by the UKF." << std::endl;
+        }
 
+        UKFResult failResult;
+        failResult.trackID = trackID;
+        failResult.p_rec = -999.0;
+        failResult.E_rec = -999.0;
+        failResult.sumEloss = -999.0;
+        failResult.p_true = initialMom.R();
+        return failResult;
+        }
+
+        // Calculate angular residuals between the smoothed state, forward state, and MC truth
+        double phi_smoothed = wrapAngle(smoothedStates[1][5]);
+        double theta_smoothed = smoothedStates[1][4];
+        double theta_true = atan2(std::sqrt(initialMom.X()*initialMom.X() +initialMom.Y()*initialMom.Y()),initialMom.Z());
+        double dtheta_rad = theta_smoothed - theta_true;
+        all_dtheta_rad.push_back(dtheta_rad);
+
+        double dtheta_fwd = theta_forward - theta_true;
+        double dtheta_sm  = theta_smoothed - theta_true;
+        double dtheta_sm_fwd = theta_smoothed - theta_forward;
+
+        // Push to global accumulators, ensuring we filter out NaN/inf values
+        if (std::isfinite(dtheta_fwd))  all_dtheta_fwd_rad.push_back(dtheta_fwd);
+        if (std::isfinite(dtheta_sm))   all_dtheta_sm_rad.push_back(dtheta_sm);
+        if (std::isfinite(dtheta_sm_fwd)) all_dtheta_sm_minus_fwd_rad.push_back(dtheta_sm_fwd);
+
+        // Optional diagnostic printout per track
+        printf("DIAG Track %d: dtheta_fwd=%.3f mrad dtheta_sm=%.3f mrad dtheta_sm-fwd=%.3f mrad\n",
+            trackID, dtheta_fwd*1e3, dtheta_sm*1e3, dtheta_sm_fwd*1e3);
+
+        printf("DIAG smoothing: theta_forward=%.3f deg theta_smoothed=%.3f deg theta_true=%.3f deg dtheta_mrad=%.3f\n",
+           theta_forward * TMath::RadToDeg(), theta_smoothed * TMath::RadToDeg(), theta_true * TMath::RadToDeg(), dtheta_rad * 1e3);
+
+   
+   //auto smoothedStates = ukf.GetSmoothedStates();
    auto smoothedCov = ukf.GetSmoothedCovariances();
 
-   for (size_t i = 0; i < smoothedStates.size(); ++i) {
+   // Extract and store the final smoothed states and calculate smoothed residuals
+
+   // =========================================================================
+   // DISCLAIMER: Extracting final kinematics from hit 1 instead of hit 0.
+   // During the final step of the backward smoother, the algorithm attempts to 
+   // reconcile the smoothed track with our manual initial guess (which has an 
+   // artificially huge covariance). This "bad prior" pulls the reconstructed 
+   // momentum and creates an unphysical offset. Skipping hit 0 avoids this bias.
+   // =========================================================================
+   
+   //std::cout << "SmoothedStates size: " << smoothedStates.size() << "number of clusters: " << hX.size() << std::endl;
+
+   for (size_t i = 1; i < smoothedStates.size(); ++i) {
       xSmooth.push_back(smoothedStates[i][0]);
       ySmooth.push_back(smoothedStates[i][1]);
       zSmooth.push_back(smoothedStates[i][2]);
-      pSmooth.push_back(smoothedStates[i][3]);
+      //pSmooth.push_back(smoothedStates[i][3]);
+
+      double current_p_sm = smoothedStates[i][3]; 
+      pSmooth.push_back(current_p_sm);
+
+      if (i >= 1) {
+        double prev_p_sm = smoothedStates[i-1][3];
+        double ke_prev = Kinematics::KE(prev_p_sm, mass);
+        double ke_curr = Kinematics::KE(current_p_sm, mass);
+        //std::cout << "[DEBUG] Smoothed Eloss at hit " << i << ": KE_prev=" << ke_prev << " MeV, KE_curr=" << ke_curr << " MeV, Eloss=" << (ke_prev - ke_curr) << " MeV" << std::endl;
+
+        eLossSmooth.push_back(ke_prev - ke_curr);
+      }
 
       sigmapSmooth.push_back(std::sqrt(smoothedCov[i](3, 3))); 
+      
+      // DEBUG: Print momentum at each smoothed step
+      double p_true_init = initialMom.R();
+      double dp_rel = (current_p_sm - p_true_init) / p_true_init * 100.0;
+      if (i % 5 == 1 || i < 3) {
+        //std::printf("[SMOOTHED] Hit %zu: p_rec=%.4f MeV/c, p_true=%.4f MeV/c, (p_rec-p_true)/p_true=%.2f%%\n", i, current_p_sm, p_true_init, dp_rel);
+      }
 
-      // Calculamos la distancia entre el hit real medido y el estado suavizado
-      double mX = hX[i]; 
+      // Distance between the real measured hit and the smoothed estimated state
+      double mX = hX[i]; // ¡Volvemos a i! Adiós al +1
       double mY = hY[i];
       double mZ = hZ[i];
       double resSmooth = std::sqrt(std::pow(smoothedStates[i][0] - mX, 2) + 
@@ -271,32 +402,43 @@ UKFResult runKalman(const std::vector<double>& hX, const std::vector<double>& hY
                                    std::pow(smoothedStates[i][2] - mZ, 2));
    
       residualSmooth.push_back(resSmooth);
+
    }
 
-   // 6. Resum de resultats (el bloc que t'agrada per a la captura)
+   std::cout << "residualSmooth size: " << residualSmooth.size() << "residualForward size: " << residualForward.size() << std::endl;
+
+   // 6. Summary of Results 
+   // (Calculates the final kinematics to package into the UKFResult struct)
    double E_sim = Kinematics::KE(beginMom, mass);
-   double p_reco_val = smoothedStates[0][3];
+   // Use momentum from hit 1 to avoid bias from smoothed state at hit 0
+   // (which is pulled toward the artificially uncertain initial guess)
+   double p_reco_val = smoothedStates[1][3]; // Use hit 1 instead of hit 0 to avoid bias
    double E_rec_val = Kinematics::KE(p_reco_val, mass);
    double sumElossMC = std::accumulate(hEloss.begin(), hEloss.end(), 0.0);
-   double sumElossUKF = std::accumulate(Eloss2.begin(), Eloss2.end(), 0.0);
+   double sumElossUKF = std::accumulate(eLossForward.begin(), eLossForward.end(), 0.0);
+   
 
    // =========================================================================
-   // PLOTS: MULTIPLOT POR TRACK
+   // VISUALIZATION: MULTIPLOT FOR EACH TRACK
    // =========================================================================
    
-   if (drawPlots==true) 
+   // Only generate and draw plots if the user explicitly requested them
+   if (drawPlots == true) 
    {
-   gROOT->cd();
-   TString canvasName = Form("c_Track%d", trackID);
-   TString canvasTitle = Form("UKF Results - Track %d", trackID);
+       gROOT->cd();
+       
+       // Generate unique names and titles for the canvas using the current Track ID
+       TString canvasName = Form("c_Track%d", trackID);
+       TString canvasTitle = Form("UKF Results - Track %d", trackID);
 
-   // Creamos un Canvas grande y lo dividimos en 2x2 paneles
-   TCanvas *cAll = new TCanvas(canvasName, canvasTitle, 1200, 900);
-   cAll->Divide(2, 2);
+       // Create a large Canvas (1200x900 pixels) and divide it into a 2x2 grid (4 panels)
+       TCanvas *cAll = new TCanvas(canvasName, canvasTitle, 1200, 900);
+       cAll->Divide(2, 2);
 
    // -------------------------------------------------------------------------
-   // PANEL 1: TRAZA 3D (Particle Track)
+   // PANEL 1: 3D TRACK (Spatial Trajectory)
    // -------------------------------------------------------------------------
+   // Navigate to the first pad (top-left) to draw the 3D particle trajectory
    cAll->cd(1);
    
    TGraph2D *track = new TGraph2D((int)hX.size(), (double*)hX.data(), (double*)hY.data(), (double*)hZ.data());
@@ -305,7 +447,7 @@ UKFResult runKalman(const std::vector<double>& hX, const std::vector<double>& hY
    track->SetMarkerStyle(20);
    track->SetMarkerSize(0.8);
 
-   TGraph2D *track2 = new TGraph2D(x2.size(), x2.data(), y2.data(), z2.data());
+   TGraph2D *track2 = new TGraph2D(xForward.size(), xForward.data(), yForward.data(), zForward.data());
    track2->SetName(Form("Prop_Track_%d", trackID)); 
    track2->SetMarkerStyle(21);
    track2->SetMarkerSize(0.8);
@@ -317,13 +459,13 @@ UKFResult runKalman(const std::vector<double>& hX, const std::vector<double>& hY
    smoothedTrack->SetMarkerSize(0.8);
    smoothedTrack->SetMarkerColor(kGreen + 2);
 
-   // Ajuste de ejes
-   double xmin = std::min(*std::min_element(hX.begin(), hX.end()), *std::min_element(x2.begin(), x2.end()));
-   double xmax = std::max(*std::max_element(hX.begin(), hX.end()), *std::max_element(x2.begin(), x2.end()));
-   double ymin = std::min(*std::min_element(hY.begin(), hY.end()), *std::min_element(y2.begin(), y2.end()));
-   double ymax = std::max(*std::max_element(hY.begin(), hY.end()), *std::max_element(y2.begin(), y2.end()));
-   double zmin = std::min(*std::min_element(hZ.begin(), hZ.end()), *std::min_element(z2.begin(), z2.end()));
-   double zmax = std::max(*std::max_element(hZ.begin(), hZ.end()), *std::max_element(z2.begin(), z2.end()));
+   // Axis range 
+   double xmin = std::min(*std::min_element(hX.begin(), hX.end()), *std::min_element(xForward.begin(), xForward.end()));
+   double xmax = std::max(*std::max_element(hX.begin(), hX.end()), *std::max_element(xForward.begin(), xForward.end()));
+   double ymin = std::min(*std::min_element(hY.begin(), hY.end()), *std::min_element(yForward.begin(), yForward.end()));
+   double ymax = std::max(*std::max_element(hY.begin(), hY.end()), *std::max_element(yForward.begin(), yForward.end()));
+   double zmin = std::min(*std::min_element(hZ.begin(), hZ.end()), *std::min_element(zForward.begin(), zForward.end()));
+   double zmax = std::max(*std::max_element(hZ.begin(), hZ.end()), *std::max_element(zForward.begin(), zForward.end()));
 
    track->GetXaxis()->SetLimits(xmin, xmax);
    track->GetYaxis()->SetLimits(ymin, ymax);
@@ -349,28 +491,33 @@ UKFResult runKalman(const std::vector<double>& hX, const std::vector<double>& hY
    elossGraph->SetTitle("Energy Loss per Hit;Hit Number;Energy Loss [MeV]");
    elossGraph->SetMarkerStyle(20);
 
-   TGraph *eloss2Graph = new TGraph(Eloss2.size());
-   for (size_t i = 0; i < Eloss2.size(); ++i) eloss2Graph->SetPoint(i, i, Eloss2[i]);
-   eloss2Graph->SetMarkerStyle(21);
-   eloss2Graph->SetMarkerColor(kRed);
+   TGraph *eLossForwardGraph = new TGraph(eLossForward.size());
+   for (size_t i = 0; i < eLossForward.size(); ++i) eLossForwardGraph->SetPoint(i, i, eLossForward[i]);
+   eLossForwardGraph->SetMarkerStyle(21);
+   eLossForwardGraph->SetMarkerColor(kRed);
 
-   // Solo dibujamos la smoothed si el vector tiene datos (evita crash)
-   TGraph *elossSmoothGraph = nullptr;
+   // Only draw the smoothed track if the vector contains data (prevents a ROOT crash)
+   /*TGraph *elossSmoothGraph = nullptr;
    if (!eLossSmooth.empty()) {
        elossSmoothGraph = new TGraph(eLossSmooth.size());
        for (size_t i = 0; i < eLossSmooth.size(); ++i) elossSmoothGraph->SetPoint(i, i, eLossSmooth[i]);
        elossSmoothGraph->SetMarkerStyle(22);
        elossSmoothGraph->SetMarkerColor(kGreen + 2);
-   }
+   }*/
+
+    TGraph *elossSmoothGraph = new TGraph(eLossSmooth.size());
+    for (size_t i = 0; i < eLossSmooth.size(); ++i)  elossSmoothGraph->SetPoint(i, i, eLossSmooth[i]);
+    elossSmoothGraph->SetMarkerStyle(22);
+    elossSmoothGraph->SetMarkerColor(kGreen + 2);
 
    elossGraph->Draw("AP"); 
-   eloss2Graph->Draw("PSAME"); 
-   if (elossSmoothGraph) elossSmoothGraph->Draw("PSAME"); 
+   eLossForwardGraph->Draw("PSAME"); 
+   elossSmoothGraph->Draw("PSAME"); 
 
    TLegend *leg2 = new TLegend(0.6, 0.7, 0.88, 0.88);
    leg2->AddEntry(elossGraph, "Measured Eloss", "p");
-   leg2->AddEntry(eloss2Graph, "Propagated Eloss", "p");
-   if (elossSmoothGraph) leg2->AddEntry(elossSmoothGraph, "Smoothed Eloss", "p");
+   leg2->AddEntry(eLossForwardGraph, "Propagated Eloss", "p");
+   leg2->AddEntry(elossSmoothGraph, "Smoothed Eloss", "p");
    leg2->Draw();
 
    // -------------------------------------------------------------------------
@@ -378,10 +525,10 @@ UKFResult runKalman(const std::vector<double>& hX, const std::vector<double>& hY
    // -------------------------------------------------------------------------
    cAll->cd(3);
 
-   TGraphErrors *pGraph = new TGraphErrors(p2.size());
-   for (size_t i = 0; i < p2.size(); ++i) {
-      pGraph->SetPoint(i, i, p2[i]);
-      pGraph->SetPointError(i, 0, sigmap2[i] * 5); // Bars scaled by 5
+   TGraphErrors *pGraph = new TGraphErrors(pForward.size());
+   for (size_t i = 0; i < pForward.size(); ++i) {
+      pGraph->SetPoint(i, i, pForward[i]);
+      pGraph->SetPointError(i, 0, sigmapForward[i] * 5); // Bars scaled by 5
    }
    pGraph->SetTitle("Momentum per Hit (Errors x5);Hit Number;Momentum [MeV/c]");
    pGraph->SetMarkerStyle(20);
@@ -409,9 +556,9 @@ UKFResult runKalman(const std::vector<double>& hX, const std::vector<double>& hY
    // PANEL 4: RESIDUALS
    // -------------------------------------------------------------------------
    cAll->cd(4);
-
-   TGraph *residualGraph = new TGraph(residual.size());
-   for (size_t i = 0; i < residual.size(); ++i) residualGraph->SetPoint(i, i, residual[i] * 0.1);
+   
+   TGraph *residualGraph = new TGraph(residualForward.size());
+   for (size_t i = 0; i < residualForward.size(); ++i) residualGraph->SetPoint(i, i, residualForward[i] * 0.1);
    residualGraph->SetTitle("Residual per Hit;Hit Number;Residual [cm]");
    residualGraph->SetMarkerStyle(23);
    residualGraph->SetMarkerColor(kMagenta);
@@ -419,34 +566,42 @@ UKFResult runKalman(const std::vector<double>& hX, const std::vector<double>& hY
   TGraph *residualSmoothGraph = nullptr;
    if (!residualSmooth.empty()) {
        residualSmoothGraph = new TGraph(residualSmooth.size());
-       for (size_t i = 0; i < residualSmooth.size(); ++i) residualSmoothGraph->SetPoint(i, i, residualSmooth[i] * 0.1);
+       for (size_t i = 0; i < residualSmooth.size(); ++i) residualSmoothGraph->SetPoint(i, i+1, residualSmooth[i] * 0.1);
        residualSmoothGraph->SetMarkerStyle(24);
        residualSmoothGraph->SetMarkerColor(kOrange + 7);
    }
 
-   residualGraph->Draw("AP");
-   if (residualSmoothGraph) residualSmoothGraph->Draw("PSAME"); //PSAME
+  // 3. Usamos TMultiGraph para que ROOT escale los ejes a TODAS las gráficas
+   TMultiGraph *mg4 = new TMultiGraph();
+   mg4->SetTitle("Residual per Hit;Hit Number;Residual [cm]");
+   mg4->Add(residualGraph, "P");
+   if (residualSmoothGraph) {
+       mg4->Add(residualSmoothGraph, "P");
+   }
+   
+   // Al dibujar el MultiGraph con "A", ROOT recalcula el suelo y el techo
+   mg4->Draw("A");
 
    TLegend *leg4 = new TLegend(0.6, 0.7, 0.88, 0.88);
    leg4->AddEntry(residualGraph, "Filtered Residual", "p");
    if (residualSmoothGraph) leg4->AddEntry(residualSmoothGraph, "Smoothed Residual", "p");
    leg4->Draw();
 
-   // Actualizamos el canvas para que dibuje todo
+   // Update teh canvas to render all the plots. 
    cAll->Update();
-  // cAll->SaveAs(Form("UKF_Plot_Track_%d.png", trackID));
+   cAll->SaveAs(Form("UKF_Plot_Track_%d.png", trackID));
 
    } //if drawPlots
 
-   // --- RESUMEN FINAL POR TERMINAL ---
+   // --- FINAL SUMMARY IN TERMINAL ---
    std::cout << "\n\n" << std::string(65, '=') << std::endl;
    std::cout << "          KALMAN FILTER (UKF) SUMMARY - TRACK " << trackID << std::endl;
    std::cout << std::string(65, '-') << std::endl;
 
    std::printf("  MOMENTUM (p):\n");
    std::printf("    - Simulated (MC):       %10.4f MeV/c\n", beginMom);
-   std::printf("    - Reconstructed (UKF):  %10.4f MeV/c\n", smoothedStates[0][3]);
-   std::printf("    - Relative Error:       %10.4f %%\n\n", (smoothedStates[0][3] - beginMom)/beginMom * 100);
+   std::printf("    - Reconstructed (UKF):  %10.4f MeV/c\n", p_reco_val);
+   std::printf("    - Relative Error:       %10.4f %%\n\n", (p_reco_val - beginMom)/beginMom * 100);
 
    std::printf("  KINETIC ENERGY (T):\n");
    std::printf("    - Simulated (MC):       %10.4f MeV\n", E_sim);
@@ -466,22 +621,43 @@ UKFResult runKalman(const std::vector<double>& hX, const std::vector<double>& hY
 //--------------------------------------------------------------------------------------------------------------------
    UKFResult result;
    result.trackID = trackID;
-   result.p_rec = p_reco_val;
+   result.p_rec = p_reco_val;  
    result.E_rec = E_rec_val;
    result.sumEloss = sumElossUKF;
-   result.p_true = initialMom.R(); // Guardamos el true para que sea fácil analizar luego
-   result.theta_rec = smoothedStates[0][4]; // Ángulo polar reconstruido
-   result.phi_rec = smoothedStates[0][5];   // Ángulo azimutal reconstruido
-   result.theta_true = std::atan2(std::sqrt(initialMom.X()*initialMom.X() + initialMom.Y()*initialMom.Y()), initialMom.Z()); // Ángulo polar verdadero
-   result.phi_true = std::atan2(initialMom.Y(), initialMom.X()); // Ángulo azimutal verdadero
+   
+   // NOTE: Using smoothed angles (from hit 1) since backward smoother works better for angles than for momentum
+   result.p_true = initialMom.R(); // Save true momentum for easier analysis later
+   result.theta_rec = smoothedStates[1][4]; // Reconstructed polar angle (smoothed)
+   result.phi_rec = wrapAngle(smoothedStates[1][5]);   // Reconstructed azimuthal angle (smoothed)
+   
+   result.theta_true = std::atan2(std::sqrt(initialMom.X()*initialMom.X() + initialMom.Y()*initialMom.Y()), initialMom.Z()); // True polar angle
+   result.phi_true = wrapAngle(std::atan2(initialMom.Y(), initialMom.X())); // True azimuthal angle
+
+   if (smoothedStates.size() > 1) {
+
+    double theta0 = smoothedStates[0][4];
+    double theta1 = smoothedStates[1][4];
+
+    double phi0 = smoothedStates[0][5];
+    double phi1 = smoothedStates[1][5];
+
+    double p0 = smoothedStates[0][3];
+    double p1 = smoothedStates[1][3];
+
+    printf("SMOOTHER SHIFT Track %d:\n", trackID);
+    printf("   Δp     = %.6f\n", p0 - p1);
+    printf("   Δtheta = %.6f rad (%.3f mrad)\n", theta0 - theta1, (theta0 - theta1)*1e3);
+    printf("   Δphi   = %.6f rad (%.3f mrad)\n", phi0 - phi1, (phi0 - phi1)*1e3);
+    }
 
    return result;
 }
 
 void UKFMultiTrack_Georgina(const char* simFilename = "/home/georgina/fair_install/ATTPCROOTv2_KF/macro/Simulation/ATTPC/protons/data/protons_300torr/protonssim_3T_H300torr_40MeV_theta30.root", int eventToDraw = 1) 
 {
-    // === A. PREPARAR ARCHIVO DE SALIDA ===
-    TFile* outFile = new TFile("reco_ukf_output_3T_H300torr_p40MeV_theta30.root", "RECREATE");
+    // === A. PREPARE OUTPUT FILE ===
+    //TFile* outFile = new TFile("reco_ukf_output_3T_H300torr_p40MeV_theta30.root", "RECREATE");
+    TFile* outFile = new TFile("reco_ukf_output_hit1.root", "RECREATE");
     TTree* outTree = new TTree("UKFTree", "Resultados del UKF");
 
     UKFResult res; // Usando el struct que definimos antes
@@ -496,11 +672,12 @@ void UKFMultiTrack_Georgina(const char* simFilename = "/home/georgina/fair_insta
     outTree->Branch("theta_true", &res.theta_true, "theta_true/D");
     outTree->Branch("phi_true", &res.phi_true, "phi_true/D");
 
+    // Global counters to calculate statistics and efficiency at the end of the script
     int totalTracksProcessed = 0;
     int successfulFits = 0;
     int failedStoppedTracks = 0;
 
-    // === B. ABRIR ARCHIVO DE SIMULACIÓN (UNA SOLA VEZ) ===
+   // === B. OPEN SIMULATION FILE (ONLY ONCE) ===
     TFile* simFile = TFile::Open(simFilename, "READ");
     TTree* simTree = (TTree*)simFile->Get("cbmsim");
     TClonesArray* tpcPoints = new TClonesArray("AtMCPoint"); 
@@ -509,16 +686,13 @@ void UKFMultiTrack_Georgina(const char* simFilename = "/home/georgina/fair_insta
     int numEventos = simTree->GetEntries();
     std::cout << "initializing" << numEventos << " events..." << std::endl;
 
-    // === C. BUCLE PRINCIPAL ===
-    for (int ev = 0; ev < 10000; ev++) {
-        
-        // 1. Delegamos el trabajo de cargar hits a tu función
+   // === C. MAIN LOOP ===
+    for (int ev = 0; ev < numEventos; ev++) {
+  
         LoadHitsROOT(simTree, tpcPoints, ev);
-
-        // 2. Procesamos las trazas que LoadHitsROOT ha dejado en los mapas globales
         for (auto const& [trackID, xVector] : posX) {
             
-            if (xVector.size() < 5) continue; // Protección Kalman
+            if (xVector.size() < 5) continue; // Extra Kalman protection
             totalTracksProcessed++;
 
             bool drawPlots = (ev == eventToDraw);
@@ -528,6 +702,22 @@ void UKFMultiTrack_Georgina(const char* simFilename = "/home/georgina/fair_insta
             // as soon as the C++ code hits a 'throw'
             UKFResult result_parcial = runKalman(posX[trackID], posY[trackID], posZ[trackID], Eloss[trackID], 
                                                 mass_p, charge_p, 1, 1, initialMom[trackID], trackID, drawPlots);
+
+            //---------------------------------------------------------------------------------------------------
+           // --- Correct diagnostics: work in radians and display in degrees ---
+            double phi_rec_rad  = result_parcial.phi_rec;   // already rad
+            double phi_true_rad = result_parcial.phi_true;  // already rad
+            double dphi_rad     = wrapAngle(phi_rec_rad - phi_true_rad);
+
+            double phi_init_rad = atan2(initialMom[trackID].Y(), initialMom[trackID].X());
+            double dphi_init_rad = wrapAngle(phi_rec_rad - phi_init_rad);
+
+            printf("DIAG Track %d: phi_true=%.3f deg phi_rec=%.3f deg dphi_deg=%.3f\n",
+                trackID, phi_true_rad * TMath::RadToDeg(), phi_rec_rad * TMath::RadToDeg(), dphi_rad * TMath::RadToDeg());
+
+            printf("DIAG Track %d: phi_init=%.3f deg dphi_init_deg=%.3f\n",
+                trackID, phi_init_rad * TMath::RadToDeg(), dphi_init_rad * TMath::RadToDeg());
+
 
             // If it didn't throw, we check the result and fill
            if (result_parcial.p_rec > 0 && result_parcial.p_rec != -999.0) {
@@ -581,13 +771,65 @@ void UKFMultiTrack_Georgina(const char* simFilename = "/home/georgina/fair_insta
     }
     std::cout << "===============================================\n" << std::endl;
 
+
+    if (!all_dtheta_rad.empty()) {
+    // Calculate basic statistics (mean, RMS) for the global angular resolution
+    const size_t n = all_dtheta_rad.size();
+    double sum = std::accumulate(all_dtheta_rad.begin(), all_dtheta_rad.end(), 0.0);
+    double mean = sum / double(n);
+
+    double sum2 = 0.0;
+    for (double v : all_dtheta_rad) sum2 += v*v;
+    double rms = std::sqrt(sum2 / double(n) - mean*mean);
+
+    std::vector<double> sorted = all_dtheta_rad;
+    std::sort(sorted.begin(), sorted.end());
+
+    auto percentile = [&](double p)->double {
+        double idx = (p/100.0) * (sorted.size() - 1);
+        size_t i = (size_t)std::floor(idx);
+        size_t j = (size_t)std::ceil(idx);
+        if (i == j) return sorted[i];
+        double frac = idx - i;
+        return sorted[i] * (1.0 - frac) + sorted[j] * frac;
+    };
+    
+
+    double med = percentile(50.0); 
+    double p68 = percentile(68.0); // 1 sigma for a Gaussian is ~68.27%, so the median gives us a robust central value even if the distribution has tails.
+    double p95 = percentile(95.0); // The 95th percentile tells us how bad the worst 5% of our tracks are, which is important for understanding the tails of the resolution distribution.
+
+    // Lambda function to compute and print detailed stats for any given vector
+    auto print_stats = [&](const std::vector<double>& v, const char* name){
+    if (v.empty()) { std::cout << name << " empty\n"; return; }
+    size_t n = v.size();
+    double sum = std::accumulate(v.begin(), v.end(), 0.0);
+    double mean = sum / double(n);
+    double sum2 = 0;
+    for (double x : v) sum2 += x*x;
+    double rms = std::sqrt(sum2/double(n) - mean*mean);
+    std::vector<double> s = v; std::sort(s.begin(), s.end());
+    auto pct = [&](double p){
+        double idx = (p/100.0)*(s.size()-1);
+        size_t i = (size_t)std::floor(idx), j = (size_t)std::ceil(idx);
+        if (i==j) return s[i];
+        double f = idx - i; return s[i]*(1-f) + s[j]*f;
+    };
+    std::cout << name << " : n="<<n<<" mean="<<mean*1e3<<" mrad rms="<<rms*1e3
+              <<" med="<<pct(50)*1e3<<" p68="<<pct(68)*1e3<<" p95="<<pct(95)*1e3<<"\n";
+    };
+
+    // Print comparative angular resolutions in milliradians (mrad)
+    print_stats(all_dtheta_fwd_rad, "DTHETA_FORWARD");
+    print_stats(all_dtheta_sm_rad,  "DTHETA_SMOOTHED");
+    print_stats(all_dtheta_sm_minus_fwd_rad, "DTHETA_SMOOTHED_MINUS_FORWARD");
+
     outFile->cd();
     outTree->Write();
     outFile->Close();
     simFile->Close();
-
-    //std::cout << "\n << 'reco_ukf_output_3T_p40MeV_H300torr.root' saved" << std::endl;
-    std::cout << "\n << 'reco_ukf_output.root' saved" << std::endl;
+    std::cout << "\n << output file starting with 'reco_ikf_output' saved" << std::endl;
+}
 }
 
 /*void UKFSingleTrack_protons() { 

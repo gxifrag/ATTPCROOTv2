@@ -12,24 +12,14 @@ double wrapAngle(double a){
     return TMath::ATan2(TMath::Sin(a), TMath::Cos(a));
 }
 
-std::vector<double> wrapAll(const std::vector<double>& delta){
-    std::vector<double> out; out.reserve(delta.size());
-    for(double d: delta) out.push_back(wrapAngle(d));
-    return out;
-}
-
-td::pair<double,double> circularStats(const std::vector<double>& delta){
-    double sx=0, cx=0;
-    for(double d: delta){ sx += sin(d); cx += cos(d); }
-    sx /= delta.size(); cx /= delta.size();
-    double mean = atan2(sx, cx);                 // media circular
-    double r = sqrt(sx*sx + cx*cx);              // resultant length
-    double circ_std = sqrt(-2.0 * log(r));       // aproximación
-    return {mean, circ_std};
+double wrapDeg(double a){
+    double r = fmod(a + 180.0, 360.0);
+    if (r < 0) r += 360.0;
+    return r - 180.0;
 }
 
 //void analyzeUKF_resolutions(TString fileName = "reco_ukf_output_3T_H300torr_p40MeV_theta30.root") {
-void analyzeUKF_resolutions(TString fileName = "reco_ukf_output_3T_H300torr_p40MeV_theta30.root") {
+void analyzeUKF_resolutions(TString fileName = "reco_ukf_output_hit1.root") {
 
     // 1. Abrir el archivo y obtener el árbol
     TFile *f = new TFile(fileName);
@@ -48,26 +38,64 @@ void analyzeUKF_resolutions(TString fileName = "reco_ukf_output_3T_H300torr_p40M
     double p_true, p_rec, theta_true, theta_rec, phi_true, phi_rec;
     tree->SetBranchAddress("p_true",     &p_true);
     tree->SetBranchAddress("p_rec",      &p_rec);
-    tree->SetBranchAddress("theta_true", &theta_true);
+    tree->SetBranchAddress("theta_true", &theta_true);// de -pi a pi
     tree->SetBranchAddress("theta_rec",  &theta_rec);
     tree->SetBranchAddress("phi_true",   &phi_true);
     tree->SetBranchAddress("phi_rec",    &phi_rec);
 
     // 3. Definición de Histogramas (Rangos ajustados según tus datos de 300torr)
-    TH1F *hP = new TH1F("hP", "Resolucion Momento; (p_{rec} - p_{true})/p_{true} [%]; Counts", 100, -5, 5);
-    TH1F *hTheta = new TH1F("hTheta", "Resolucion #theta; #theta_{rec} - #theta_{true} [mrad]; Counts", 100, -100, 100);
-    TH1F *hPhi   = new TH1F("hPhi",   "Resolucion #phi; #phi_{rec} - #phi_{true} [mrad]; Counts", 100, -50, 150);
+    TH1F *hP = new TH1F("hP", "Resolucion Momento; (p_{rec} - p_{true})/p_{true} [%]; Counts", 160, -4, 4);
+    TH1F *hTheta = new TH1F("hTheta", "Resolucion #theta; #theta_{rec} - #theta_{true} [mrad]; Counts", 160, -40, 40);
+    TH1F *hPhi   = new TH1F("hPhi",   "Resolucion #phi; #phi_{rec} - #phi_{true} [mrad]; Counts", 160, -40, 40);
 
     // 4. Llenar los histogramas
     Long64_t nentries = tree->GetEntries();
+
     for (Long64_t i=0; i<nentries; i++) {
         tree->GetEntry(i);
-        if (p_rec > 0) {
-            hP->Fill((p_rec - p_true) / p_true * 100.0);
-            hTheta->Fill((theta_rec - theta_true)*1000*TMath::DegToRad());
+        if (p_rec <= 0) continue; // Solo consideramos eventos con p_rec > 0 para evitar problemas de división y asegurar que son eventos reconstruidos
+        
+        hP->Fill((p_rec - p_true) / p_true * 100.0);
+        double dtheta_mrad = (theta_rec - theta_true) * TMath::DegToRad() * 1000; // Convertimos a mrad
+        hTheta->Fill(dtheta_mrad);
+
+        //printf("entry %lld: p_true=%g  p_rec=%g  theta_true=%g  theta_rec=%g  dtheta_mrad=%g\n",
+                //i, p_true, p_rec, theta_true, theta_rec, dtheta_mrad);
+            
             hPhi->Fill((phi_rec - phi_true)*1000*TMath::DegToRad());
-        }
+            //hPhi->Fill(phi_rec);
+
+        double phi_t = wrapDeg(phi_true);
+        double phi_r = wrapDeg(phi_rec);
+        double ddeg = wrapDeg(phi_r - phi_t);
+
+        double dphi_mrad = ddeg * TMath::DegToRad()*1000 ;              // a rad
+        //printf("entry %lld: phi_true=%g  phi_t=%g  phi_rec=%g  phi_rec_wrapped=%g  dphi_deg=%g  dphi_mrad=%g\n",i, phi_true, phi_t, phi_rec, phi_r, ddeg, dphi_mrad);
+        //hPhi->Fill(dphi_mrad);                 // mrad
+        //deltasPhi_rad.push_back(dphi_rad);
+                
+        
     }
+
+   /* for (int i=0;i<nentries;i++){
+        tree->GetEntry(i);
+         double phi_r_wrapped = wrapDeg(phi_rec);
+       // comprobar phi_true raw (si esperas que siempre esté en [-180,180])
+        if (phi_true > 180.0 || phi_true < -180.0) {
+            double diff = phi_rec - phi_r_wrapped; // diferencia raw - wrapped (grados)
+            printf("WARNING: Angulo phi_true fuera de rango en entry %d: phi_true=%g  phi_rec_raw=%g  phi_rec_wrapped=%g  diff_raw_wrapped=%g\n",
+                i, phi_true, phi_rec, phi_r_wrapped, diff);
+        }
+
+        // comprobar el valor normalizado (phi_r_wrapped), no el raw
+        if (phi_rec > 180.0 || phi_rec< -180.0) {
+             double diff = phi_rec - phi_r_wrapped; 
+            printf("WARNING: Angulo phi_rec_wrapped fuera de rango en entry %d: phi_true=%g  phi_rec_raw=%g  phi_rec_wrapped=%g  diff_raw_wrapped=%g\n",
+                i, phi_true, phi_rec, phi_r_wrapped, diff);
+        }
+                    //printf("entry %d: phi_true=%g  phi_rec=%g  theta_true=%g  theta_rec=%g\n",
+                //i, phi_true, phi_rec, theta_true, theta_rec);
+    }*/
 
     // 5. Estilo
     gStyle->SetOptStat(0); // Quitamos el stat box de los histogramas para que no tapen
@@ -131,20 +159,6 @@ void analyzeUKF_resolutions(TString fileName = "reco_ukf_output_3T_H300torr_p40M
 
     // 6. Guardar imagen y TXT
     cRes->SaveAs("UKF_Summary_H300torr_40MeV_theta30.png");
-
-
-    //coomprobaciones:
-
-    double ssum=0, csum=0;
-    for(int i=0;i<N;i++){
-        ssum += w[i] * sin(sigmaPhi[i]);
-        csum += w[i] * cos(sigmaPhi[i]);
-    }
-    double phi_mean = atan2(ssum, csum);
-
-    cout << "\n>>> Circular Stats for Phi Residuals:" << endl;
-    cout << "    - Mean (wrapped): " << phi_mean*1000 << " mrad" << endl;
-    cout << "    - Sigma (approx): " << sqrt(-2.0 * log(sqrt(ssum*ssum + csum*csum))) * 1000 << " mrad" << endl;    
 
     ofstream outfile("resoluciones_H300torr_40MeV_theta30.txt");
     outfile << "RESUMEN ANALISIS UKF - Archivo: " << fileName << endl;
