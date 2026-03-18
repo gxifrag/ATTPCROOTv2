@@ -22,6 +22,7 @@ void TrackFitterUKF::Reset()
 void TrackFitterUKF::SetInitialState(const ROOT::Math::XYZPoint &initialPosition,
                                      const ROOT::Math::XYZVector &initialMomentum, const TMatrixD &initialCovariance)
 {
+    LOG(info)<< "holaaaaaaaaaaaaaaaaaaaaaaaaaaa";
    // If we are setting the initial state, then we should clear the history.
    Reset();
    fPropagator.SetState(initialPosition, initialMomentum); // Set the initial state in the propagator
@@ -43,6 +44,7 @@ void TrackFitterUKF::SetInitialState(const ROOT::Math::XYZPoint &initialPosition
       m_matQmod(i, i) = fPosModelNoise; // Initialize model noise covariance to zero
    }
 
+    LOG(info) << "diooooooooooooooooooooos";
    // Save the initial state in our history vectors
    m_vecXFiltHist.push_back(m_vecX);
    m_matPFiltHist.push_back(m_matP);
@@ -50,10 +52,14 @@ void TrackFitterUKF::SetInitialState(const ROOT::Math::XYZPoint &initialPosition
    m_matPPredHist.push_back(m_matP);
    m_matCPredHist.push_back(Matrix<TF_DIM_X, TF_DIM_X>::Zero()); // Cross-correlation is not defined for the first point
 
+    LOG(info) << "claudeeeeeeeeeeeeeeeeeeeee";
    // We need to calculate the sigma points for the initial state
    updateAugmentedStateAndCovariance();                   // Update the augmented state vector and covariance matrix
+
+   LOG(info) << "josemaaaaa";
    m_matSigmaXa = calculateSigmaPoints(m_vecXa, m_matPa); // Calculate the sigma points for the initial state
    // Now we grab the sigma points only for the state.
+   LOG(info) << "Georginaaaaaaa";
    m_matSigmaXPred = m_matSigmaXa.block(0, 0, TF_DIM_X, SIGMA_DIM_A); // Extract the state sigma points
 
    logEigen("Initial cov", m_matP, 0); // Log the eigenvalues of the initial covariance matrix
@@ -153,7 +159,7 @@ Vector<TrackFitterUKF::TF_DIM_X> TrackFitterUKF::funcF(const Vector<TrackFitterU
    // Set the state of the propagator to the current state vector
    using namespace ROOT::Math;
 
-   if (x[3] < 15.0) {
+   if (x[3] < 5.0) {
        LOG(warn) << ">>> PRE-PROPAGATION BREAK: Momentum too low (" << x[3] << "), lower than 15MeV/c. Terminating track to avoid freeze.";
        throw std::runtime_error("ParticleStopped");
    }

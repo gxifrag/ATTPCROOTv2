@@ -1,7 +1,7 @@
-RESUMEN ANALISIS UKF - Archivo: reco_ukf_output_hit1.root
+RESUMEN ANALISIS UKF - Archivo: reco_ukf_output_pionssim_30MeV_Bfield_20kG_H300torr_theta30_catima_initialMom_phi_1000.root
 -----------------------------------------------
-MOMENTO (p):   Sigma = 0.546676 %   | Bias = -1.15997 %
-THETA (theta): Sigma = 4.13627 mrad | Bias = 16.7908 mrad
-PHI (phi):     Sigma = 8.84082 mrad | Bias = 0.477243 mrad
+MOMENTO (p):   Sigma = 0.156933 %   | Bias = -0.019269 %
+THETA (theta): Sigma = 2.67608 mrad | Bias = 8.03947 mrad
+PHI (phi):     Sigma = 2.67608 mrad | Bias = -19992 mrad
 -----------------------------------------------
 Eficiencia Reconstruccion: 100 %

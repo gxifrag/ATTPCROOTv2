@@ -1,10 +1,17 @@
 // Struct to store and easily compare the Unscented Kalman Filter (UKF) 
 // reconstruction results against the Monte Carlo truth data.
+enum class FitStatus {
+    SUCCESS,
+    STOPPED_IN_BRAGG,
+    FAILURE
+};
 
 struct UKFResult {
    int eventID = -1;
    int trackID = -1;
    
+   FitStatus status = FitStatus::FAILURE; // Default to FAILURE, will be set to SUCCESS or STOPPED_IN_BRAGG based on fit outcome
+
    // Reconstructed variables
    double p_rec = 0.0;      // Reconstructed momentum [MeV/c]
    double E_rec = 0.0;      // Reconstructed kinetic energy [MeV]
@@ -18,12 +25,11 @@ struct UKFResult {
    double phi_true = 0.0;   // True azimuthal angle [rad]
 };
 
-// Helper function to safely wrap angles so they remain bounded between -pi and pi.
-// Using ATan2(Sin, Cos) gracefully handles phase wrapping without needing loops.
-
 double wrapAngle(double a){
-    return TMath::ATan2(TMath::Sin(a), TMath::Cos(a));
+    //return TMath::ATan2(TMath::Sin(a), TMath::Cos(a));
+    return a;
 }
+
 
 // Global vectors to accumulate angular residuals/differences across all processed events.
 // These are typically used to fill histograms for resolution analysis at the end.
@@ -31,6 +37,10 @@ static std::vector<double> all_dtheta_rad;
 static std::vector<double> all_dtheta_fwd_rad;
 static std::vector<double> all_dtheta_sm_rad;
 static std::vector<double> all_dtheta_sm_minus_fwd_rad;
+
+// Global vectors for all clusters across all events
+static std::vector<double> all_cluster_p_rec;
+static std::vector<double> all_cluster_p_true;
 
 // Dynamically resolves the path to the energy loss table (e.g., Proton in Hydrogen).
 // Checks the standard VMCWORKDIR environment variable first, then falls back to a relative path.
@@ -46,8 +56,19 @@ std::string getEnergyPath()
 }
 
 // Fundamental physics constants for the tracked particle
-const double mass_p = 938.272;           // Mass of proton in [MeV/c^2]
-const double charge_p = 1.602176634e-19; // Charge of proton in [Coulombs
+/*const double mass_p = 938.272;           // Mass of proton in [MeV/c^2]
+const double charge_p = 1.602176634e-19; // Charge of proton in [Coulombs]
+*/
+
+double mass_pi = 139.57039;  // MeV/c^2
+double charge_pi = 1.0;
+double charge_pi_Coulombs = 1.602176634e-19; //1.0;      // en unidades de e (no Coulomb)
+
+
+int mat_Z = 1;               // Hydrogen
+int mat_A = 1;               // H-1
+double density_300torr = 3.3084e-5;  // g/cm^3 (tu valor para 300 torr)
+double density_60torr= 6.6168e-6; 
 
 // Dictionaries (maps) linking a specific track ID to its downsampled cluster data.
 // These store the grouped spatial coordinates [mm] and accumulated energy loss [MeV].
@@ -59,7 +80,7 @@ std::map<int, std::vector<double>> Eloss;
 // To save the XYZVector of the initial momentum for each track
 std::map<int, ROOT::Math::XYZVector> initialMom;
 
-int pointsToCluster= 5; //5
+int pointsToCluster= 10; //5
 
 void LoadHitsROOT(TTree* tree, TClonesArray* tpcPoints, int targetEvent)
 {
@@ -84,10 +105,13 @@ void LoadHitsROOT(TTree* tree, TClonesArray* tpcPoints, int targetEvent)
    // and downsample the hits into discrete clusters.
 
    for (int i = 0; i < nPoints; i++) {
+
       AtMCPoint* point = (AtMCPoint*)tpcPoints->At(i);
       if (!point) continue;
 
       int trackID = point->GetTrackID();
+      if (trackID != 0) continue;
+
 
         // Extract position and energy loss, converting units
         // Assuming framework native units are cm and GeV, converting to mm and MeV
@@ -169,22 +193,44 @@ UKFResult runKalman(const std::vector<double>& hX, const std::vector<double>& hY
    double pForward_early = 0.0;  // momentum at early stage (hit 1)
    double pForward_late = 0.0;   // momentum at late stage (last hit)
 
-   // Set up the CATIMA energy loss model for Hydrogen gas at 300 torr.
-   // (The commented out line below is for 60 torr)
-   auto elossModel = std::make_unique<AtTools::AtELossCATIMA>(3.3084e-5);
-   //auto elossModel = std::make_unique<AtTools::AtELossCATIMA>(6.6168e-6);
+    //------------------------CATIMA IMPLEMENTATION:----------------------------------
+    // Set up the CATIMA energy loss model for Hydrogen gas at 300 torr.
+    
+    /*auto elossModel = std::make_unique<AtTools::AtELossCATIMA>(density_300torr);
+    elossModel->SetProjectile(mat_Z, mat_A, mass / 931.494); // Convert mass from MeV/c^2 to approximate amu for CATIMA
+    std::vector<std::tuple<int, int, int>> mat = {{mat_Z, mat_A, 2}}; // Hidrogen
+    elossModel->SetMaterial(mat);*/
+    //--------------------------------------------------------------------------------
 
-   // Convert mass from MeV/c^2 to approximate amu for CATIMA
-   elossModel->SetProjectile(Z, A, mass / 931.494); 
-   std::vector<std::tuple<int, int, int>> mat = {{1, 1, 2}}; // Hidrogen
-   elossModel->SetMaterial(mat);
+   //For pions we use the betheBloch:
+    auto elossModel = std::make_unique<AtTools::AtELossBetheBloch>(
+    charge_pi, // Charge in units of e
+    mass_pi, // MeV/c^2
+    mat_Z,
+    mat_A,
+    density_300torr,
+    -1.0);
+
+
+    // TEST
+    double p_test = 30.0;
+    double p_test2 = 300.0;
+    double p_test3 = 1000.0;
+
+    std::cout << "dEdx 30 MeV/c = " << elossModel->GetdEdx(p_test) << std::endl;
+    std::cout << "dEdx 300 MeV/c = " << elossModel->GetdEdx(p_test2) << std::endl;
+    std::cout << "dEdx 1000 MeV/c = " << elossModel->GetdEdx(p_test3) << std::endl;
+
+    std::cout << "mass pion = " << mass_pi << std::endl;
+    std::cout << "charge pion = " << charge_pi << std::endl;
+    std::cout << "density = " << density_300torr << std::endl;
 
    // 2. Propagator and UKF Setup
    // Initializes the physical environment (E and B fields) and the Runge-Kutta stepper
 
    AtTools::AtPropagator propagator(charge, mass, std::move(elossModel));
    propagator.SetEField({0, 0, 0});
-   propagator.SetBField({0, 0, 3.});//2.85 T
+   propagator.SetBField({0, 0, 2.});//2.85 T
    auto stepper = std::make_unique<AtTools::AtRK4Stepper>();
    kf::TrackFitterUKF ukf(std::move(propagator), std::move(stepper));
 
@@ -206,13 +252,16 @@ UKFResult runKalman(const std::vector<double>& hX, const std::vector<double>& hY
    // Initial covariance matrix (6x6: x, y, z, px, py, pz)
    TMatrixD cov(6, 6); cov.UnitMatrix(); 
    cov(3,3) = sigma_mom * sigma_mom;
+    
    ukf.fEnableEnStraggling = true;
    ukf.setParameters(1e-3, 2, 0);
+   //ukf.setParameters(0.1, 2, 0);
    ukf.SetInitialState(startPos, startMom, cov);
 
-
    // Measurement covariance matrix (3x3: spatial coordinates only)
-   TMatrixD cov_meas(3, 3); cov_meas.UnitMatrix(); cov_meas *= (sigma_pos * sigma_pos);
+   TMatrixD cov_meas(3, 3); 
+   cov_meas.UnitMatrix(); 
+   cov_meas *= (sigma_pos * sigma_pos);
 
    // 4. Hit Loop (Forward Filter)
    ROOT::Math::XYZVector lastMom = startMom;
@@ -248,6 +297,9 @@ UKFResult runKalman(const std::vector<double>& hX, const std::vector<double>& hY
       if (state.size() < 6) break;
 
       auto currentCov = ukf.matP();
+      double eps = 1e-9;
+      for (int k = 0; k < 6; k++) currentCov(k,k) += eps;
+
       ROOT::Math::XYZPoint pos(state[0], state[1], state[2]);
 
       ROOT::Math::Polar3DVector momPolar(state[3], state[4], state[5]);
@@ -289,7 +341,7 @@ UKFResult runKalman(const std::vector<double>& hX, const std::vector<double>& hY
       // Store early and late momentum for later comparison
       if (i == 1) pForward_early = mom.R();  // momentum at 2nd hit
       pForward_late = mom.R();  // last momentum in forward pass
-   } 
+    }
    
    // If the filter couldn't process enough points to make a meaningful track, flag as a failure.
    if (xForward.size() < 4) {
@@ -374,8 +426,15 @@ UKFResult runKalman(const std::vector<double>& hX, const std::vector<double>& hY
 
       double current_p_sm = smoothedStates[i][3]; 
       pSmooth.push_back(current_p_sm);
+      all_cluster_p_rec.push_back(current_p_sm);
+      all_cluster_p_true.push_back(initialMom.R());
 
-      if (i >= 1) {
+      if (i == 0) {
+        // Físicamente, en el punto inicial no ha habido "paso" previo, 
+        // así que la pérdida de energía acumulada en este paso es 0.
+        eLossSmooth.push_back(0.0); 
+        } else {
+     // if (i >= 1) {
         double prev_p_sm = smoothedStates[i-1][3];
         double ke_prev = Kinematics::KE(prev_p_sm, mass);
         double ke_curr = Kinematics::KE(current_p_sm, mass);
@@ -495,15 +554,6 @@ UKFResult runKalman(const std::vector<double>& hX, const std::vector<double>& hY
    for (size_t i = 0; i < eLossForward.size(); ++i) eLossForwardGraph->SetPoint(i, i, eLossForward[i]);
    eLossForwardGraph->SetMarkerStyle(21);
    eLossForwardGraph->SetMarkerColor(kRed);
-
-   // Only draw the smoothed track if the vector contains data (prevents a ROOT crash)
-   /*TGraph *elossSmoothGraph = nullptr;
-   if (!eLossSmooth.empty()) {
-       elossSmoothGraph = new TGraph(eLossSmooth.size());
-       for (size_t i = 0; i < eLossSmooth.size(); ++i) elossSmoothGraph->SetPoint(i, i, eLossSmooth[i]);
-       elossSmoothGraph->SetMarkerStyle(22);
-       elossSmoothGraph->SetMarkerColor(kGreen + 2);
-   }*/
 
     TGraph *elossSmoothGraph = new TGraph(eLossSmooth.size());
     for (size_t i = 0; i < eLossSmooth.size(); ++i)  elossSmoothGraph->SetPoint(i, i, eLossSmooth[i]);
@@ -625,15 +675,16 @@ UKFResult runKalman(const std::vector<double>& hX, const std::vector<double>& hY
    result.E_rec = E_rec_val;
    result.sumEloss = sumElossUKF;
    
-   // NOTE: Using smoothed angles (from hit 1) since backward smoother works better for angles than for momentum
    result.p_true = initialMom.R(); // Save true momentum for easier analysis later
    result.theta_rec = smoothedStates[1][4]; // Reconstructed polar angle (smoothed)
    result.phi_rec = wrapAngle(smoothedStates[1][5]);   // Reconstructed azimuthal angle (smoothed)
    
-   result.theta_true = std::atan2(std::sqrt(initialMom.X()*initialMom.X() + initialMom.Y()*initialMom.Y()), initialMom.Z()); // True polar angle
-   result.phi_true = wrapAngle(std::atan2(initialMom.Y(), initialMom.X())); // True azimuthal angle
-
-   if (smoothedStates.size() > 1) {
+   //result.theta_true = std::atan2(std::sqrt(initialMom.X()*initialMom.X() + initialMom.Y()*initialMom.Y()), initialMom.Z()); // True polar angle
+   //result.phi_true = std::atan2(initialMom.Y(), initialMom.X()); // True azimuthal angle
+   result.phi_true = wrapAngle(initialMom.Phi()); // True azimuthal angle using ROOT's built-in function, which handles the correct quadrant
+   result.theta_true = initialMom.Theta(); // True polar angle using ROOT's built-in function
+    
+   /*if (smoothedStates.size() > 1) {
 
     double theta0 = smoothedStates[0][4];
     double theta1 = smoothedStates[1][4];
@@ -648,19 +699,22 @@ UKFResult runKalman(const std::vector<double>& hX, const std::vector<double>& hY
     printf("   Δp     = %.6f\n", p0 - p1);
     printf("   Δtheta = %.6f rad (%.3f mrad)\n", theta0 - theta1, (theta0 - theta1)*1e3);
     printf("   Δphi   = %.6f rad (%.3f mrad)\n", phi0 - phi1, (phi0 - phi1)*1e3);
-    }
+    }*/
 
+   result.status = FitStatus::SUCCESS;
    return result;
 }
 
-void UKFMultiTrack_Georgina(const char* simFilename = "/home/georgina/fair_install/ATTPCROOTv2_KF/macro/Simulation/ATTPC/protons/data/protons_300torr/protonssim_3T_H300torr_40MeV_theta30.root", int eventToDraw = 1) 
+void UKFMultiTrack_Georgina(const char* simFilename = "/home/georgina/fair_install/ATTPCROOTv2_KF_fork/ATTPCROOTv2/macro/Simulation/ATTPC/protons/data/protonssim_2T_H300torr_40-80MeV_theta10-80.root", int eventToDraw = 1) 
+//void UKFMultiTrack_Georgina(const char* simFilename = "/home/georgina/fair_install/ATTPCROOTv2_KF_fork/ATTPCROOTv2/macro/Simulation/ATTPC/pions/data/pionssim_20-40MeV_Bfield_20kG_H300torr_theta0-90.root", int eventToDraw = 1)
+//void UKFMultiTrack_Georgina(const char* simFilename = "/home/georgina/fair_install/ATTPCROOTv2_KF_fork/ATTPCROOTv2/macro/Simulation/ATTPC/pions/data/pionssim_30MeV_Bfield_20kG_H300torr_theta30.root", int eventToDraw = 1) 
 {
-    // === A. PREPARE OUTPUT FILE ===
-    //TFile* outFile = new TFile("reco_ukf_output_3T_H300torr_p40MeV_theta30.root", "RECREATE");
-    TFile* outFile = new TFile("reco_ukf_output_hit1.root", "RECREATE");
+// === A. PREPARE OUTPUT FILE ===
+    TFile* outFile = new TFile("reco_ukf_output_pionssim_30MeV_Bfield_20kG_H300torr_theta30_Bethe_initialMom_10kEvt_hit1.root", "RECREATE");
+    //TFile* outFile = new TFile("reco_ukf_output_protonssim_40-80MeV_Bfield_20kG_H300torr_theta10-80_catima_initialMom_10kEvt_hit1_cluster10.root", "RECREATE");
     TTree* outTree = new TTree("UKFTree", "Resultados del UKF");
 
-    UKFResult res; // Usando el struct que definimos antes
+    UKFResult res; 
     outTree->Branch("eventID", &res.eventID, "eventID/I");
     outTree->Branch("trackID", &res.trackID, "trackID/I");
     outTree->Branch("p_rec", &res.p_rec, "p_rec/D");
@@ -671,11 +725,13 @@ void UKFMultiTrack_Georgina(const char* simFilename = "/home/georgina/fair_insta
     outTree->Branch("p_true", &res.p_true, "p_true/D");
     outTree->Branch("theta_true", &res.theta_true, "theta_true/D");
     outTree->Branch("phi_true", &res.phi_true, "phi_true/D");
+    outTree->Branch("status", &res.status, "status/I");
 
     // Global counters to calculate statistics and efficiency at the end of the script
     int totalTracksProcessed = 0;
     int successfulFits = 0;
     int failedStoppedTracks = 0;
+    int failedFits = 0; // New counter for fits that failed for reasons other than stopping in the Bragg peak
 
    // === B. OPEN SIMULATION FILE (ONLY ONCE) ===
     TFile* simFile = TFile::Open(simFilename, "READ");
@@ -683,11 +739,11 @@ void UKFMultiTrack_Georgina(const char* simFilename = "/home/georgina/fair_insta
     TClonesArray* tpcPoints = new TClonesArray("AtMCPoint"); 
     simTree->SetBranchAddress("AtTpcPoint", &tpcPoints);
 
-    int numEventos = simTree->GetEntries();
-    std::cout << "initializing" << numEventos << " events..." << std::endl;
+    int numEvents = simTree->GetEntries();
+    std::cout << "initializing" << numEvents << " events..." << std::endl;
 
    // === C. MAIN LOOP ===
-    for (int ev = 0; ev < numEventos; ev++) {
+    for (int ev = 0; ev < numEvents; ev++) {
   
         LoadHitsROOT(simTree, tpcPoints, ev);
         for (auto const& [trackID, xVector] : posX) {
@@ -697,27 +753,13 @@ void UKFMultiTrack_Georgina(const char* simFilename = "/home/georgina/fair_insta
 
             bool drawPlots = (ev == eventToDraw);
 
-            try {
+            /*try {
             // This function call will now "jump" to the 'catch' block 
             // as soon as the C++ code hits a 'throw'
             UKFResult result_parcial = runKalman(posX[trackID], posY[trackID], posZ[trackID], Eloss[trackID], 
-                                                mass_p, charge_p, 1, 1, initialMom[trackID], trackID, drawPlots);
+                                                mass_p, charge_p, 1, 1, initialMom[trackID], trackID, drawPlots); //coulombs
 
-            //---------------------------------------------------------------------------------------------------
-           // --- Correct diagnostics: work in radians and display in degrees ---
-            double phi_rec_rad  = result_parcial.phi_rec;   // already rad
-            double phi_true_rad = result_parcial.phi_true;  // already rad
-            double dphi_rad     = wrapAngle(phi_rec_rad - phi_true_rad);
-
-            double phi_init_rad = atan2(initialMom[trackID].Y(), initialMom[trackID].X());
-            double dphi_init_rad = wrapAngle(phi_rec_rad - phi_init_rad);
-
-            printf("DIAG Track %d: phi_true=%.3f deg phi_rec=%.3f deg dphi_deg=%.3f\n",
-                trackID, phi_true_rad * TMath::RadToDeg(), phi_rec_rad * TMath::RadToDeg(), dphi_rad * TMath::RadToDeg());
-
-            printf("DIAG Track %d: phi_init=%.3f deg dphi_init_deg=%.3f\n",
-                trackID, phi_init_rad * TMath::RadToDeg(), dphi_init_rad * TMath::RadToDeg());
-
+            //--------------------------------------------------------------------------------------------------
 
             // If it didn't throw, we check the result and fill
            if (result_parcial.p_rec > 0 && result_parcial.p_rec != -999.0) {
@@ -728,10 +770,10 @@ void UKFMultiTrack_Georgina(const char* simFilename = "/home/georgina/fair_insta
                 res.sumEloss = result_parcial.sumEloss;
                 res.p_true   = result_parcial.p_true;
 
-                res.theta_rec  = result_parcial.theta_rec * TMath::RadToDeg();
-                res.phi_rec    = result_parcial.phi_rec   * TMath::RadToDeg();
-                res.theta_true = result_parcial.theta_true * TMath::RadToDeg();
-                res.phi_true   = result_parcial.phi_true   * TMath::RadToDeg();
+                res.theta_rec  = result_parcial.theta_rec; //rad
+                res.phi_rec    = result_parcial.phi_rec; //rad
+                res.theta_true = result_parcial.theta_true; //rad
+                res.phi_true   = result_parcial.phi_true; //rad
 
                 outTree->Fill();
                 successfulFits++;
@@ -750,7 +792,52 @@ void UKFMultiTrack_Georgina(const char* simFilename = "/home/georgina/fair_insta
                     throw;
                 }
             
-            } 
+            } */
+
+            UKFResult result_parcial = runKalman(posX[trackID], posY[trackID], posZ[trackID], Eloss[trackID], 
+                                                mass_pi, charge_pi_Coulombs, 1, 1, initialMom[trackID], trackID, drawPlots); //coulombs
+
+            std::cout << "status = " << (int)result_parcial.status << std::endl;
+
+            if (result_parcial.status == FitStatus::SUCCESS) {
+
+                res.eventID  = ev;
+                res.trackID  = result_parcial.trackID;
+
+                res.p_rec    = result_parcial.p_rec;
+                res.E_rec    = result_parcial.E_rec;
+                res.sumEloss = result_parcial.sumEloss;
+                res.p_true   = result_parcial.p_true;
+
+                res.theta_rec  = result_parcial.theta_rec; // rad
+                res.phi_rec    = result_parcial.phi_rec;   // rad
+                res.theta_true = result_parcial.theta_true; // rad
+                res.phi_true   = result_parcial.phi_true;   // rad
+                res.status = result_parcial.status;
+
+                outTree->Fill();
+                successfulFits++;
+            }
+
+            else if (result_parcial.status == FitStatus::STOPPED_IN_BRAGG) {
+
+                failedStoppedTracks++;
+
+                std::cout << "Event " << ev
+                        << ", Track " << trackID
+                        << ": Track stopped in Bragg Peak. Skipping..."
+                        << std::endl;
+            }
+
+            else {
+
+                failedFits++;
+
+                std::cout << "Event " << ev
+                        << ", Track " << trackID
+                        << ": Kalman fit failed."
+                        << std::endl;
+            }
         }   
         
         if (ev % 100 == 0) std::cout << "Processed " << ev << " events..." << std::endl;
@@ -770,87 +857,38 @@ void UKFMultiTrack_Georgina(const char* simFilename = "/home/georgina/fair_insta
         std::cout << "Reconstruction Efficiency:  " << efficiency << "%" << std::endl;
     }
     std::cout << "===============================================\n" << std::endl;
-
-
-    if (!all_dtheta_rad.empty()) {
-    // Calculate basic statistics (mean, RMS) for the global angular resolution
-    const size_t n = all_dtheta_rad.size();
-    double sum = std::accumulate(all_dtheta_rad.begin(), all_dtheta_rad.end(), 0.0);
-    double mean = sum / double(n);
-
-    double sum2 = 0.0;
-    for (double v : all_dtheta_rad) sum2 += v*v;
-    double rms = std::sqrt(sum2 / double(n) - mean*mean);
-
-    std::vector<double> sorted = all_dtheta_rad;
-    std::sort(sorted.begin(), sorted.end());
-
-    auto percentile = [&](double p)->double {
-        double idx = (p/100.0) * (sorted.size() - 1);
-        size_t i = (size_t)std::floor(idx);
-        size_t j = (size_t)std::ceil(idx);
-        if (i == j) return sorted[i];
-        double frac = idx - i;
-        return sorted[i] * (1.0 - frac) + sorted[j] * frac;
-    };
     
-
-    double med = percentile(50.0); 
-    double p68 = percentile(68.0); // 1 sigma for a Gaussian is ~68.27%, so the median gives us a robust central value even if the distribution has tails.
-    double p95 = percentile(95.0); // The 95th percentile tells us how bad the worst 5% of our tracks are, which is important for understanding the tails of the resolution distribution.
-
-    // Lambda function to compute and print detailed stats for any given vector
-    auto print_stats = [&](const std::vector<double>& v, const char* name){
-    if (v.empty()) { std::cout << name << " empty\n"; return; }
-    size_t n = v.size();
-    double sum = std::accumulate(v.begin(), v.end(), 0.0);
-    double mean = sum / double(n);
-    double sum2 = 0;
-    for (double x : v) sum2 += x*x;
-    double rms = std::sqrt(sum2/double(n) - mean*mean);
-    std::vector<double> s = v; std::sort(s.begin(), s.end());
-    auto pct = [&](double p){
-        double idx = (p/100.0)*(s.size()-1);
-        size_t i = (size_t)std::floor(idx), j = (size_t)std::ceil(idx);
-        if (i==j) return s[i];
-        double f = idx - i; return s[i]*(1-f) + s[j]*f;
-    };
-    std::cout << name << " : n="<<n<<" mean="<<mean*1e3<<" mrad rms="<<rms*1e3
-              <<" med="<<pct(50)*1e3<<" p68="<<pct(68)*1e3<<" p95="<<pct(95)*1e3<<"\n";
-    };
-
-    // Print comparative angular resolutions in milliradians (mrad)
-    print_stats(all_dtheta_fwd_rad, "DTHETA_FORWARD");
-    print_stats(all_dtheta_sm_rad,  "DTHETA_SMOOTHED");
-    print_stats(all_dtheta_sm_minus_fwd_rad, "DTHETA_SMOOTHED_MINUS_FORWARD");
-
     outFile->cd();
+
+    /*TH2F* h_pdiff_vs_ptrue_all = new TH2F("h_pdiff_vs_ptrue_all", 
+                                          "Momentum Diff vs True Momentum (All Clusters); p_{true} [MeV/c]; p_{rec} - p_{true} [MeV/c]", 
+                                          50, 35, 85, 
+                                          100, -2.0, 2.0);
+
+    for (size_t k = 0; k < all_cluster_p_rec.size(); k++) {
+        h_pdiff_vs_ptrue_all->Fill(all_cluster_p_true[k], all_cluster_p_rec[k] - all_cluster_p_true[k]);
+    }
+
+    h_pdiff_vs_ptrue_all->Write();
+
+    TCanvas* c_all_clusters = new TCanvas("c_all_clusters", "All Clusters Momentum Diff", 800, 600);
+    c_all_clusters->cd();
+    
+    h_pdiff_vs_ptrue_all->Draw("COLZ"); // Draw with the color palette
+    
+    // Optional: Draw a line at Y=0
+    TLine* line0_all = new TLine(35, 0, 85, 0);
+    line0_all->SetLineStyle(2);
+    line0_all->SetLineColor(kRed);
+    line0_all->SetLineWidth(2);
+    line0_all->Draw("SAME");
+    
+    // Save it as an image file in your folder
+    c_all_clusters->SaveAs("Momentum_Difference_All_Clusters.png");*/
+
+
     outTree->Write();
     outFile->Close();
     simFile->Close();
     std::cout << "\n << output file starting with 'reco_ikf_output' saved" << std::endl;
 }
-}
-
-/*void UKFSingleTrack_protons() { 
-   
-   pointsToCluster = 5; 
-   LoadHitsROOT(); // Carga las posiciones y el initialMom de TODAS las trazas
-
-   // Recorremos cada traza que LoadHitsROOT haya encontrado
-   for (auto const& [trackID, vectorHits] : posX) {
-       
-       std::cout << "\n=====================================" << std::endl;
-       std::cout << " Iniciando Filtro de Kalman para Track " << trackID << std::endl;
-       
-       // Recuperamos el momento inicial específico de esta traza
-       ROOT::Math::XYZVector momP = initialMom[trackID]; 
-       
-       std::cout << " Momento Inicial (Px, Py, Pz) = (" 
-                 << momP.X() << ", " << momP.Y() << ", " << momP.Z() << ") MeV/c" << std::endl;
-
-       // Ejecutamos el Kalman pasándole los vectores y el momento de ESTA traza
-       runKalman(posX[trackID], posY[trackID], posZ[trackID], Eloss[trackID], mass_p, charge_p, 1, 1, momP, trackID);
-   }
-}*/
-

@@ -1,14 +1,14 @@
-void run_sim_protons(Int_t nEvents = 10000, TString mcEngine = "TGeant4")
+void run_sim_protons(Int_t nEvents = 1000000, TString mcEngine = "TGeant4")
 {
 
    TString dir = getenv("VMCWORKDIR");
 
    // Output file name
-   TString outFile = "./data/protonssim_3T_H300torr_40MeV_theta60.root";
+   TString outFile = "./data/protonssim_2T_H300torr_20-100MeV_theta0-90_1e6evt.root";
 
 
    // Parameter file name
-   TString parFile = "./data/protonspar_3T_H300torr_40MeV_theta60.root";
+   TString parFile = "./data/protonspar_2T_H300torr_20-100MeV_theta0-90_1e6evt.root";
 
    // -----   Timer   --------------------------------------------------------
    TStopwatch timer;
@@ -41,14 +41,14 @@ void run_sim_protons(Int_t nEvents = 10000, TString mcEngine = "TGeant4")
    run->AddModule(pipe);*/
 
    FairDetector *ATTPC = new AtTpc("ATTPC", kTRUE);
-   ATTPC->SetGeometryFileName("/home/georgina/fair_install/ATTPCROOTv2_KF/geometry/ATTPC_H60torr.root");
+   ATTPC->SetGeometryFileName("/home/georgina/fair_install/ATTPCROOTv2_KF/geometry/ATTPC_H300torr.root");
    //ATTPC->SetModifyGeometry(kTRUE);
    run->AddModule(ATTPC);
 
    // -----   Magnetic field   -------------------------------------------
    // Constant Field
    AtConstField *fMagField = new AtConstField();
-   fMagField->SetField(0., 0., 30.);                     // values are in 20 kG
+   fMagField->SetField(0., 0., 20.);                     // values are in 20 kG
    fMagField->SetFieldRegion(-50, 50, -50, 50, -10, 230); // values are in cm
                                                           //  (xmin,xmax,ymin,ymax,zmin,zmax)
    run->SetField(fMagField);
@@ -58,14 +58,14 @@ void run_sim_protons(Int_t nEvents = 10000, TString mcEngine = "TGeant4")
    Int_t pdgCode = 2212; // Proton
    //Int_t pdgCode = 211; // Pion
    Int_t multiplicity = 1; // 1 proton por evento para ver las tracks claras
-   Double_t pMin = 0.04; // Momentum mínimo en GeV/c
-   Double_t pMax = 0.04; // Momentum máximo en GeV/c
+   Double_t pMin = 0.02; // Momentum mínimo en GeV/c
+   Double_t pMax = 0.1; // Momentum máximo en GeV/c
 
    FairBoxGenerator* boxGen = new FairBoxGenerator(pdgCode, multiplicity);
    
    boxGen->SetPRange(pMin, pMax);    // Momentum (GeV/c)
    boxGen->SetPhiRange(0., 360.);   // Cobertura azimutal completa
-   boxGen->SetThetaRange(60, 60.); // Cobertura polar completa
+   boxGen->SetThetaRange(0, 90.); // Cobertura polar completa
    boxGen->SetXYZ(0., 0., 0.);     // Origen (centro, desplazado ligeramente en Z)
 
    FairPrimaryGenerator* primGen = new FairPrimaryGenerator();

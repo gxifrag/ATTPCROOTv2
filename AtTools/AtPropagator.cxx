@@ -51,6 +51,7 @@ AtPropagator::XYZVector AtPropagator::dpds(const XYZPoint &pos, const XYZVector 
 }
 AtPropagator::XYZVector AtPropagator::d2xds2(const XYZPoint &pos, const XYZVector &mom) const
 {
+
    auto phat = mom.Unit();         // Unit vector in the direction of momentum
    auto p = mom.R();               // Magnitude of the momentum
    auto dpds_vec = dpds(pos, mom); // Derivative of momentum w.r.t. arc length
@@ -143,6 +144,8 @@ void AtPropagator::PropagateToMeasurementSurface(const AtMeasurementSurface &sur
 
          LOG(debug) << "Last KE: " << KE_last << " MeV";
          LOG(debug) << "Energy to loose to stop: " << deltaE << " MeV";
+
+         LOG(info) << "fELossModel->GetdEdx(KE_last) = " << fELossModel->GetdEdx(KE_last);
          double h_Stop = deltaE / fELossModel->GetdEdx(KE_last); // Distance to stop in mm
          LOG(debug) << "Estimated distance to stop: " << h_Stop << " mm";
 
@@ -214,6 +217,7 @@ void AtPropagator::PropagateToMeasurementSurface(const AtMeasurementSurface &sur
 
 void AtPropagator::PropagateToMeasurementSurface(const AtMeasurementSurface &surface, double eLoss, AtStepper &stepper)
 {
+
    LOG(debug) << "Propagating to surface with eLoss: " << eLoss;
 
    if (eLoss == 0) {
@@ -261,7 +265,6 @@ void AtPropagator::PropagateToMeasurementSurface(const AtMeasurementSurface &sur
 
 AtPropagator::StepState AtRK4Stepper::Step(const AtPropagator::StepState &state) const
 {
-
    auto result = state;
    result.fLastPos = state.fPos;
    result.fLastMom = state.fMom;
@@ -311,7 +314,6 @@ AtPropagator::StepState AtRK4Stepper::Step(const AtPropagator::StepState &state)
 
 AtPropagator::StepState AtRK4AdaptiveStepper::Step(const AtPropagator::StepState &state) const
 {
-
    // Take h to be the step size in m.
    auto result = state;
    result.fLastPos = state.fPos;

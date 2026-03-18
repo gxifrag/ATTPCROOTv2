@@ -1,13 +1,13 @@
-void run_sim(Int_t nEvents = 100, TString mcEngine = "TGeant4")
+void run_sim(Int_t nEvents = 10000, TString mcEngine = "TGeant4")
 {
 
    TString dir = getenv("VMCWORKDIR");
 
    // Output file name
-   TString outFile = "./data/protonssim_Bfield_H300torr.root";
+   TString outFile = "./data/pionssim_20-40MeV_Bfield_20kG_H300torr_theta0-90.root";
 
    // Parameter file name
-   TString parFile = "./data/protonspar_Bfield_H300torr.root";
+   TString parFile = "./data/pionspar_20-40MeV_Bfield_20kG_H300torr_theta0-90.root";
 
    // -----   Timer   --------------------------------------------------------
    TStopwatch timer;
@@ -56,16 +56,15 @@ void run_sim(Int_t nEvents = 100, TString mcEngine = "TGeant4")
    
    // -----   Create PrimaryGenerator   --------------------------------------
 
-   Int_t pdgCode = 2212; // Proton
-   //Int_t pdgCode = 211; // Pion
-   Int_t multiplicity = 3; // 1 proton por evento para ver las tracks claras
-   Double_t pMin = 0.04; // Momentum mínimo en GeV/c
-   Double_t pMax = 0.06; // Momentum máximo en GeV/c
+   Int_t pdgCode = 211; // Pion
+   Int_t multiplicity = 1; // 1 pion por evento para ver las tracks claras
+   Double_t pMin = 0.02; // Momentum mínimo en GeV/c
+   Double_t pMax = 0.04; // Momentum máximo en GeV/c
 
    FairBoxGenerator* boxGen = new FairBoxGenerator(pdgCode, multiplicity);
    
    boxGen->SetPRange(pMin, pMax);    // Momentum (GeV/c)
-   boxGen->SetPhiRange(0., 360.);   // Cobertura azimutal completa
+   boxGen->SetPhiRange(0., 360.);   // Cobertura azimutal completa;
    boxGen->SetThetaRange(0, 90.); // Cobertura polar completa
    boxGen->SetXYZ(0., 0., 0.);     // Origen (centro, desplazado ligeramente en Z)
 
@@ -79,8 +78,8 @@ void run_sim(Int_t nEvents = 100, TString mcEngine = "TGeant4")
    AtVertexPropagator* vertexProp = AtVertexPropagator::Instance();
    
    // Set the mass of the beam particle (Proton mass is ~1.0078 u)
-   vertexProp->SetBeamMass(1.007825); 
-   //vertexProp->SetBeamMass(0.13957); // Pion mass in GeV/c^2
+   //vertexProp->SetBeamMass(1.007825); 
+   vertexProp->SetBeamMass(0.13957); // Pion mass in GeV/c^2
    double massGeV = vertexProp->GetBeamMass(); // Store mass in GeV for later use
    
    // Set Nominal Energy (matching your BoxGen momentum)
