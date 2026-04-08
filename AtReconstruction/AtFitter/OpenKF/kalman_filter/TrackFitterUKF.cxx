@@ -21,8 +21,7 @@ void TrackFitterUKF::Reset()
 
 void TrackFitterUKF::SetInitialState(const ROOT::Math::XYZPoint &initialPosition,
                                      const ROOT::Math::XYZVector &initialMomentum, const TMatrixD &initialCovariance)
-{
-    LOG(info)<< "holaaaaaaaaaaaaaaaaaaaaaaaaaaa";
+{ 
    // If we are setting the initial state, then we should clear the history.
    Reset();
    fPropagator.SetState(initialPosition, initialMomentum); // Set the initial state in the propagator
@@ -44,22 +43,20 @@ void TrackFitterUKF::SetInitialState(const ROOT::Math::XYZPoint &initialPosition
       m_matQmod(i, i) = fPosModelNoise; // Initialize model noise covariance to zero
    }
 
-    LOG(info) << "diooooooooooooooooooooos";
-   // Save the initial state in our history vectors
+       // Save the initial state in our history vectors
    m_vecXFiltHist.push_back(m_vecX);
    m_matPFiltHist.push_back(m_matP);
    m_vecXPredHist.push_back(m_vecX);
    m_matPPredHist.push_back(m_matP);
    m_matCPredHist.push_back(Matrix<TF_DIM_X, TF_DIM_X>::Zero()); // Cross-correlation is not defined for the first point
 
-    LOG(info) << "claudeeeeeeeeeeeeeeeeeeeee";
    // We need to calculate the sigma points for the initial state
    updateAugmentedStateAndCovariance();                   // Update the augmented state vector and covariance matrix
 
-   LOG(info) << "josemaaaaa";
+   LOG(info) << "before calculate sigma points";
    m_matSigmaXa = calculateSigmaPoints(m_vecXa, m_matPa); // Calculate the sigma points for the initial state
    // Now we grab the sigma points only for the state.
-   LOG(info) << "Georginaaaaaaa";
+   LOG(info) << "after calculate sigma points";
    m_matSigmaXPred = m_matSigmaXa.block(0, 0, TF_DIM_X, SIGMA_DIM_A); // Extract the state sigma points
 
    logEigen("Initial cov", m_matP, 0); // Log the eigenvalues of the initial covariance matrix
@@ -125,7 +122,8 @@ Matrix<TrackFitterUKF::TF_DIM_V, TrackFitterUKF::TF_DIM_V> TrackFitterUKF::calcu
 
    if (!fEnableEnStraggling) {
       // If energy straggling is disabled, we set the process noise to zero.
-      matQ(0, 0) = 0.0;
+      //matQ(0, 0) = 0.0;
+      matQ(0,0) = 1e-12; //Georgina 20 Mar 2026
       return matQ;
    }
 
@@ -133,10 +131,10 @@ Matrix<TrackFitterUKF::TF_DIM_V, TrackFitterUKF::TF_DIM_V> TrackFitterUKF::calcu
       double dedx_straggle = elossModel->GetdEdxStraggling(eIn, eOut);
       double factor = dedx_straggle / elossModel->GetdEdx(eIn);
       if (factor > fMaxStragglingFactor) {
-         LOG(warn) << "Process noise factor for energy straggling is greater than " << fMaxStragglingFactor
+         /*LOG(warn) << "Process noise factor for energy straggling is greater than " << fMaxStragglingFactor
                    << ". To maintain stability, we will "
                       "use a factor of "
-                   << fMaxStragglingFactor << ".";
+                   << fMaxStragglingFactor << ".";*/
          factor = fMaxStragglingFactor;
       }
       matQ(0, 0) = factor * factor; // Variance for the dedx straggling.
@@ -293,6 +291,19 @@ void TrackFitterUKF::smoothUKF()
          pFilt + D * (pSmooth - pPred) * D.transpose(); // P^s_{k} = P_{k} + D * (P^s_{k+1} - P_{k+1}^-) * D^T
       logEigen("State P+", m_matPSmooth[i - 1], i - 1);
    }
+
+   const auto& finalCov = m_matPSmooth[0];
+
+    std::cout << "\n[INFO] FINAL SMOOTHED COVARIANCE (Initial State):" << std::endl;
+    for (int i = 0; i < 6; ++i) {
+        std::cout << "   "; // Margen
+        for (int j = 0; j < 6; ++j) {
+            // Usamos printf para controlar el ancho y los decimales como en tu ejemplo
+            std::printf("%10.4f ", finalCov(i, j));
+        }
+        std::cout << std::endl;
+    }
+    std::cout << "------------------------------------------------------------\n" << std::endl;
 }
 
 } // namespace kf

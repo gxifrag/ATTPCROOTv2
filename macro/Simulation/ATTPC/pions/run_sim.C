@@ -4,10 +4,10 @@ void run_sim(Int_t nEvents = 10000, TString mcEngine = "TGeant4")
    TString dir = getenv("VMCWORKDIR");
 
    // Output file name
-   TString outFile = "./data/pionssim_20-40MeV_Bfield_20kG_H300torr_theta0-90.root";
+   TString outFile = "/home/georgina/fair_install/ATTPCROOTv2_KF_fork/ATTPCROOTv2/macro/Simulation/ATTPC/pions/data/8April-pionssim_20-40MeV_Bfield_20kG_H300torr_theta0-90.root";
 
    // Parameter file name
-   TString parFile = "./data/pionspar_20-40MeV_Bfield_20kG_H300torr_theta0-90.root";
+   TString parFile = "/home/georgina/fair_install/ATTPCROOTv2_KF_fork/ATTPCROOTv2/macro/Simulation/ATTPC/pions/data/8April-pionspar_20-40MeV_Bfield_20kG_H300torr_theta0-90.root";
 
    // -----   Timer   --------------------------------------------------------
    TStopwatch timer;
@@ -40,7 +40,7 @@ void run_sim(Int_t nEvents = 10000, TString mcEngine = "TGeant4")
    run->AddModule(pipe);*/
 
    FairDetector *ATTPC = new AtTpc("ATTPC", kTRUE);
-   ATTPC->SetGeometryFileName("/home/georgina/fair_install/ATTPCROOTv2_KF/geometry/ATTPC_H300torr.root");
+   ATTPC->SetGeometryFileName("/home/georgina/fair_install/ATTPCROOTv2_KF_fork/ATTPCROOTv2/geometry/ATTPC_H300torr.root");
    //ATTPC->SetModifyGeometry(kTRUE);
    run->AddModule(ATTPC);
 
