@@ -468,16 +468,37 @@ tEvents->Branch("eventID", &eventID, "eventID/I");*/
 	t_PS->SetBranchAddress("Ex_cal",&Ex_cal);
 	t_PS->SetBranchAddress("ThetaCM_cal",&ThetaCM_cal);
 
+   std::cout << "Entries PS tree = " << t_PS->GetEntries() << std::endl;
+
 	TH1F *h_PS_1n = new TH1F("h_PS_1n","h_PS_1n", NumberBins, Ebin_min, Ebin_max ) ; 
 
 	for( int i = 0 ; i < t_PS->GetEntries() ; i++ ) {
 		t_PS -> GetEntry(i) ;
-		if ( ThetaCM_cal > ThetaCM_min && ThetaCM_cal < ThetaCM_max ) {
-			h_PS_1n -> Fill( Ex_cal, Weight_sim ) ;	
+		if (ThetaCM_cal > ThetaCM_min && ThetaCM_cal < ThetaCM_max ) {
+			h_PS_1n-> Fill(Ex_cal, Weight_sim) ;	
 		}	
+         if (i < 10) {
+            std::cout << "Weight = " << Weight_sim << std::endl;
+         }
 	}
 	h_PS_1n -> Smooth() ;
-   
+
+         std::cout << "---- PhaseSpace file ----" << std::endl;
+
+      if (!f_PS || f_PS->IsZombie()) {
+         std::cerr << "ERROR: no se abre el fichero PS\n";
+         return;
+      }
+
+      f_PS->ls();   // 🔥 CLAVE: ver qué hay dentro
+
+      if (!t_PS) {
+         std::cerr << "ERROR: tree no encontrado\n";
+         return;
+      }
+
+      std::cout << "Entries en PS tree = " << t_PS->GetEntries() << std::endl;
+         
    // -----------------------------KINEMATICS FOR DIFFERENT EXCITATION ENERGIES
 
 std::vector<std::string> files = {

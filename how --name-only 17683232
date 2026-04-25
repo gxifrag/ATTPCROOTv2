@@ -1,0 +1,1074 @@
+[33m17683232[m[33m ([m[1;36mHEAD -> [m[1;32manalysis_C16[m[33m)[m arreglando
+[33md80d444b[m[33m ([m[1;31morigin/analysis_C16[m[33m)[m Update analysis macros and ignore raw data
+[33m609412bc[m Update kinematics and remove outdated analysis macros
+[33m9d2dd06c[m organising files in folders 2
+[33m0a5682a7[m organising files in folders
+[33ma35975cd[m actualizacion macro
+[33mdae77f5e[m Update macros analysis 16Cpd
+[33mb5f3d177[m fix(c12ana): created canvas for fits
+[33m88947b68[m feat(c16ana): final version of the canvas
+[33m0a338a5d[m update macros today
+[33m7ff39098[m[33m ([m[1;31mupstream/develop[m[33m)[m Implementation of the algorithm to find the experimental Bragg curves from the AtTracks. (#257)
+[33m96754fd8[m[33m ([m[1;31morigin/develop[m[33m, [m[1;31morigin/HEAD[m[33m, [m[1;32mdevelop[m[33m)[m Add energy and range straggeling to energy loss models (#256)
+[33m1dffcc6c[m Auto download and build CATIMA (#255)
+[33m0576e901[m Add method to compute the Bragg curve in AtELossCATIMA class (#253)
+[33m1f323c50[m Created a CATIMA wrapper as an AtELossModel (#252)
+[33mc9cf72ba[m Add first version of unpacker for Si data (#251)
+[33m0079ea48[m Add OpenKF to the AtReconstruction library (#248)
+[33m6915605b[m Update CONTRIBUTING.md to reflect test conventions (#247)
+[33m83951ac4[m Visualize fits on pad plane (#245)
+[33m87b90706[m Add new unpacker for updated HDF5 merger (#244)
+[33m32cab946[m Add CONTRIBUTING document (#233)
+[33m7729f1b4[m Fix ROOT dictionary generation
+[33m89456eb0[m Update TriplClust and add phase space decay generator
+[33m2aa70c65[m Add data filtering task with kNN (#240)
+[33mc926e259[m Fix bug in decaying generators (#235)
+[33m36050060[m Combine detectors into single library (#237)
+[33mf81a30aa[m Build and run tests (#239)
+[33m55e78361[m Add Dockerfile for dependencies installation (#238)
+[33mde43e709[m Refactor g4Config.C to remove external decayer dependency
+[33m25ba97cc[m Fix bug with old cmake (#234)
+[33m2fa5af6e[m Add unit test integration (#232)
+[33mda74ca45[m Fix deprecation warnings (#231)
+[33m532a5518[m Update clang-format action and format code (#230)
+[33m735bfb12[m Add PEEK geometry and gamma scripts (#229)
+[33m1ea599d9[m Refactor AtFitter to be a class and add relevant data structures (#224)
+[33mde1152b2[m Add PxCT detector (#227)
+[33m8a7eb4c3[m Add DeGAi detector simulation (#226)
+[33m87352400[m New sidebar features and simulation work (#221)
+[33m40699a23[m Add CITATION.cff
+[33m3e961b2e[m[33m ([m[1;33mtag: v0.4.1-beta[m[33m)[m Charge dispersion for GADGET(#220)
+[33mf40e2ae8[m Exclude geometry from clang-format check
+[33m1af5d96a[m Add analysis scripts from ANL experiments (#222)
+[33me62d9d26[m Update README.md
+[33m8d690616[m[33m ([m[1;33mtag: v0.4.0-beta[m[33m, [m[1;31mupstream/main[m[33m)[m Fix implementation of OpenKF
+[33m8a415397[m Actually add the required CMake
+[33m6586cab8[m Add OpenKF as an optional dependecy
+[33m04dfc5a1[m Add final changes to fit FF for Z with MC fitter (#212)
+[33mbcde4074[m Add new options for viewer and update SCACorrect filter (#208)
+[33m5d073658[m Merge daq, try 2 (#213)
+[33m8c578f95[m Updated analysis macros
+[33ma17dc163[m Updated ATLAS campaign analysis
+[33meb4ecf65[m Updated analysis and fitting for Argonne exp
+[33mf657544b[m Add multi-threading to MCFitter (#206)
+[33m39d6c65f[m Pulse convolution (#204)
+[33mf1903156[m Monte carlo fit (#201)
+[33me6c710d7[m Fixed error that prevents compilation (#203)
+[33m596ae8f5[m Simulation (#202)
+[33mdc4a4f2c[m Add ability to use simulated charge to construct hits
+[33mb7dd09ae[m Add base class for all event types. REQUIRES REGENERATING DATA
+[33m8d3cdb38[m Remove debug info from AtSimpleSim and add FPN option to viewer (#198)
+[33m019338a2[m Fix units in longitudnal diff being off by a factor of 10
+[33maae2463b[m Add simple simulation task (bypass GEANT and use AtELossModels) (#196)
+[33m269e33f3[m Add tab for examining energy loss
+[33m8b4ad60b[m Add different energy loss models to code and tools to use them. (#194)
+[33mb71782fc[m Added Viewer ability to test from AtReductionTask
+[33m19247c99[m Update GADGET macros for new viewer
+[33m9ec37b2b[m Rerun Event button reruns instead of redraws the event.
+[33mcc6a2ebc[m Fix bug in viewer where data from the last event could be drawn.
+[33mea7fea29[m Fix to row/col position mapping
+[33maa8bf4e5[m Refactor AtTabs and AtTabInfo. Move event control to bottom of viewer (#187)
+[33m383ccfe5[m Fix AtRawEvent now copying timestamps in copy constructor (#186)
+[33m065c7f8a[m AtSidebarAddons additions and minor AtTabMacro mods and fixes (#185)
+[33m46e9d32b[m Add task to copy the source TTree to the sink TTree. (#184)
+[33m0ac31ba8[m Add ability to cut on species ID using HEIST data (#183)
+[33m747e6945[m Added documentation to AtSidebarAddon
+[33mf0004484[m Add modular viewer (#181)
+[33m6b4cc6c3[m Fix supression of deprecated warnings in ROOT dictionary compilation
+[33m246313b2[m Add iterative deconvolution PSA
+[33mbc3133ec[m Kine fitting (#174)
+[33md38f4949[m Updates (#176)
+[33mb87f4d05[m Update AtDataReductionTask and AtHDF5WriteTask
+[33med2d20f6[m Update tests for unpacking AT-TPC data with GRAW
+[33m06acc855[m Modify GRAWUnpacker to track SCA and add more complete baseline subtraction (#163)
+[33m648bae35[m Updated SpecMAT and S1845 analysis (#170)
+[33meb0018c9[m Add support for when meta data is not saved in H5 file (#169)
+[33maec661ab[m Dev ana (#168)
+[33m8c0d7a8f[m Specmat simulations (#167)
+[33m33c83ff3[m SeGA simulation (#150)
+[33m34c8e827[m Spec mat fitter (#166)
+[33m9d063122[m Fix bug where beam particles were generated during reaction events. (#165)
+[33m0f0d14e0[m Linters on all non WIP classes running cleanly
+[33m9c316919[m Add Skeleton for reading HDF5
+[33m0e4de78d[m Add FPN to HDF5 unpacker and relevant filters (#161)
+[33mfb824a86[m Add ElectronicResponse namespace and generalize electronic responses
+[33mbd75487e[m Update copy-and-swap to only make sway findable through ADL.
+[33md4f69417[m Run linters on all code (#159)
+[33m6562cb56[m Cleanup AtTPC20MgDecay so it passes code linters (#151)
+[33m94c8a752[m  Implementation of a specific e-field distortion correction (refactored) (#158)
+[33m99531efa[m Update README to remove duplicate information
+[33m6c44d2e9[m Refactor AtPad to use composition and add a deconvolution PSA. (#156)
+[33maaeabf35[m Specmat unpack alpha data (#153)
+[33mb522c7e7[m Hotfix for adding HiRAEVT library to the LD_LIBRARY_PATH (#152)
+[33m1414e07b[m Refactor AtHitCluster, AtEvent, and AtPSA (#145)
+[33mb0494177[m Fixed rounding error in AtVectorResponse (#144)
+[33md815986e[m Add Mg20 decay generator. (#139)
+[33m3ff981fc[m Update eX17 macros for newest version of code. (#141)
+[33mb4703471[m Fix bug where proto pad plane was not loading from file corrcetly. (#140)
+[33m57a76ead[m Updated EFitter Analysis
+[33mcb7fa821[m Added AtPadCharge.cxx to CMakeLists in AtData (#138)
+[33md7da4723[m Add generalized electronic response function (#133)
+[33m76cf0eb1[m Added ability to store charge in pads in sim (#137)
+[33mf5e1f7e1[m Add task for sample consensus and clean AtPatternY
+[33m41c8606a[m Fix WeightedY sampling hanging.
+[33m9b58e8eb[m Add additional options for beam simulation
+[33mdd8bb3e2[m Fix bug where random sampling was biased towards specific hits
+[33me34db6ac[m Add missing functions/enums to linkdefs (#128)
+[33md533d8f2[m Fix nullptr exception when map is not set in viewer (#127)
+[33m3613f45d[m Update simulated electronic response. (#125)
+[33mf4af10d4[m Add missing function implementations. (#123)
+[33m13f460ca[m Copy GADGET sim macros from e17023
+[33mccec865f[m Merge branch 'develop' of https://github.com/ATTPC/ATTPCROOTv2 into develop
+[33mf59d87b6[m Refactored clustering part including a new track manager class.
+[33m030e721a[m Fix bug unpacking every event while linking DAQs.
+[33m389625e1[m When linking DAQs make the TTrees friends and fix unpacker bug.
+[33m2064b737[m Update e20020 macro to subtract ch0 background
+[33mfcd052ed[m Add space charge model for arbitrary radial field.
+[33mf1f34904[m Fix unit conversion in simulated diffusion
+[33mbf724893[m Fix segfault in AtPulseTask
+[33md461b81e[m Update ROOT2HDF so it takes file from terminal.
+[33m1c695f4b[m Add missing classes to AtReconstructionLinkDef
+[33mc37e9c8d[m Add license (GPL-3.0)
+[33m80b193a9[m Run clang-format on new HC code, and disable clang-tidy for code
+[33m3dd95229[m Update GADGET test macros to use undeprecated PSA method
+[33mdbcd02ac[m Fix memory leak in AtPSAtask
+[33m130d8db1[m Bye PCL, we wont miss you (precleaning version)
+[33me1ce2b38[m Update GADGETII run_eve macro
+[33mba746534[m Attempt to update GADGET macros for v18.6
+[33mc775dc13[m Update ROOT2HDF so it builds again.
+[33m1045b496[m Update ROOT2hdf for new build system
+[33m1563f16a[m Fix to remove pcl include in AtPRA
+[33m9b79e94f[m Update fitting analysis
+[33mcc457fc1[m Remove PCL RANSAC again.
+[33mcd9bfae8[m Run linters on all code
+[33ma03a0973[m Add Curtis TB average PSA method
+[33m0eb06490[m Cleanup AtPSA, AtHit, and AtDigiPar
+[33m14e0b836[m Fix bug in AtPatternY
+[33m89e24ded[m adding Y patterns and sampler and estimator
+[33m3f81a17f[m Improve arc length algorithm.
+[33m926da317[m New algorithm for computing arc length of tracks
+[33m81572ac2[m Add RANSAC method
+[33m8a630976[m Fix angle reconstruction in AtPRA
+[33mc83a20a9[m Pushing missing files not included in previous commit
+[33m2e2f151a[m Merge branch 'develop' of https://github.com/ATTPC/ATTPCROOTv2 into develop
+[33mf13b7fbd[m Fixed AtGenfit constructor and Hit management on PSA
+[33m27d80d33[m Add proper copy-swap behavior for AtTrack.
+[33mdaff94d0[m 	Merge branch 'develop' of https://github.com/ATTPC/ATTPCROOTv2 into develop
+[33m3e200f69[m Updating macros and run lists for e20020
+[33m0dac9e0e[m Remove debug statments.
+[33m1a41d88a[m Fix bug with copying AtTracks
+[33m04d898c9[m Add new members of AtTrack to copy constructor
+[33mfc05cbc9[m Fix bug in test script
+[33m5f75ece5[m Update EFitterAnalysis so it builds and runs
+[33m4831d0b7[m Merge remote-tracking branch 'upstream/FairRootv18.00' into develop
+[33m6f1d1801[m Implemented merging function in Fitter procedure
+[33m6a97b6a2[m 	Merge branch 'FairRootv16.00' of https://github.com/ATTPC/ATTPCROOTv2 into FairRootv18.00
+[33m7c4a42b4[m Adding Merging algorithms to EFitterAnalysis
+[33mbe8c5b64[m Replace PCL with AtSampleConsensus and refactor AtTrack
+[33m942f6ae6[m Add test for GRAW unpacking over multiple files
+[33m31af6ec9[m Add optimization flag to compiler
+[33m9d39e8ee[m Fix bug in AtFilterCalibrate
+[33m4924f27c[m Add baseline subtraction to FFT filter
+[33m4a4624a3[m Refactor AtEventDrawTask so it takes a pointer to a map
+[33ma426937e[m Cleanup template programming for AtEvent/AtRawEvent
+[33m73742574[m Fix AtCSVReader not being coppied to include directory
+[33mbe78105e[m Add doxygen links to readme
+[33m5b3ec474[m Only update doxygen on a release
+[33m0d0d6aaf[m[33m ([m[1;33mtag: v0.3.0-alpha[m[33m)[m Update versions for first release (v0.3.0)
+[33mf6558545[m Remove assumtion in AtRansac that hitID < hitArray.size()
+[33m2271510d[m Doxygen will be built and published on changes to develop (#10)
+[33m887f036c[m Fix small memory leak
+[33m8f408c23[m Merge branch 'develop' of github.com:ATTPC/ATTPCROOTv2 into develop
+[33mb5e859cf[m Update README.md
+[33mb3a8c48d[m Fix memory leak
+[33ma5be9348[m Add FFT Filter (#9)
+[33m6d6feba9[m Fix bug in AtFilterSubtraction
+[33m9b537bba[m Refactor PadReference to AtPadReference
+[33mc157155b[m Fix PadReference not being coppied to include folder
+[33m1b8311dd[m Remove old build files
+[33m54896564[m Add LWYU and improve static analyzer summary
+[33me6ef3616[m Merge remote-tracking branch 'upstream/FairRootv18.00' into yassid-merge
+[33m4efe9b7f[m Run IWYU now all clang-tidy is applied
+[33ma338bb5f[m Add clang-tidy checks to match coding conventions
+[33mf1a00891[m Libraries passing basic clang-tidy checks
+[33mc0495a4c[m Add option to run IWYU when building (#115)
+[33mbc4344dc[m Finished multifit analysis standalone program.
+[33m27dbf7c2[m Spec mat develop (#114)
+[33meaf471f8[m Fix bug in space charge task.
+[33m1bb91244[m Add ability to draw two hit clouds to event viewer
+[33m465431ba[m Fix memory leak from AtEvent not clearing properly
+[33mc1a762ec[m First version of multifit stand-alone program. Adding RCNP detectors
+[33m14e01aad[m Space charge correction (#8)
+[33mfacd3a0f[m Fix for using CMake < 3.18
+[33md20b46c9[m Fix dictionary generation and hdf5 target alias
+[33m2100ab4b[m Merge branch 'develop' of github.com:anthoak13/ATTPCROOTv2 into develop
+[33m3942176a[m Merge remote-tracking branch 'remotes/upstream/develop' into develop
+[33mb60ae812[m Build modernization (#112)
+[33mb03b5350[m Will now build against more installs of HDF5
+[33md8063c34[m Fix bug in build script
+[33m08d79d2f[m E20009Analysis is also building with new code
+[33m059182ac[m E20020Analysis compiling attpcroot and targets
+[33me6531fff[m Get ATTPCROOT installing with targets
+[33m338c206c[m Work on build system.
+[33m21d3158c[m Completed parser for list of ions to fit. Added format headers
+[33m2013e02a[m Move more to AtTools and update README with more test info
+[33m177ffa89[m Add ability to clone a hit into an AtEvent
+[33m5e1679f8[m Update AtTools to use the new build system and move AtCSVReader to AtTools
+[33m08a2042d[m Merge remote-tracking branch 'upstream/FairRootv18.00' into develop
+[33m1e471013[m Merge pull request #111 from ATTPC/unpackerRefactor
+[33m63356eb6[m Added new tools library (needs refactoring). Added a multifit standalone progam (in progress...)
+[33m57e9ea92[m Stop building deprecated code.
+[33mda977ff6[m Add GRAW unpacker (AtCore2) to the unified unpacker task.
+[33mfff92586[m Add SpecMAT ROOT unpacker to unified unpacking task
+[33m98605d7b[m Move HDF5 unpacking to the common AtUnpackTask
+[33m8b0fcd6f[m Move unpacking tasks to new library
+[33m9d0a04e4[m Merge in pull request #3 "Rework of AtReconstruction"
+[33m9bf6c254[m Improve tests
+[33m5a0c0d5c[m Add required file for AT-TPC tests
+[33md1d48e19[m Add initial working test suite
+[33m35f17803[m Add test script for GADGETII
+[33m3f9e6257[m Fix memory bug in AtRawEvent
+[33m23a38e7a[m Add test script for SpecMAT
+[33ma4f14dd5[m Remove forgotten debug statements
+[33me941c54c[m Fix bug where AtRawEvent always assumes there is a timestamp
+[33m2690b8a3[m Fix bug in AtCoreSpecMAT and GETCoboFrame
+[33mfc36cf7e[m Merge remote-tracking branch 'upstream/FairRootv18.00' into develop
+[33m746772f7[m Refactor AtMap
+[33m4ff188c7[m Added energy loss, first orbit and length calculation for fitted tracks
+[33m880190d8[m Fix bug in AtRansac from AtEvent refactor
+[33m0d9c27c2[m Merge branch 'develop' of github.com:ATTPC/ATTPCROOTv2 into develop
+[33m79461f94[m Fix merged code so it compiles and runs
+[33me5f582be[m Merge remote-tracking branch 'upstream/FairRootv18.00' into develop
+[33mf2fb2ca1[m Update workflows to ignore legacy include folder
+[33m87b402eb[m Re-add AtCore2 and associated files from FairRootv18.00 branch
+[33m6f2590d3[m Fix bugs in AtFilterTask
+[33m68928dc4[m Merge pull request #4 from anthoak13/spacecharge
+[33mf9baf1f0[m Update AtEvent to use parameter forwarding for construction of hits
+[33mfd2eab09[m Fixed graw unpacker baseline correction. Fixed GADGET mapping size and Bin2Pad function
+[33mf475f905[m Fixed AtCore for GADGET unpacking
+[33m6dd5f25c[m Fixed phi conventio for (d,p) fit. Fixed geo phi calculation (on analysis programs)
+[33m7e6134ed[m Merge pull request #110 from ACeulemans/SpecMAT_digitization
+[33m11ad52b2[m update linking + cmake
+[33md445efb9[m Add decoder specmat
+[33m21f97481[m Add Decoder task specmat
+[33m0697a0f7[m Add macro files for unpacking
+[33m45ccca4d[m Update AtPSAtask.cxx
+[33m0b178245[m Refactor auxillary pads into their own class
+[33mc6c57fbb[m Refactor AtRawEvent and AtPad
+[33me859f6b5[m Merge branch 'e12014' into spacecharge
+[33m292268a0[m Update e12014 macros for simulation and Z determination
+[33mb065a96f[m Beginning work on AtTrack/AtPRA cleaning
+[33m70a90c17[m Refactor data structure AtEvent data class
+[33mc5c529d7[m Merge pull request #109 from ACeulemans/SpecMAT_digitization
+[33m64d5d282[m Update digitization
+[33m0d76dac4[m Updated tracking
+[33mf0748447[m Updated and improved fitting
+[33m21f7093f[m Refactor AtVertexpropagator
+[33m7bf98c81[m Refactor AtMCPoint, and create new AtSiPoint and cleanup AtTpc class
+[33m859cab32[m Initial work on Z determination in TPC
+[33meec1a9ad[m Added X17 standalone analysis program
+[33m0815f806[m Update e12014 macros
+[33m03391f48[m Updated e20009 fit
+[33mbc6507b6[m Merge branch 'FairRootv18.6' into develop
+[33m53fe833a[m Merge remote-tracking branch 'origin/e12014' into FairRootv18.6
+[33mc403937d[m Refactor pad inhibit maps
+[33m33df1a8d[m Merge pull request #2 from sg5190/e12014
+[33m32414c14[m Update E20020Analysis CMakeLists.txt to new build system, as an example
+[33m049cd6cd[m Merge pull request #108 from ATTPC/FairRootv18.6
+[33m813140f2[m Refactor AtMap to track how a pad is inhibited
+[33m4a30248e[m Remove old, unused code from AtReconstruction
+[33m43d2dd86[m Merge remote-tracking branch 'upstream/develop' into FairRootv18.6
+[33m2eed376d[m run clang format
+[33meb5620fe[m Improve and speed up simulation
+[33m0cce19d8[m Added final mapping for GADGET. Added backward fit.
+[33m9098a828[m Merge pull request #107 from rijal-2019/patch-4
+[33m2daaa0c3[m Merge pull request #106 from rijal-2019/patch-3
+[33m1e105a35[m EnergyLoss_LookUp.h
+[33med87caea[m EnergyLoss_LookUp.cpp
+[33mc6f7fc24[m Merge branch 'FairRootv18.6' of github.com:ATTPC/ATTPCROOTv2 into FairRootv18.6
+[33me9cdfbf6[m Remove using namespace statements from RANSAC headers
+[33m5004fa7e[m Update README
+[33mf913c621[m Update build scripts to work with older version of ROOT
+[33ma7479f9f[m Update README.md
+[33m2654d6ae[m Update for new fishtank FairRoot build
+[33m486ac206[m Run clang-format
+[33mce38a634[m Merge remote-tracking branch 'upstream/develop' into FairRootv18.6
+[33m5f412b32[m Merge branch 'FairRootv18.6' of github.com:anthoak13/ATTPCROOTv2 into FairRootv18.6
+[33me42a7573[m Refactor AtDigitization
+[33m1640d19f[m Update README.md
+[33m3c776c95[m Update for FairRoot 18.6.5 and new installation method on FRIB fishtank
+[33m30342103[m  Committer: Stephen Gillespie <gillespi@flagtail.nscl.msu.edu>
+[33m6865409e[m  Committer: Stephen Gillespie <gillespi@flagtail.nscl.msu.edu>
+[33m09744c0e[m Added a new clusterization with smoothing algorithm
+[33m9044fddb[m Merge pull request #105 from ACeulemans/develop_specmat_run_eve
+[33m71369623[m Clang-format run_eve
+[33m2b153c59[m Change run_eve.C to specmat
+[33m62fa99ae[m add parameter files
+[33m365f411a[m Add specmat geometry without scintillators
+[33md34a358e[m Merge pull request #104 from ACeulemans/develop_specmat_digitization
+[33ma2047585[m Merge pull request #103 from ACeulemans/develop_specmat_xml
+[33mc9b81ec9[m Update Be10He4_sim.C
+[33m85fd5d2a[m Add Specmat lookup to AtMap
+[33mf0be91e4[m Implement Specmat map
+[33m73e8d232[m Set Lookuptable in AtPulseTask
+[33mb99d8729[m Solve name conflict
+[33m8e192290[m Update rundigi_sim.C
+[33m39c62e2c[m Add Lookuptable specmat
+[33me568583f[m Adjusted covariance matrix for fit (hard coded). Added overlaying cluster hits in visualizer. Added track prunning function.
+[33m827b8d4b[m Updated GADGET pad plane
+[33m8dfede27[m Merge branch 'develop' of https://github.com/ATTPC/ATTPCROOTv0 into develop
+[33m2804b5fd[m Added SeGA. Updated GEnfit interface
+[33m19c1f39a[m Merge pull request #102 from rijal-2019/patch-2
+[33mb4735088[m Merge pull request #101 from rijal-2019/patch-1
+[33m1f046d23[m e20009Ana.h
+[33m7b7d9e19[m e20009Ana_v1.cc
+[33mb4a670bd[m Updated PRA task for cluster analysis.
+[33m0fc7de07[m Merge pull request #100 from ACeulemans/SpecMAT_AddScintillators
+[33m045b4184[m Update media.geo
+[33mbaeaa345[m Add Scintillators
+[33me3873ddf[m Refactor AtMap to include the number of pads in a detector
+[33me78742ac[m Update diffusion parameters for e12014 and refactor AtRansacTask
+[33m8f86c114[m Refactor AtTPCFissionGeneratorV3 and add its dependencies to the CMakeLists.txt
+[33m5c29a653[m Merge branch 'e12014' of github.com:anthoak13/ATTPCROOTv2 into e12014
+[33m7cf62ca9[m Update e12014 simulation macros
+[33m7c59147e[m Merge pull request #1 from anthoak13/FairRootv18.6
+[33m871aa34e[m Merge remote-tracking branch 'upstream/develop' into FairRootv18.6
+[33mfef4d396[m Merge pull request #98 from ACeulemans/develop_specmat
+[33m5fd11281[m Create SpecMAT_He1Bar.C
+[33mada804b1[m Update media.geo
+[33mae160b1f[m Merge pull request #97 from ATTPC/e12014
+[33me12972ba[m Merge remote-tracking branch 'upstream/FairRootv18.6' into e12014
+[33m26c0ebcb[m Calibration work for e12014
+[33m555eb81c[m Updated proto viewer for X17
+[33mb3df138f[m Added X17 mapping and analysis macros. Updated pATTPC event display.
+[33m198b0dcf[m Adding functions to prune tracks. Updated GADGETII unpacking
+[33mccb7d308[m Can calibrate using AtFilter framework
+[33mbce1b42c[m Adding option to prune tracks after PRA. Adding GADGETII mapping
+[33m82806527[m Modified GENFIT integration
+[33mbc811daf[m Completed refactoring of code to optimize memory usage. Deprecated Hough transform classes.
+[33m3118bc41[m Critical update for AtPRA
+[33ma92e4d77[m Removed duplicated RANSAC calculation from AtPRA
+[33m4769d524[m Fixed issue with RANSAC determination of line parameters. Disabled C++14 compatibility
+[33m46e02723[m Fixing clang format
+[33mdb912644[m Fixed problem with RANSAC when calculating the angle. This problem seems to be related to PCL version.
+[33m2b908e99[m Updated e20020 analyis. Updated Statistical Outlier Removal algorithm. Updated HC parameter management
+[33m91e3de4d[m Merge branch 'e12014' of github.com:anthoak13/ATTPCROOTv2 into e12014
+[33me5da4b9a[m Add task to filter specific aux pads using AtFilter and trap filter
+[33m7790b5d4[m Update README.md
+[33m8ad57dbf[m PSA and filtering tasks will no longer process bad events
+[33m247b9a7c[m Move aux pad mapping to AtMap
+[33maf09ee5f[m Refactor how AtRawEvent handles its pads
+[33m9979cfad[m Merge pull request #95 from anthoak13/e12014
+[33m3d676a98[m Refactor e12014 macros and update TPC drift parameters
+[33m9fae0b32[m Fix a bug where aux pads were not being recognized
+[33m9f6b4f32[m AtFilterSubtration can now filter aux channels
+[33m1e166388[m Merge pull request #94 from anthoak13/e12014
+[33mc115e6c4[m Fix bug with AtFilterSubtraction so it respects the threshold
+[33ma13b3b50[m Refactor code to prefer std::shared_ptr for AtMap
+[33m61cf7b3f[m Refactor AtHDFParserTask to accept a pointer to AtMap
+[33m3434cbe5[m Refactor PadReference to support std::hash
+[33m95bb2b2a[m Refactor pad reference and add threshold to AGET ch0 filter
+[33m17ca4a72[m Update e12014 macros
+[33m046f172c[m Update build scripts
+[33me18f7aed[m Update analysis e20009
+[33m2bd1beab[m Updated e20009 analysis to process simulation files simultaneously
+[33m35d9ef75[m Merge pull request #93 from AliMRamos/missing_includes
+[33medfb35e3[m Add missing includes
+[33m47bdd4da[m Set maximun number of tracks to display to 20
+[33m4fc70dad[m  Improved fitting procedure for elastic scattering
+[33m00e9cb8b[m Merge pull request #92 from anthoak13/e12014
+[33m0ed9934f[m Add filter to subtract the average of all force-read chanels in an AsAd.
+[33me4776c70[m Can now filter data using AGET ch0s with a macro
+[33m88849249[m Updated e20009 analysis
+[33m75ce436c[m Adjusted forward fitting parameters
+[33m9fa2eb94[m  Updated e20009 analysis
+[33m19fd288b[m Adding unpacking macros for e20009
+[33m6b683dd3[m Updated (d,p) analysis
+[33mc0ebff11[m Added function to provide energy loss file to GENFIT from ATTPCROOT
+[33m532e563a[m Adding realistic covariance matrix for track fitting
+[33mdf6f381b[m Added fitting programs in parallel
+[33mc194b976[m Updated Genfit tracking for backward fits
+[33m16a8bdca[m Merge pull request #90 from anthoak13/e12014
+[33m2224e002[m Add task to reduce data using arbitrary conditions on AtRawEvent
+[33m33246f71[m Add linking between HiRAEVT trees and TPC data.
+[33m23154943[m Add support for HiRAEVT
+[33mc239fbfe[m Improved 3D clustering.
+[33mfee930ed[m Added energy loss parameterizations for GENFIT. Added Be10dp simulation macros.
+[33m43aebed5[m Merge branch 'FairRootv18.6' of github.com:ATTPC/ATTPCROOTv2 into e12014
+[33m8e0dca55[m Fixed harcoded PDG codes in Genfit. Fixed several macros. Added a GENFIT standalone program
+[33ma6c1fed4[m Will build against PCL 1.8 and later versions
+[33m09e3ad78[m Update README.md
+[33m1c1c38c5[m Update README.md
+[33m7b1ccfc0[m Fission simulation no longer crashes
+[33m98feeb00[m Merge pull request #88 from anthoak13/e12014
+[33mc4efc492[m Merge remote-tracking branch 'upstream/develop' into e12014
+[33m0389d09e[m Build against GENFIT on fishtank
+[33m8510ec7d[m Update for 18.6.3 on fishtank
+[33mad582bf7[m Merge remote-tracking branch 'upstream/FairRootv18.6' into e12014
+[33m33a834bf[m Added Fit paramters through task
+[33m08af2f4e[m Major update to GENFIT. Implementation of e20009 geometry for simulation
+[33m18d48723[m Adapting filter for data. Fully working for e20020 simulation.
+[33m8218dc75[m Adapting filter for data. Fully working for e20020 simulation.
+[33m326dbbd7[m Updated e20020  macros
+[33m7950016a[m Fixed conventions for RANSAC calculation
+[33m450726f2[m Adding e20020 analysis macros
+[33m6c56db5d[m Adding e20020 analysis macros
+[33m4feed768[m Fixed memory leak on AtPRA. Finished and tested kinematics reconstruction from PRA.
+[33mb8a7b46a[m Delete .nfs000000000007d791000024e5
+[33m81067649[m Fixed parameters from Circular RANSAC.
+[33mbc43da94[m Fixed parameters for e20020. Working on prefit parameter optiization
+[33mac3c3c29[m Manually create targets for ROOT libraries
+[33mab7b9a03[m Add ability to build against HiRAEVT
+[33me6767e7a[m Merge branch 'e12014' of github.com:anthoak13/ATTPCROOTv2 into e12014
+[33m4dc083fc[m Tweak GENFIt parameters for 16O. Replaced include folder. Finished GENFIT port from develop_prerefactoring branch
+[33m09dc3135[m Everthing working except visualization of MC tracks
+[33mcfc276c5[m Building against GENFIT2
+[33m42ba4026[m Add summary to CMakeLists.txt listing found dependencies
+[33m79830595[m Update build script and fix compile warnings
+[33m6d576fc3[m Testing track reconstruction for e20020
+[33md07afe86[m Update to FairRoot v18.6
+[33ma6fd1181[m Building against HiRAEVT,
+[33mc9b23863[m Merge branch 'ATTPC:develop' into e12014
+[33m716d1958[m Improved reaction+decay simulation scheme. Implemented digi macros for e20020
+[33m08a2edfa[m Merge remote-tracking branch 'upstream/develop' into e12014
+[33m9d61e404[m Update format checked exclude list
+[33m26281f7b[m Implementing 16Oaa MC simulation
+[33m6d42b8c4[m Implementing 16Oaa MC simulation
+[33ma5899ce1[m Merge pull request #87 from anthoak13/testFormat
+[33m9d3a43e2[m Merge remote-tracking branch 'upstream/develop' into testFormat
+[33mc67c6438[m Merge remote-tracking branch 'upstream/develop' into e12014
+[33m673a0ad8[m Cleanup of e12014 macros
+[33m447d7203[m Fixed excitation function xs generator
+[33m5ffb9415[m Dev XS manager in progress
+[33m22239942[m Fixed 20Mg decay generator.
+[33md08cccf8[m Fixed diffusion calculation. Changed GADGET test macro parameters.
+[33m888034a9[m Merge remote-tracking branch 'upstream/develop' into testFormat
+[33m6d24e703[m Merge branch 'develop' of https://github.com/ATTPC/ATTPCROOTv2 into develop
+[33m48066421[m Adapted event visualizer for GADGET and SpecMAT. Fixed leak problem when selecting an empty bin
+[33ma2e906d4[m Merge remote-tracking branch 'upstream/develop' into testFormat
+[33m5222a6b4[m Merge pull request #86 from Nuclear-T-Wheeler/TylerFork
+[33m4856ebc4[m Added more details to detector geometry.
+[33m946b5c93[m Action to check formatting
+[33m22deede6[m Added much more detailed detector geometry.
+[33m7f8bcd90[m Fixed GADGETII map and added digitalization
+[33mebc0227e[m Merge pull request #83 from bolaizol/specmat
+[33mf946e551[m SpecMAT padplane geometry
+[33mcd74e8e5[m SpecMAT padplane geometry
+[33m48b9c5b9[m Merge branch 'specmat' of https://github.com/bolaizol/ATTPCROOTv2 into specmat
+[33md8f748a6[m Deleting to restore later
+[33m9f2e6d30[m Delete SpecMat.cxx
+[33mc0372333[m Delete AtSpecMATMap.h
+[33m00fcbc4b[m Geometry of the SpecMAT padplane
+[33m455af67c[m Adding SpecMAT padplane geomtery
+[33ma255c300[m Updating digitalization to include several detectors
+[33m162f7886[m Merge pull request #81 from Nuclear-T-Wheeler/TylerFork
+[33m8e7b4a8f[m Added GADGET_II geometry, added two gases, adjusted macro input and output names
+[33mce2f2488[m Merge pull request #80 from anthoak13/e12014
+[33m45b8baa5[m Merge branch 'develop' of github.com:ATTPC/ATTPCROOTv2 into e12014
+[33md4be5568[m Support PSA and viewer reading/writing arbitrary branches for raw events
+[33mc59364ff[m Merge pull request #79 from anthoak13/e12014
+[33m1b8e7682[m Add new task type to filter the traces in a raw event
+[33m58d70447[m Update macro for getting constant pads
+[33m36cbe714[m Added 20Mg generator for GADGET
+[33m9ddf5d10[m Merge pull request #77 from anthoak13/e12014
+[33mfdfff09c[m Update AtEventdisplay for AT-TPC and remove depricated classes
+[33m655b9515[m Fix bug where the eve viewer would seg-fault if a pad without data was ever clicked
+[33m698caf42[m Forgot to reformat a file before pushing
+[33m6f481f07[m Merge changes with genfit and map refactor
+[33mcf6abb89[m Adding GENFIT fitter. Added clustering in PRA class.
+[33mc6e8c454[m Fixed typo in CMakeLists
+[33m6f030dfc[m GADGETII pad plane implemented
+[33m706eecaf[m Merge pull request #74 from anthoak13/e12014
+[33m870b7517[m Refactoring map class to include GADGETII and SpecMAT
+[33mc9518d14[m Update parameter files and fix bug where PSA methods were trying to read parameter files before they were initialized.
+[33m2b701ff0[m Updated e12014 macro and created an example macro to show how to use refactored PSA structure.
+[33m68e99ea1[m Merge upstream commit
+[33mf76782ce[m Add more info on coding style to readme
+[33m57570aac[m Reformat all code to be in complience with ROOT standards.
+[33m1cee2c13[m Updated simulation macros
+[33m7969ec41[m Refactor source files so they are all .cxx
+[33ma796405a[m Name of libraries is consistant with folder structure
+[33m56d36d8c[m Refactor all headers so they are '.h'
+[33me876cce4[m Refactor Apollo
+[33mf9669489[m More cleanup of PSA code. Brought it in-line with standards in README and remove refrences to deprecated functions.
+[33maddff29f[m Cleanup PSA classes to remove warnings about deprecated logger
+[33mbd6f3bd8[m Update README and refactor PSA code
+[33mf3369b4c[m Merge branch 'e12014' of github.com:anthoak13/ATTPCROOTv2 into e12014
+[33m92220897[m Add option for multiple timestamps
+[33mcf71d0b0[m First attempt at TS matching using mutant TS
+[33m4f3bb28e[m Merge pull request #73 from hapol/improGam
+[33me681bf5d[m Add setting function for the gamma cascade option
+[33m3801a92b[m Merge pull request #72 from hapol/improGam
+[33m3fe7cb36[m Improve gammas response
+[33m1817a964[m Added macros for SOLARIS proposal and general experiments.
+[33mdbb7e0bb[m Added placeholders and support for GENFIT2. Added 35P_4He simulation macros
+[33m62304463[m Merge pull request #70 from hapol/apPoint
+[33mc77a7906[m Add apollo point momentum and position
+[33m9c629cbf[m Merge branch 'jczamorac-after_exp' into develop
+[33me2c80db4[m Merge branch 'after_exp' of https://github.com/jczamorac/ATTPCROOTv2 into jczamorac-after_exp
+[33m7b182319[m removing conflicting line in ClusterzeTask
+[33mffa83127[m removing conflicting line in ClusterzeTask
+[33m62d4e95e[m removing conflicting line in ClusterzeTask
+[33m87ddee17[m removing conflicting line in ClusterzeTask
+[33m0e377091[m removing conflicting line in ClusterizeTask
+[33m8686a762[m simple kin fitting for (d,2he)
+[33m020039e4[m Added gamma generator. Tested Apollo geometry.
+[33m874445b7[m Updated decay generator
+[33m434c795e[m Added simulation macros for 37Ka2p. Fixed the Phase Space Decay generator.
+[33maaa0a2f8[m HELIOS simulation updated. Analysis macros added
+[33meb86dbc5[m Merging pull request
+[33mb3fb9ee8[m Updated digitalization and MC information parsing
+[33mc11c493c[m Merge pull request #66 from giraudsimon/gainPads
+[33m12834064[m average pad gain fluctuation
+[33ma41d38c4[m Merge pull request #65 from hapol/apolloClass
+[33m0247c2b0[m Add the APOLLO detector support
+[33ma8f5b2f0[m Merge pull request #64 from jczamorac/after_exp
+[33meaf68b95[m background interpolation via TSpectrum
+[33m2f107549[m excling first and last 3 TB
+[33m3967386d[m mistake with BG array
+[33m591f4890[m charge relative to bg
+[33m25d18323[m BG interpolation via TSpectrum
+[33md0521878[m load env files
+[33m2e7a8610[m Merge branch 'develop' of github.com:ATTPC/ATTPCROOTv2 into e12014
+[33m017dd3ec[m Merge pull request #63 from jczamorac/after_exp
+[33m1a98969a[m Low threshold in ATPSAFilter
+[33m74ed34ac[m First attempt at TS matching using mutant TS
+[33m3ace2f5d[m set a default threshold
+[33m49b34018[m threshold for central pads
+[33m63a67a02[m Merge pull request #62 from anthoak13/patch-1
+[33md705f92c[m Change ClassDef to version 2
+[33m11e3b79d[m Fixing to a working HELIOS simulation. Merged previous commit.
+[33mf01ac70e[m Merge pull request #61 from jczamorac/after_exp
+[33mfdbba870[m solving conflits with reco/cmake
+[33ma50f67a3[m testing sim after experiments
+[33m5be9af78[m Fixed few problems with HELIOS simulation. Implemented fix target mode
+[33mcb264d70[m Added Si Array response. Organized macros.
+[33m0b57de43[m HELIOS: Adding Si Array response
+[33mda3853c8[m Merge pull request #60 from hapol/apolloGeo
+[33md05efacc[m Add APOLLO geometry
+[33maa952049[m Merge pull request #59 from AliMRamos/develop
+[33mf5e5db9a[m Add missing include TFile.h
+[33m64877a90[m Merge pull request #58 from anthoak13/e12014
+[33mb357102b[m Add aux channels to the event visualized for attpc
+[33m4bca0d29[m Fixed CMakeLists to compile with and without RANSAC
+[33mde2e5eb0[m Included HELIOS geometry
+[33mbe3621a9[m invmap class multi map interpolation
+[33me4256efe[m update after e18008 e18027
+[33m8231b901[m update after e18008 e18027
+[33me011f64f[m Modified CMakeLists to allow the compilation of the framework without PCL library. ATRansac, ATEventDisplay and PSAFilter modules won't compile if PCL is not found. These classes will be modified as much as possible to make integration possible
+[33m2526e817[m Merge pull request #56 from anthoak13/e12014
+[33m2e9d92cf[m Merge pull request #55 from jczamorac/single_commit
+[33m6a9ea62b[m Merge branch 'develop' of github.com:ATTPC/ATTPCROOTv2 into e12014
+[33maaba04a8[m Add inverse lookup for AtTpcMap
+[33mfad20991[m S800-ATTPC event vis
+[33mc5503305[m Merge pull request #54 from jczamorac/single_commit
+[33m124381b3[m include several cut files
+[33mbd9e4b3c[m ext gate in TRaw & TEvent
+[33m6d8f3d36[m Merge pull request #53 from giraudsimon/tasks
+[33ma4687ca1[m Merge branch 'develop' into tasks
+[33m7d8970d7[m solve conflicts
+[33med0aed1b[m S800 class in cbmsim
+[33m8991fb40[m Merge pull request #51 from jczamorac/single_commit
+[33m4571a22b[m update merge task
+[33md30cf450[m merge task
+[33med8ee838[m skeleton of S800task
+[33m4d003b15[m solved strange EventID numbers
+[33m9c331ca7[m Merge branch 'develop' of https://github.com/ATTPC/ATTPCROOTv2 into single_commit
+[33m0d1c4b3c[m testing findvertex
+[33md9017891[m Merge pull request #50 from jczamorac/single_commit
+[33m370a927b[m findvertex and randsamp options
+[33mb168297b[m Mlesac and Lmeds
+[33m0e59707a[m home made ransac running
+[33m5806d167[m Merge pull request #49 from anthoak13/e12014
+[33m138fd2a3[m Add electronic peaking time to ATDigiPar file
+[33m996a8f84[m At GET gain and fano factor to ATDigiPar file instead of hard-coding values
+[33m278ee470[m Merge pull request #44 from jczamorac/single_commit
+[33m92863d09[m Merge pull request #47 from giraudsimon/emittance
+[33m07070188[m Finish work on fission generator
+[33m1309dd1f[m Merge branch 'develop' of https://github.com/ATTPC/ATTPCROOTv2 into develop
+[33mfa8493a5[m update ion generator
+[33m21c619f9[m Merge pull request #46 from anthoak13/e12014
+[33m52335cac[m Merge branch 'develop' of github.com:ATTPC/ATTPCROOTv2 into e12014
+[33meac81657[m Fix stupid mistake in merging to upstream
+[33mf5a96e43[m Update readme with documentation from Carls' thesis
+[33m7dd79bc1[m Merge pull request #45 from anthoak13/e12014
+[33m213298eb[m Merging with upstream
+[33mb36c7544[m Macros from experiment and fixes to ATDigiPar file to support time bucket size used in e12014
+[33mb7df1e5d[m Reverting back the Ion Generator
+[33mfaaffbbf[m basic ransac class
+[33m1cc2092f[m Merge pull request #43 from jczamorac/single_commit
+[33maabc09b1[m ransac coeff !=6
+[33mdf53aa4f[m Merge pull request #42 from giraudsimon/attpcS800
+[33m6e10d339[m offline merging and analysis S800-ATTPC
+[33m951be015[m Merge pull request #40 from jczamorac/single_commit
+[33m2033b3e5[m inhibit pads in pulsetask
+[33mc65d549f[m Merge branch 'develop' of https://github.com/ATTPC/ATTPCROOTv2 into develop
+[33md151d5fb[m Updating digitalization and 22Mg simulations. Included parser from root to HDF
+[33mbdbf484e[m Merge pull request #39 from jczamorac/single_commit
+[33mafee0ee5[m fit 3D line again
+[33mc57335ae[m fit 3D line
+[33me1469ec1[m Merge pull request #38 from ssedd1123/develop
+[33md70a07b5[m Merge branch 'develop' of https://github.com/ATTPC/ATTPCROOTv2 into develop
+[33mdf7df161[m Vertex from ATRansacTask can now be visualized in ATEventDrawTask
+[33mdda360c5[m Merge pull request #37 from ssedd1123/develop
+[33m0e53bfe6[m Added e12014 mapping
+[33med27d0e4[m Updated sampling rate and parameter file for e12014
+[33m237046c5[m Merge pull request #35 from anthoak13/e12014
+[33mee7058d5[m Merge pull request #36 from ssedd1123/develop
+[33m8bd2d944[m Fixed out of bound bug in ATRansac.cc when the vector tracks is empty. tracks.size() is casted to signed integer to prevent overflow error due to -1
+[33m07bce429[m Add changes for fission generator
+[33m523ec48e[m Add changes required for fission generator
+[33m2d8e2a42[m Merge pull request #34 from ssedd1123/develop
+[33m9a9d7927[m Uncomment the tile angle mutator in ATRansacTask
+[33md73fac7d[m Tile angle can now be accessed by mutator in ATRansacTask. ATRansacTask is added to main.cc for e12014
+[33mcd927db3[m Merge pull request #33 from anthoak13/e12014
+[33m04f205e4[m Merge pull request #32 from giraudsimon/develop
+[33m93b7db59[m Changes made for e12014. Breaks old HDF5 file format, adds ability to unpack timestamps, includes generator for fission events
+[33mc31110a5[m generator for reaction products decay
+[33m1c81b7cf[m Fixing macros
+[33m9a85ec9a[m Fixed memory leak
+[33m75f3a606[m Updating HDF unpacker
+[33m1dfbabae[m Merge pull request #31 from anthoak13/timestamp
+[33m5155a15d[m Add timestamping
+[33m3735322f[m Upgraded to FairRoot 18
+[33m369f944c[m Updated ND analysis
+[33m799e7c69[m Updated framework for ND2019 experiments
+[33m5cbd7e05[m Merge branch 'develop' of https://github.com/ATTPC/ATTPCROOTv2 into develop
+[33m00446bba[m Updated S1845 analysis
+[33m1f665e55[m Merge pull request #30 from CloakedAnomaly/develop
+[33m734753fd[m Updated script for copying headers to include all .h files
+[33md23ec06d[m Updated stand alone analysis
+[33mbe53c2bb[m Added an stand alone code to use RANSAC+ATTPCROOT
+[33me03bf675[m Updated S1845 analysis
+[33m6668f59b[m Updated S1845 analysis
+[33md801fe73[m Merge branch 'develop' of https://github.com/ATTPC/ATTPCROOTv2 into develop
+[33m019e4fd2[m Updated S1845 analysis
+[33m981ae8e8[m Delete Qtot_run_0080_analysis.root.txt
+[33m84364756[m Updated final version of the analysis
+[33md7843be4[m Updated S1845 analysis
+[33maf28150c[m Fixed a bug in the analysis
+[33md71b2150[m Completed 7Li analysis
+[33mfa2d543d[m Updating 11Be analysis to include 7Li fit
+[33m418b9f38[m Updated 12N(d,p) simulation
+[33mb40bed17[m Implementing chi2 analysis for 7Li (11Be experiment)
+[33m0ab8d2ab[m Modified analysis macro to plot fits with best chi2
+[33mff2a66d9[m Script to analyze runs for 11Be experiment
+[33mb7b503f3[m Fixed compilation problem with DOM Parser in Ubuntu
+[33m8fb00177[m Fixed HC algorithm problem
+[33mdf19db5a[m Updated analysis
+[33m30663a95[m  11Be analysis updated
+[33m51860937[m Updated analysis plots
+[33m3bf4d57b[m Changed the way triggers were stored in the analysis of the 11Be
+[33m0644160e[m Fixed a typo in the fit function return values by reference
+[33m46962afa[m Completed 11Be analysis
+[33m6bdb6f45[m Added Aux Pad name and correct aux mapping
+[33mf9d6065f[m Added auxiliary channels
+[33m40913321[m Adding auxiliary channels in the HDF parser
+[33m60f948bc[m Fixed a problem with the analytical energy loss function for the proton reference
+[33mbdfcb30f[m Updated proton analysis
+[33m87d1c7cd[m Proton analysis for 11Be
+[33mc319d647[m Updated 11Be analysis
+[33m14ea9608[m Fixed memory leak in cluster algorithm
+[33m418594df[m Improving S1845 analysis
+[33m9f6b47b8[m Added a functionality to constrain the time bucket range to calculate the total charge
+[33m4bc7b57b[m Added a new PSA mode for calorimetric studies
+[33mf8d0dc42[m Fixed several issues with the visualization
+[33m6408cbf6[m Fixed Hierch. Clustering visualization for prototype
+[33m7579004a[m Merge pull request #28 from jczamorac/develop
+[33m311c85ab[m HDF5 flag for old format included
+[33mb871567b[m few corrections
+[33m642d12e9[m Merge pull request #27 from jczamorac/develop
+[33m5587df28[m fixed missing geant4 data files
+[33mfaf9fba6[m Fixed a problem with the initial event in the parser
+[33m17121f91[m Updated HDF5 parser
+[33m969ff53d[m Visualization working
+[33ma030877b[m Fixed HDF5 parser and mapping
+[33m9d391ab4[m Development progress
+[33m12feeef3[m Implementing new pad plane geometry
+[33mce625c82[m Merge pull request #26 from hapol/develop
+[33m3b26271d[m Correct cluster and pulse formation with proper GET gain
+[33m74006c37[m Update README.md
+[33mc8d97f70[m Update to contend with FairLogger.h not found with latest releases of FairRoot 17.10 and FairSoft may18 (boost 1.67.0, CMake 3.12.0, clang 10.0.0)
+[33m62b9abe8[m Fixed a problem that made the Track finder crash when RANSAC returned an empyt Track vector
+[33m401dec5e[m Fixed problem with std:future and ROOT
+[33medfa7bda[m Concurrent RANSAC analysis in progress
+[33m448a5735[m Fixed a bug that was causing an iteration go beyond limits (clang)
+[33m84df66f3[m Updated Hierarchical clustering
+[33m8e27b54d[m Fixed a bug in the RANSAC algorithm
+[33md736d0ab[m Improving the results of the tracking algorithm
+[33m0704ad8f[m Working on simulation analysis
+[33m64ae6f55[m Finalized optimization of initial parameters for the MC
+[33m43b1e5f6[m Work in progress
+[33m90b886bd[m Improving angle determination from RANSAC
+[33m40326359[m Fixed a bug that prevented RANSAC for finding outliers in a 2D circle pattern
+[33mc0e70d16[m Fixed a bug in the Hough Space calculation
+[33m617417f4[m Added a smoothing algorithm for spiral radius based on RANSAC. Work in progress
+[33m76bdcc90[m Adjusted thresholds for RANSAC Circle 2D
+[33mc8e7fb6f[m Forgot the event!
+[33m31ad0b48[m Added a stand-alone module for RANSAC 2D circle estimator
+[33m9aaf5e1e[m Fixed few bugs on PSA. Working on kinematics...
+[33mff5e8b7f[m Working on MC simulation
+[33ma65e07ab[m Implemented reconstruction on simulation
+[33m7da8f432[m Added AT3PC simulation. TPC response modified. Changed AtTpcMap dump function to create an ascii file
+[33med2b9fb2[m Fixed a problem in the CMakeLists for reco library
+[33m48f106d9[m Merge pull request #25 from hapol/develop
+[33mf453c71b[m Add ATPSFull and improve ATPulseTask
+[33mcfb29c83[m Merge branch 'develop' of https://github.com/ATTPC/ATTPCROOTv2 into develop
+[33m8c969b93[m Fixed bug in inievent
+[33md802aa91[m Merge pull request #24 from hapol/develop
+[33madd1051c[m Add ATTPCXSReader class for adding the PACE output
+[33m47e7d617[m PSAFull, work in progres. Updated 12N_dn
+[33m57c51e5f[m Fixed first event of the HDF parser
+[33m08912598[m Merge pull request #23 from hapol/pulseWork
+[33ma2cd570b[m Pulse generation, some corrections in clusterization and e15250 sim folders
+[33mf196ba57[m HDFParser connected to analysis flow
+[33m9a8bc0ef[m Working version of HDF parser
+[33m3a14109c[m Added HDF parser task
+[33m6a2d35b6[m Fixed a problem with the HDF parser
+[33mb81e5d70[m Added task for HDFParser
+[33md9aa7c5b[m Work in progress: Changing from GETDecoder to HDF5 Parser
+[33ma1a4ba83[m Refactoring the code for pulse generation task
+[33ma3ac735b[m Work in progress (Simulation)
+[33mc5fe9e78[m Fixed a bug in the 2B generator. Redistributed simulation macros
+[33m93c4d3db[m Fixed a problem with the 2Body kinematics generator. Added new geometries
+[33mb8eb6f34[m Fixed compatibility with latest FairRoot. Working on 12N(d,n) simulations
+[33m5f84d66e[m Remvoed deprecated headers. Modified 2Body generator to avoid crashing the simulation during the generation of a beam event. Updated compatibility with latest FairRoot and FairSoft versions
+[33m1bb62bad[m Fixed a problem in the viewer that prevented RANSAC data to be displayed correctly
+[33m916110ad[m Fixed a problem with the radius or curvature calculation
+[33md5d91d44[m Work in progress for new MC
+[33mdd76c1b5[m Refactoring code. Created a Pattern Recognition base class
+[33mb05dda95[m Change color for outlier visualization
+[33mfd2e0be8[m Implemented visualizer for TrackFinderHC
+[33mc7f083b7[m Solved a plethora of problems with root dictionary
+[33m61f88e00[m Added Track Finder by Dalitz et al. ATTPCROOT requires C++14 now
+[33m54910f33[m Started a new Taks for TrackFinder by Dalitz et al.
+[33m2284e9d3[m Updating come
+[33m7da01892[m Plain commit
+[33m5447974e[m Save event as ASCII works now
+[33mbd262b29[m Debugging digitalization
+[33mb874e384[m Trying to fix the mess on digi...
+[33mfcf55ad0[m Implementing Hierarchical clustering in FairROOT analysis flow
+[33m27f831e1[m Merge pull request #15 from ATTPC/feature_refactoring
+[33m0e1941c9[m Merge branch 'develop' into feature_refactoring
+[33ma35f185d[m Updating Hierarchical CLustering. Removing VTK dependencies
+[33m31fd80b4[m Merge pull request #22 from ATTPC/dev_HC
+[33mf7dbe439[m Merge pull request #21 from ATTPC/dev_HC_lukas
+[33m0aef9d1c[m Merge branch 'develop' of https://github.com/ATTPC/ATTPCROOTv2 into develop
+[33m0ddc85e2[m Changed Draw Task Proto for visualization of all pulses to correct a bug, colors are now rightly assigned per quadrant
+[33m2acf8092[m New python script for AsAd file unpacking, cleaned the runfiles/ folder
+[33m9e5a7496[m Removed debug for macro
+[33m51ee8e8a[m New way of reading files for several files per Asad (they need to be in the correct order) + kept as a comment the dirty/easy way of adding the files (the iThread number should correspond to the Asad you're looking at, and there are 40 threads for the ATTPC)
+[33mcb50c6c8[m Added the run_unpack_fission.C unpacker, parameter files, and geometry map for experiment e17504
+[33m3b92fd65[m Merge branch 'develop' of https://github.com/ATTPC/ATTPCROOTv2 into develop
+[33m77226533[m Trigger task/class updated
+[33m982cb55c[m Updated simulations
+[33m53333721[m removed cloudScale calculation to have codebase in sync with dalitz version
+[33m299a03b7[m Comment Hierarchical Clustering & remove ~ temp files in reco/
+[33mc83abb75[m Fixed CMakeLists
+[33m0d7e9d7a[m Added colors to the event display task for the prototype (separating quadrants for the raw pad plane signals)
+[33m375d34d7[m PSAProto mesh signal only includes one hit
+[33m1a9760db[m Fixed CMakeLists
+[33mf3e92649[m Merge pull request #14 from ATTPC/issue-#13
+[33md6c384db[m Merge branch 'develop' into issue-#13
+[33mc3063ba1[m Merge pull request #20 from ATTPC/trigger
+[33m311ac473[m Addition of trigger to simulation
+[33mc9a586d3[m code cleanup vertex position is now calculated vertex position is printed out (simulation only) fixed an error in calculating the derivatives Hits in ATTrajectory are now correctly ordered
+[33m67dcfc57[m added linear interpolation to ATCubicSplineFit
+[33ma2e6e2cb[m Fixed siulation energy conservation
+[33m740b7377[m changed SetAtMap
+[33mf6539f47[m Trigger Parameter Object
+[33m4fae26bd[m added output of trackID
+[33mdbd07001[m Trigger Task
+[33mfdd029c4[m a little more tweaking
+[33md5731856[m parameter tweaking
+[33m09062a46[m re-added functionality to display no-matches
+[33m8a1de84c[m hierarchical clustering example now works with simulated data as well visualization is now controllable via macros
+[33m5721046a[m some refactoring and code-cleanup
+[33m70d1f3f7[m Merge pull request #19 from ATTPC/issue-#17
+[33m0247d434[m updated scripts
+[33m9bdb4df6[m Merge pull request #18 from ATTPC/simulation
+[33m0087c32b[m Modified simulation to work
+[33mc736f81a[m now using const & and copying into fClusteredHits
+[33m8d85a3f0[m changed curvature calculation
+[33m3688784b[m implemented curvature-calculation using splineFit
+[33mf3358b56[m position is now projected onto mainDirection
+[33ma768268d[m ATCubicSplineFit added to ATTrajectory ATCubicSplineFit is now calculated on smoothed cloud
+[33mfbd0bc0c[m completed ATCubicSplineFit
+[33mbb895a86[m started implementing ATCubicSplineFit
+[33mf2543ee3[m Merge pull request #16 from ATTPC/calibration
+[33m5d0082f1[m Calibration
+[33mfdde23ec[m removed backup-files
+[33mcd63c24b[m fixed memory leak (wrong delete)
+[33m5a5f82a4[m started refactoring ATHoughSpaceCircle
+[33m1a2f0965[m approximate length calculation added start and end point calculation added
+[33m4c7a0bb6[m most of issue #13 handled
+[33m914a7528[m Merge pull request #11 from ATTPC/feature_rootExport
+[33m769ce047[m Merge pull request #12 from ATTPC/issue-#10
+[33m2a15eb8a[m Merge pull request #9 from ATTPC/issue-#6
+[33mff5bad3d[m fixed issue #10
+[33m561042da[m added data-dir to .gitignore
+[33m73ba24fa[m added json exporter
+[33m4c5cf807[m fixed export macro
+[33m662f2ce2[m macro now works with correct root-file
+[33mf40abbd7[m fixed some shadow warnings and refactored affected code
+[33m80cbab07[m merged example fix
+[33ma495cd5e[m fixed example
+[33m8bcf044b[m Merge pull request #7 from ATTPC/feature_hierarchicalClustering
+[33mf1f20ee7[m hierarchical clustering integrated with new types
+[33mad8a3590[m added .vscode and *~ to .gitignore
+[33m0eb40c45[m Added hierarchical clustering
+[33ma83067fb[m Merge branch 'develop' of https://github.com/ATTPC/ATTPCROOTv2 into develop
+[33m0590f059[m Cosmetics on pad plane. Added 4He+4He angular distribution calculation (vs previous works)
+[33m67aff630[m included deuteron elastic breakup
+[33m03eb6bcd[m Fixed a problem with isnan (should be std::isnan)
+[33m11dc6501[m background generator
+[33m920d45c8[m New style on pad plane
+[33mf74f0b7b[m simple d_2He analysis class
+[33mf7d29633[m Create README.md
+[33mc29d4d6b[m Fixed a bug to prevent memory leak when RANSAC fits are empty.
+[33mc5235cc1[m Fixed a problem with analysis macro for 4He+4He. Fixed parameters for beam range.
+[33mb85b431b[m Merge branch 'develop' of https://github.com/ATTPC/ATTPCROOTv2 into develop
+[33mc9458895[m Better MC for 46Ar data
+[33m97b2ec7b[m New plots for CO2 data
+[33m620a9f64[m Added new features to MC
+[33mbb670337[m Updating 4He+4He analysis
+[33m21d9f858[m Working Statistical filter implemented. Fixed few bugs
+[33m473a84a9[m Merge branch 'develop' of https://github.com/ATTPC/ATTPCROOTv2 into develop
+[33m7f5673a6[m Implemented a statistical filter for random noise witht he PCL library
+[33m200cee9c[m Updated plots for the CO2 analysis
+[33m3cf454ce[m Analysis macro for CO2
+[33mf3af9d2f[m Extending CO2 analysis
+[33m212dab80[m Adding a simple analysis for free tracks for the CO2 data
+[33m8167b703[m Adding functions to make a simple RANSAC analysis
+[33m3f22cc94[m Updated parameters for fission test data
+[33m7b3ebb32[m Script for 4He+4He analysis
+[33m05df3ae5[m Testing my patience with script syntax
+[33m6d56712c[m Improved description of chi2
+[33m279be90a[m Added an optional chi2 calculation for the range of the track
+[33m2c64c460[m Adding a range Chi2
+[33m19bb4647[m Adding few more parameters through the parameter file
+[33m0a27b590[m Added parameter transfer. Adjusting MC.
+[33mc6d985bd[m Added a function to change the MC step
+[33m979a2952[m Small typo fixed
+[33m6c9960db[m Improving MC parameters
+[33m443ec7f9[m Updated analysis plots
+[33m1078a048[m Updated analysis macro
+[33m05fb7e65[m Added a function to adjust the gain
+[33m002c36ad[m Added new MC parameters
+[33mc733c65a[m Refactoring code to move the result of the fit to the new analysis class
+[33m8d29e8e7[m Working MC for 4He+4He
+[33ma28817e2[m Density for 4He+4He fixed
+[33mf1328d3b[m Fixed a typo on parameter propagation.
+[33m31dcb0a5[m Fixed rotations in MC.
+[33m9ae04ff3[m Fixed a typo on the calculation of the angle of the track
+[33meaa830eb[m Adjusting MC parameters
+[33m08cba302[m Added multitracking MC visualizer
+[33mf43dcc19[m corrected samll error in ATTPC_d2He generator and macro analysis
+[33m069ac712[m Adding MC results to each independent track
+[33ma45044b4[m Fixed several typos on Range to Energy function. Added next step on multi-MC
+[33mb7f87c12[m Added missing paramters to par files. Added a chi2 function to MC Charge minimization
+[33m603a3737[m Added parameter file function to digitization
+[33mf4ca6edc[m Small changes in analysis macro
+[33m289bc7eb[m Updated 4He analysis with angular resolution
+[33m6c9e7957[m Fixing few incorrect line
+[33mfaa789c4[m Simulates pulse reconstruction
+[33m49732b6f[m Updated vis. for 4He+4He analysis
+[33m47381881[m Range calculation
+[33m95914f9e[m Working on the MC
+[33mea0fd691[m Debugging angle calculation
+[33md2e8ab0e[m Fixed some errors on the rotation
+[33ma6250b1b[m Working on MC
+[33m74b4ca87[m Improving selction of tracks for MC
+[33m492a15f7[m Fixed wrong assignments when calculating the global reaction vertex
+[33me38aa00a[m Tracks for scatter and recoil particles
+[33m4c5a4c11[m Angle with Z axis
+[33mcbefe7d7[m Entrance of the beam from vertex reconstruction added
+[33m3160b1e8[m MC for independent tracks
+[33m038b1edb[m Added a parametrization to calculate the Energy from the range for a particle-gas combination defined by the user
+[33mc7a2b917[m Function to get the Brho from the energy
+[33m709c4ba7[m Fixed few scripts. Working on MC for 4He+4He
+[33m597abbb5[m d_2He update
+[33m96a4ef07[m Adding a new task to manage the reconstruction of every detector
+[33m261ae786[m Parameter files updated
+[33mddd82b91[m Adding global parameters to combine RANSAC+MC
+[33mdd33d9c1[m MC adapted for different particles
+[33m4cd5beef[m Working on MC for 4He+4He
+[33m34a807d0[m Implementing specific functions for ELoss
+[33m30cef3fb[m Small changes in MCQ
+[33m8450bc31[m New run files for 46Ar
+[33m35646f33[m Template for MCQ implemented. TODO: Disable the main MCQ member function
+[33m87d1f6fd[m Backward extrapolation completed
+[33m6c299b1b[m Visualizer updated
+[33mf6130bab[m Optimizing MC
+[33mae11e68d[m Refactoring and cleaning the code
+[33me3834077[m MCQ working. Fixed a problem with array indexing
+[33m9d22b468[m Pass the pad plane coord by reference. Fixing map problem.
+[33m5d09b2a3[m Working on exceptions in MC
+[33m2f54c1f6[m Adapting new MC
+[33m9fedd2e5[m Tuning the initial conditions. Density of points has to be adjusted to lower than 10 TB.
+[33m20e5507f[m Fine tuning for Ransac
+[33me8c250ea[m Noise suppression completed for the RxPhi space
+[33m902f21f0[m Debugging RxPhi noise reduction
+[33m1a518791[m Still working on the RxPhi thing...
+[33m593d84e2[m Noise reduction improved. TODO: Remove the j loop on find track candidate function. Check the distance between hit candidates
+[33me97e24d2[m Improving 46Ar reconstruction
+[33mb595d01b[m Impreved RxPhi noise suppression
+[33md9f1511d[m Repo fixed
+[33md16fde05[m[33m ([m[1;33mtag: v-2.5[m[33m, [m[1;33mtag: v-2.1[m[33m, [m[1;33mtag: v-2.0[m[33m)[m Analysis completed
+[33m259f1e9f[m Analysis for 4He+4He data
+[33mbf2a5371[m Add few task parameters. Ready for analysis
+[33mf7da7265[m Number of lines limited
+[33m63e41468[m Visualization for RANSAC tracks implemented. The number of tracks must be limited to 5
+[33m9a9d47da[m Minuit coupled to RANSAC
+[33m80d188dd[m RANSAC fully implemented. Solved a problem with FLANN static library linkage
+[33m19302b81[m Implementing PCL RANSAC
+[33m11ad54df[m Building a program for the 3D Hough
+[33mfb85ff55[m 3D Hough Space finalized
+[33m35d99ccc[m Implementing new 3D Hough Space calculation
+[33m96e0f92d[m Small update
+[33mb20b4fe0[m Added new scripts for installing new packages
+[33m91077294[m New clash for 3D Hough added. Class uses Point Cloud Library (see Wiki)
+[33m395f795b[m Small typo corrected
+[33m7532d822[m Added Hough space in different planes. Added support for PCL library
+[33mec4acd2d[m Fixed several mistakes and typos
+[33m874ddb25[m Fixed few typos
+[33m2532312d[m d_2He event generator
+[33m7850a7f6[m Corrected a pitfall in the track reconstruction algorithm
+[33m6ccf2994[m Finalizing 3D vertex reconstruction
+[33m574d3181[m Visualizer based on OpenGL for 3D lines
+[33m7e26da15[m Added two vertices to have a better precission
+[33mebe2d741[m Merge branch 'develop' of https://github.com/ATTPC/ATTPCROOTv2 into develop
+[33m64f13a3d[m Distance of minimum apporach between beam, pile up and reaction products implemented
+[33m8ee9167b[m Change on AtFieldCreator class
+[33m2ff62712[m Moving the Minimizer to the main function
+[33m7aaaed93[m Improved Hough Space 3D calculation
+[33m39f590a1[m Linear Fitter 3D with Minuit/Migrad implemented
+[33me71ec3dc[m Uncomment the mutiple hough space calculation
+[33m10e0de81[m Fixed linking problem with template. Added Hough space distance from macro
+[33me03d422d[m Refactoring code for generic hough space calculation through template
+[33m13480348[m Added a quality factor for PSA
+[33m2cd61611[m Improved PSA for data unpacking
+[33mb8762617[m deleting std::thread floating pointers
+[33m6fc46762[m Fixed array declared on the heap. New standalone MC version
+[33m24e08c0c[m Multiple Hough Space completed and working. To check: memory leaks for pointers
+[33mc17ca8a7[m Hough Space for multiple tracks implemented
+[33mbc833dcf[m ATTPCROOT core modified to change the number of cobos
+[33m9a9311ab[m TH2Poly partition increased. Optimization of MC parameters.
+[33m4c9c3bcb[m Minor modifications
+[33ma4b7c691[m[33m ([m[1;33mtag: v-1.0[m[33m)[m New MC for Energy Loss. Added 8He experiment files too. Refactoring code for Analysis container
+[33mf51252b5[m Simple macro to plot kinematics
+[33m0c0afe3b[m Merge branch 'develop' of https://github.com/ATTPC/ATTPCROOTv2 into develop
+[33m3395d657[m Added macros for 20Mg experiment. Material list updated.
+[33m29bca42d[m Macro to analyze the data in separated files
+[33m844e6225[m Updating 12Be+4He macros and kinematics
+[33m64511453[m Fixing a file
+[33m769b98ea[m Macro for fission analysis
+[33m9baa0ef6[m Updated macros for 10Be 2013
+[33mf61e72c8[m Added a clean version of the stand alone without CUDA and OpenMPI
+[33m7eac3773[m Added upper limits for linear fits after Hough transformation
+[33m7a3e780e[m Fixed a bug that prevented the TPads to Update
+[33m6885948a[m Added auxiliary channels for the 8He at Raw level. Lite visualizer updated.
+[33m2214c45e[m Auxiliary channels added for the prototype
+[33m660ab274[m Added Mass and Atomic Number for each fragment track in the Geant4 simulation
+[33mc0474845[m Simple unpack macro for 8He
+[33m2e43f570[m 10Be update
+[33ma12c2997[m Merge branch 'develop' of https://github.com/ATTPC/ATTPCROOTv2 into develop
+[33m64eb20da[m 10Be ND 2015 parameter fix
+[33m1db55914[m Copied missing AtTpcMap.h header into includes
+[33m344e2c8f[m Merge pull request #4 from csullivan/MPI
+[33m1ef875d0[m Replaced submodule with the ATTPC fork of MPIEventLoop
+[33m6c960302[m Removed old submodule
+[33mf439949f[m Working on prototype Bragg curve fit
+[33med12b3a5[m auxilliary files for 10Be analysis
+[33m5e04e0aa[m 10Be analysis in updated framework
+[33me26e1aed[m Merge branch 'develop' of https://github.com/ATTPC/ATTPCROOTv2 into develop
+[33m2dbec0e0[m update plot macro
+[33m59b07f6d[m Small update on the plot macro
+[33m0e95e338[m Added center of gravity of the pulse for better determination of the scattering angle
+[33me47ed319[m Merge branch 'develop' of https://github.com/ATTPC/ATTPCROOTv2 into develop
+[33m82838114[m Chi2 and NDF added to linear fits
+[33md15fcf7e[m Merge branch 'develop' of https://github.com/ATTPC/ATTPCROOTv2 into develop
+[33mba80c2b6[m Plot macro updated for ATProtoEventAna. Map for 10Be experiment updated
+[33mb3d25644[m Added a macro to analyze the Geant4 simulation of the fission experiment
+[33m84a2a051[m Merge branch 'develop' of https://github.com/ATTPC/ATTPCROOTv2 into develop
+[33m424ef516[m Temporary fix for 10Be+4He data. Z position can be recalibrated in every analysis step
+[33m06c71022[m Merge branch 'develop' of https://github.com/ATTPC/ATTPCROOTv2 into develop
+[33m4126745f[m Fixed a bug with the angle calculation after hough space. Added kinematics into lite visualizer
+[33m757c7207[m Removed unnecessary gSystem->Load call
+[33md688d43f[m Merge branch 'develop' of https://github.com/ATTPC/ATTPCROOTv2 into MPI
+[33m59454f1a[m Added MPIEventLoop to ATTPC MC minimizer.
+[33m0db057ce[m Merge branch 'develop' of https://github.com/ATTPC/ATTPCROOTv2 into develop
+[33m2f02ab4a[m Vertex determination improved
+[33m9c82c0d0[m Merge branch 'develop' of https://github.com/ATTPC/ATTPCROOTv2 into develop
+[33m50d963a0[m Track fit for prototype added
+[33m4266ca4e[m Merge branch 'develop' of https://github.com/ATTPC/ATTPCROOTv2 into develop
+[33m90057ea7[m Bragg curve added
+[33me5e27db8[m Updating Prototype analysis
+[33m9c8772f5[m Merge branch 'develop' of https://github.com/ATTPC/ATTPCROOTv2 into develop
+[33m8434a626[m 10Be analysis updates
+[33ma73a9f74[m Hough Space added. Not freed pointer creates memory leak
+[33m6ba19e8d[m Bragg curves added
+[33maf74e35e[m Working energy loss for quadrant tracks
+[33md7fc6761[m Lite version of the viewer for the pATTPC
+[33maaa2ba42[m Optimizing MC
+[33mff904dca[m CUDA minimization
+[33m16e93ca2[m Merge branch 'develop' of github.com:ATTPC/ATTPCROOTv2 into develop
+[33m1b26d6ae[m Adding charge distribution to MC
+[33m3fec2fe4[m Working on mapping
+[33m7f1b72df[m Progress on digitization. Adding map to the MC
+[33m6b2c0c7e[m Removing .DS_Store
+[33m83eedc43[m Small change on macros
+[33m64fb7c25[m Fission generator based on INCL+ABLA code added. Macro to create lists of isotopes for the VMC added. Fast analysis macros for 47Ar added. Changed ATCore destructor for Mac OS compatiblity.
+[33me886ce64[m Merge branch 'develop' of github.com:ATTPC/ATTPCROOTv2 into develop
+[33m5091f9c1[m Prototype analysis macros updated
+[33m75992a98[m 8He analysis upgrade
+[33m46c9d319[m Merge branch 'develop' of github.com:ATTPC/ATTPCROOTv2 into develop
+[33mabd9052a[m Added the 3rd particle from the phase space generator to the Geant4 visualization
+[33m1eb48cf0[m Updating prototype reconstructions routines
+[33m5867f9b7[m Merge branch 'develop' of github.com:ATTPC/ATTPCROOTv2 into develop
+[33m61e4b9cc[m Checksum update
+[33m22aab0fb[m Stand Alone MC finished
+[33m84b9a5b3[m Merge branch 'develop' of github.com:ATTPC/ATTPCROOTv2 into develop
+[33me82e513c[m Fixed a bug in the standalone MC
+[33m3033e488[m Merge branch 'develop' of github.com:ATTPC/ATTPCROOTv2 into develop
+[33m98019b86[m MCsrc_cuda
+[33m26ca7755[m MC results reproduced by the stand alone version
+[33m1cd28197[m Stand alone MC with OpenMP and CUDA (In progress...)
+[33mbae68d8a[m script to analyze several runs
+[33m97a16655[m Scripts for copying and creating run files
+[33md23bdf4e[m run files added
+[33m12b3a3dd[m Speed for MC increased by a factor of 5
+[33m75a7f27e[m New path for run files
+[33m209c915c[m Fixed a problem for GCC 5.3 compatibility
+[33mc98bb1b8[m Extended fit information
+[33m0dfcd1e5[m Working on CUDA
+[33mb9bb2ec5[m Adding compiled programs and new CUDA code by Michelle
+[33m9ceda278[m Add a function to reset fit parameters
+[33m19b97424[m Several kinematic cuts for 46Ar, root file create to store the results in a very simple way
+[33m1084250c[m Kinematics for 46Ar
+[33m162c9d79[m Adding vertex position and angular distributions in analysis macros for the prototype
+[33m42aa5d04[m Optimizing MC
+[33m446314e5[m Reduced the number of iterations on the MC
+[33ma784dc55[m Back extrapolation complete
+[33m67a14ecb[m Added vertex information. Created a script to refresh the include folder for stand alone C++ compilation. Cleaned MC propagation for CUDA purposes.
+[33m3fa34e6a[m Backward extrapolation of the spiral fit
+[33m5026cb15[m Production of physics
+[33med3e5d6c[m Optimizing MC. Event dump created to control the chi2 of each point. Refactoring functions to search hits by time bucket.
+[33me1723fbc[m MC: back-extrapolation of the spiral to the origin in the pad plane.
+[33m9f1d50d5[m A preliminary version of MC working for every spiral
+[33mdf367c90[m MC optimized for events without spirals. New axis limits for the MC plots
+[33mb7ceeaaf[m Cleaning MC
+[33m6bf89b74[m New macros added for 10C+4He experiment. Angle-Angle plots extracted
+[33m2651a822[m Added range calculation, updated Hough Space bining
+[33m56652b5c[m Fixed base line subtraction
+[33m27460fcf[m Optimizing MC parameters. Check iChi!
+[33m97441e38[m TGrpahs disabled
+[33m7b430e70[m Cleaning MC
+[33m4e9f64c3[m Progress
+[33mac7dce23[m Stand alone program working properly now
+[33me33b309d[m Working on the stand alone programs
+[33mae96f53e[m Work in progress
+[33mc5e61da3[m Progress on a MC on OpenMP
+[33m04d0468f[m Stand alone program finalized
+[33m8990f2a5[m Stand alone programs with root and attpcroot libraries added for each different experiment
+[33m2c28bfbc[m Starting a clean repository
