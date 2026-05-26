@@ -2,6 +2,7 @@
 *.root
 *.log
 *.graw
+*.h5
 gphysi.dat
 core_dump*
 build
