@@ -8,7 +8,7 @@
     mystyle->SetCanvasColor(0);
     mystyle->SetFrameFillColor(0);
     mystyle->SetFrameBorderMode(0);
-    mystyle->SetPadTopMargin(0.08);    // Increase margin for title/stats text
+    mystyle->SetPadTopMargin(0.12);    // Increase margin for title/stats text
     mystyle->SetPadBottomMargin(0.12); // Give space for X-axis title
     mystyle->SetPadLeftMargin(0.15);   // Give space for Y-axis title
 
@@ -17,12 +17,11 @@
     mystyle->SetLabelFont(42, "XYZ");
     mystyle->SetLabelSize(0.045, "XYZ");
     mystyle->SetTitleFont(42, "XYZ");
-    mystyle->SetTitleSize(0.00, "");
-    mystyle->SetTitleOffset(0.0, "");
-    mystyle->SetTitleBorderSize(0);
     mystyle->SetTitleFillColor(0);
-    mystyle->SetTitleSize(0.05, "XYZ");
-    mystyle->SetTitleOffset(1.3, "Y");   // Move Y-axis title away from labels
+    mystyle->SetTitleSize(0.04, "XYZ");
+    mystyle->SetTitleOffset(1.3, "Y");   // Move Y-axis title away from label
+    mystyle->SetTitleBorderSize(0);
+    mystyle->SetTitleStyle(0);
     //mystyle->SetNdivisions(505, "XYZ");  // Remove ticks on top and right axes
     mystyle->SetTickLength(0.015, "XYZ");
     // --- Error Bar and Marker Settings ---
