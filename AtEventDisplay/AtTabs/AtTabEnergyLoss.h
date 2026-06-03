@@ -84,7 +84,7 @@ public:
    AtTabEnergyLoss(DataHandling::AtBranch &fissionBranch);
    ~AtTabEnergyLoss();
    void InitTab() override;
-   void Exec() override {};
+   void Exec() override{};
    void Update(DataHandling::AtSubject *sub) override;
 
    static float GetZ(int Zcn, float proxy);

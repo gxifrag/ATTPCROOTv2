@@ -281,7 +281,8 @@ void runana_merg_cal_d2He_newRansac()
       // ATMlesacMod* fATRansac  = dynamic_cast<ATMlesacMod*> (ransacArray->At(0));
       ATLmedsMod *fATRansac = dynamic_cast<ATLmedsMod *>(ransacArray->At(0));
       if (fATRansac == NULL)
-         std::cout << " Null pointer fATRansac " << "\n";
+         std::cout << " Null pointer fATRansac "
+                   << "\n";
       else {
          std::vector<ATTrack> trackCand = fATRansac->GetTrackCand();
 
@@ -449,8 +450,8 @@ void runana_merg_cal_d2He_newRansac()
             ivt = i;
             anatree->Fill();
          } // if lines.size()>0
-      } // ATRansac check NULL
-   } // Event loop
+      }    // ATRansac check NULL
+   }       // Event loop
 
    /// --------------------- End event loop ---------------------------------------
    anatree->Write();

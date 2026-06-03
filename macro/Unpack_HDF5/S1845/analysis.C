@@ -105,7 +105,8 @@ Double_t *GetPadWaveForm(Int_t padnum, std::vector<ATPad> *padarray)
          return 0;
       }
    } else {
-      std::cerr << " Warning! : Padnum not found in Pad Array!" << "\n";
+      std::cerr << " Warning! : Padnum not found in Pad Array!"
+                << "\n";
       return 0;
    }
 }

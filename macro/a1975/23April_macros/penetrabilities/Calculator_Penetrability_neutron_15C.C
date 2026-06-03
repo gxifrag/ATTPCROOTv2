@@ -45,7 +45,8 @@ void generateDataFile(const std::vector<double> &energies, const std::vector<dou
    }
    outfile << "};\n\n";
 
-   outfile << "double T" << L << "_neutron_15C_values" << "[" << penetrabilities.size() << "] = {";
+   outfile << "double T" << L << "_neutron_15C_values"
+           << "[" << penetrabilities.size() << "] = {";
    for (size_t i = 0; i < penetrabilities.size(); ++i) {
       outfile << penetrabilities[i];
       if (i < penetrabilities.size() - 1)

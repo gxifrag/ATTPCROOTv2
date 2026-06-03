@@ -548,7 +548,7 @@ void C15_pp_def()
          }
 
       } // events
-   } // Files
+   }    // Files
 
    //-------------------- PHASE SPACE ----------------------------------------------
 
@@ -619,12 +619,16 @@ void C15_pp_def()
 
    // BW modified
 
-   TF1 *bwprefit1 = new TF1("bw1", [=](double *x, double *par) { return BWModificada(x, par, 3, 0); }, 1.22, 9, 4);
+   TF1 *bwprefit1 = new TF1(
+      "bw1", [=](double *x, double *par) { return BWModificada(x, par, 3, 0); }, 1.22, 9, 4);
 
-   TF1 *bwprefit2 = new TF1("bw2", [=](double *x, double *par) { return BWModificada(x, par, 1, 1); }, 1.22, 9, 4);
-   TF1 *bwprefit3 = new TF1("bw3", [=](double *x, double *par) { return BWModificada(x, par, 0, 2); }, 1.22, 9, 4);
+   TF1 *bwprefit2 = new TF1(
+      "bw2", [=](double *x, double *par) { return BWModificada(x, par, 1, 1); }, 1.22, 9, 4);
+   TF1 *bwprefit3 = new TF1(
+      "bw3", [=](double *x, double *par) { return BWModificada(x, par, 0, 2); }, 1.22, 9, 4);
 
-   TF1 *bwprefit4 = new TF1("bw4", [=](double *x, double *par) { return BWModificada(x, par, 0, 3); }, 1.22, 9, 4);
+   TF1 *bwprefit4 = new TF1(
+      "bw4", [=](double *x, double *par) { return BWModificada(x, par, 0, 3); }, 1.22, 9, 4);
 
    /*
    TF1 *bwprefit1 = new TF1("bw1", "[0]*TMath::BreitWigner(x,[1],[2])", 4.3,4.7);
@@ -750,28 +754,32 @@ void C15_pp_def()
    gaus2->Draw("same");
 
    // Breit-Wigner 1
-   TF1 *bw1 = new TF1("bw1", [=](double *x, double *par) { return BWModificada(x, par, 0, 0); }, 1.22, 9, 4);
+   TF1 *bw1 = new TF1(
+      "bw1", [=](double *x, double *par) { return BWModificada(x, par, 0, 0); }, 1.22, 9, 4);
    bw1->SetParameters(globalParamsFinals[6], globalParamsFinals[7], globalParamsFinals[8], globalParamsFinals[9]);
    bw1->SetNpx(1000);
    bw1->SetLineColor(kGreen + 2);
    bw1->Draw("same");
 
    // Breit-Wigner 2
-   TF1 *bw2 = new TF1("bw2", [=](double *x, double *par) { return BWModificada(x, par, 1, 1); }, 1.22, 9, 4);
+   TF1 *bw2 = new TF1(
+      "bw2", [=](double *x, double *par) { return BWModificada(x, par, 1, 1); }, 1.22, 9, 4);
    bw2->SetParameters(globalParamsFinals[10], globalParamsFinals[11], globalParamsFinals[12], globalParamsFinals[13]);
    bw2->SetNpx(1000);
    bw2->SetLineColor(kMagenta);
    bw2->Draw("same");
 
    // Breit-Wigner 3
-   TF1 *bw3 = new TF1("bw3", [=](double *x, double *par) { return BWModificada(x, par, 1, 2); }, 1.22, 9, 4);
+   TF1 *bw3 = new TF1(
+      "bw3", [=](double *x, double *par) { return BWModificada(x, par, 1, 2); }, 1.22, 9, 4);
    bw3->SetParameters(globalParamsFinals[14], globalParamsFinals[15], globalParamsFinals[16], globalParamsFinals[17]);
    bw3->SetLineColor(kRed + 2);
    bw3->SetNpx(1000);
    bw3->Draw("same");
 
    // Breit-Wigner 4
-   TF1 *bw4 = new TF1("bw4", [=](double *x, double *par) { return BWModificada(x, par, 1, 3); }, 1.22, 9, 4);
+   TF1 *bw4 = new TF1(
+      "bw4", [=](double *x, double *par) { return BWModificada(x, par, 1, 3); }, 1.22, 9, 4);
    bw4->SetParameters(globalParamsFinals[18], globalParamsFinals[19], globalParamsFinals[20], globalParamsFinals[21]);
    bw4->SetLineColor(kCyan + 2);
    bw4->SetNpx(1000);

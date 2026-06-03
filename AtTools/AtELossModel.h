@@ -25,7 +25,7 @@ protected:
    double fDensity;
 
 public:
-   AtELossModel(double density) : fDensity(density) {};
+   AtELossModel(double density) : fDensity(density){};
    virtual ~AtELossModel() = default;
 
    virtual void SetDensity(double density);

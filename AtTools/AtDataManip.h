@@ -32,5 +32,5 @@ double GetTB(double z, const AtDigiPar *par = nullptr);
  */
 double GetDriftTB(double d, const AtDigiPar *par = nullptr);
 
-}; // namespace AtTools
+};     // namespace AtTools
 #endif // ATDATAMANIP_H

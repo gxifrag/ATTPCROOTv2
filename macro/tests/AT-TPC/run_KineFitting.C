@@ -71,7 +71,8 @@ void run_KineFitting()
    std::cout << " Recoil energy (from momentum) " << sqrt(momRec.Mag2() + m_Be10 * m_Be10) - m_Be10 << "\n";
 
    std::cout << "\n";
-   std::cout << " Momentum in : " << "\n";
+   std::cout << " Momentum in : "
+             << "\n";
    std::cout << "  " << beamMom.X() << " " << beamMom.Y() << " " << beamMom.Z() << " " << beamEtot << " " << momSca.X()
              << " " << momSca.Y() << " " << momSca.Z() << " " << EScaTot << " " << momRec.X() << " " << momRec.Y()
              << " " << momRec.Z() << " " << ERecTot << "\n";
@@ -81,7 +82,8 @@ void run_KineFitting()
    AtTools::AtKinematics kinematics;
    auto fitParameters = kinematics.KinematicalFit(parameters);
 
-   std::cout << " Momentum out : " << "\n";
+   std::cout << " Momentum out : "
+             << "\n";
    for (auto fpar : fitParameters)
       std::cout << "  " << fpar;
 

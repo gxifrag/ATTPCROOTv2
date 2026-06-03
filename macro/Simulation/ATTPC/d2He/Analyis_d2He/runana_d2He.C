@@ -166,7 +166,8 @@ void runana_d2He()
       // lines.clear();
       ATRANSACN::ATRansac *fATRansac = dynamic_cast<ATRANSACN::ATRansac *>(ransacArray->At(0));
       if (fATRansac == NULL)
-         std::cout << " Null pointer fATRansac " << "\n";
+         std::cout << " Null pointer fATRansac "
+                   << "\n";
       else {
 
          //@ransacArray->At(0)->Dump();
@@ -304,8 +305,8 @@ void runana_d2He()
             ivt = i;
             anatree->Fill();
          } // if lines.size()>0
-      } // RANSAC null pointer
-   } // Event loop
+      }    // RANSAC null pointer
+   }       // Event loop
 
    /// --------------------- End event loop ---------------------------------------
    anatree->Write();

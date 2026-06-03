@@ -31,7 +31,8 @@ void ana_digi()
       ATHoughSpaceCircle *fHoughSpaceCircle = dynamic_cast<ATHoughSpaceCircle *>(houghArray->At(0));
 
       if (fHoughSpaceCircle == NULL)
-         std::cout << " Null pointer " << "\n";
+         std::cout << " Null pointer "
+                   << "\n";
 
       else {
 

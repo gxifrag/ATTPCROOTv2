@@ -382,7 +382,8 @@ void analysis(int runNumberS800, int runNumberATTPC)
       // ATMlesacMod* fATRansac  = dynamic_cast<ATMlesacMod*> (ransacArray->At(0));
       ATLmedsMod *fATRansac = dynamic_cast<ATLmedsMod *>(ransacArray->At(0));
       if (fATRansac == nullptr) {
-         std::cout << " Null pointer fATRansac " << "\n";
+         std::cout << " Null pointer fATRansac "
+                   << "\n";
          continue;
       }
 
@@ -727,8 +728,8 @@ void analysis(int runNumberS800, int runNumberATTPC)
             */
             //-------------------------------------------------
          } // two proton pairs
-      } // gated and  tracks.size()>1
-   } // Event loop
+      }    // gated and  tracks.size()>1
+   }       // Event loop
 
    /// --------------------- End event loop ---------------------------------------
    outfile->cd();

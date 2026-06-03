@@ -38,8 +38,10 @@ void analysis_proton()
 
       ATRawEvent *rawEvent = (ATRawEvent *)raweventArray->At(0);
 
-      outputFileEvent << "		" << "\n";
-      outputFileEvent << " Event " << i << " " << "\n";
+      outputFileEvent << "		"
+                      << "\n";
+      outputFileEvent << " Event " << i << " "
+                      << "\n";
 
       if (rawEvent != NULL) {
 

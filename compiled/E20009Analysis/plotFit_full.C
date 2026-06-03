@@ -418,14 +418,14 @@ void plotFit_full(std::string fileFolder = "data_t20_10_20_cov01_elastic/")
                                        // HQval->Fill(Ex);
                                     }
                                  } // Xini
-                              } // Rad
-                           } // Z vertex
-                             //}//X-Y
-                        } // Chi2
-                     } // POCA
-                  } // Angle
-               } // Track length
-            } // Energy
+                              }    // Rad
+                           }       // Z vertex
+                                   //}//X-Y
+                        }          // Chi2
+                     }             // POCA
+                  }                // Angle
+               }                   // Track length
+            }                      // Energy
          }
       }
    }

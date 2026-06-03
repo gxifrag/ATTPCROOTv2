@@ -410,7 +410,7 @@ void C16_pd_ana_v16_23April()
          // Fill uncorrected histogram
          hex->Fill(ex_energy);
          ExvsZpos->Fill(ex_energy_corr, zPos * 100.0); // MeV, cm
-         KineticEnergy->Fill(E_ej);                    // Usar energía calibrada para el histograma de energía cinética
+         KineticEnergy->Fill(E_ej); // Usar energía calibrada para el histograma de energía cinética
 
          Ang_Ener_Corr->Fill(theta_lab_corr_JR * TMath::RadToDeg(),
                              E_ej); // theta lab!! -> I still have to implement the correction of catima?
@@ -507,7 +507,7 @@ void C16_pd_ana_v16_23April()
 
          // tEvents->Fill();
       } // events
-   } // Files
+   }    // Files
 
    AngDistrCM->Divide(new TF1("sin", "sin(x * TMath::DegToRad())", 0, 180));
 

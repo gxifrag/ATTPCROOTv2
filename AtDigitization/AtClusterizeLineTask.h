@@ -16,8 +16,10 @@ class TBuffer;
 class TClass;
 class TMemberInspector;
 
-class [[deprecated("AtClusterizeLineTask is deprecated. Use AtClusterizeTask with AtClusterizeLine instead.")]]
-AtClusterizeLineTask : public AtClusterizeTask {
+class [[deprecated(
+   "AtClusterizeLineTask is deprecated. Use AtClusterizeTask with AtClusterizeLine instead.")]] AtClusterizeLineTask
+   : public AtClusterizeTask
+{
    AtClusterizeLineTask() : AtClusterizeTask(std::make_shared<AtClusterizeLine>()) {}
 
    ClassDefOverride(AtClusterizeLineTask, 2);

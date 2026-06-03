@@ -277,7 +277,7 @@ void AtStack::UpdateTrackIndex(TRefArray *detList)
          }
 
       } // Collections of this detector
-   } // List of active detectors
+   }    // List of active detectors
    LOG(debug) << "...stack and " << nColl << " collections updated.";
 }
 // -------------------------------------------------------------------------

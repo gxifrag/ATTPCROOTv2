@@ -81,7 +81,8 @@ void Be_PS(double Energy = 35.0) // BeamEnergy in MeV
               << flush;
          cout << "\r Progression:" << percent * 100 << " % \t | \t Remaining time : ~" << TimeToWait << "s" << flush;
       } else if (i == nentries - 1)
-         cout << "\r Progression:" << " 100% " << endl;
+         cout << "\r Progression:"
+              << " 100% " << endl;
 
       InitOutput();
 

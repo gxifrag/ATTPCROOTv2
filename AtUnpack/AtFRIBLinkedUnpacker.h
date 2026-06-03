@@ -16,7 +16,7 @@ protected:
    std::string fGetPath = "/get_traces"; // Path to the get object containing meta data and traces
 
 public:
-   AtFRIBLinkedHDFUnpacker(mapPtr map) : AtHDFUnpacker(map) {};
+   AtFRIBLinkedHDFUnpacker(mapPtr map) : AtHDFUnpacker(map){};
    ~AtFRIBLinkedHDFUnpacker() = default;
 
    void SetFribPaths(const std::vector<std::string> &paths) { fFribPaths = paths; }

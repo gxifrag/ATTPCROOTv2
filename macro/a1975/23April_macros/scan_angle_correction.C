@@ -273,7 +273,7 @@ void scan_angle_correction()
          delete h_test;
 
       } // kethe
-   } // alpha
+   }    // alpha
 
    //--------------------------------------------------------------------------
    // RESULTS

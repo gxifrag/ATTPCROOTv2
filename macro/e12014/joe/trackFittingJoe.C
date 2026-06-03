@@ -342,8 +342,8 @@ void FitTracksCheck(int cut_radius = 0, int tpc_run_num = 206)
 
    auto jvertex = (jc1.Z() + jc2.Z()) / 2.0;
 
-   std::cout << "User Vertex at " << jvertex << " mm (z)" << "For cut radius of " << cut_radius << " mm (z)"
-             << std::endl;
+   std::cout << "User Vertex at " << jvertex << " mm (z)"
+             << "For cut radius of " << cut_radius << " mm (z)" << std::endl;
 }
 
 void FitTracksPlotAngle(int cutLimit = 150, int tpc_run_num = 206)

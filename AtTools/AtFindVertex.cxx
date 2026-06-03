@@ -186,7 +186,7 @@ std::vector<std::vector<Int_t>> AtFindVertex::SortTrackSameVtx(std::vector<std::
             }
          }
       } // j loop lines
-   } // i loop lines
+   }    // i loop lines
    if (paired.size() > 1)
       result.push_back(paired);
 
@@ -259,7 +259,7 @@ std::vector<XYZVector> AtFindVertex::CoGVtx(std::vector<std::vector<Int_t>> vtxC
                }
             }
          } // End of track_f (for loop j)
-      } // Loop over the lines (for loop i)
+      }    // Loop over the lines (for loop i)
 
       Double_t sumW = 0; // sum of the weights
       for (Int_t i = 0; i < iv.size(); i++) {

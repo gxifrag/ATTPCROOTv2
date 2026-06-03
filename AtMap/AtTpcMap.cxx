@@ -63,7 +63,7 @@ void AtTpcMap::Dump()
                       << ") :" << AtPadCoord[i][j][k] << std::endl;
             coordmap << AtPadCoord[i][j][k] << "  ";
          } // k
-      } // j
+      }    // j
 
       coordmap << std::endl;
 

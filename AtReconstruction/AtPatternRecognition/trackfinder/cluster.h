@@ -12,7 +12,7 @@ protected:
    std::vector<pcl::PointIndicesPtr> clusters;
 
 public:
-   Cluster() {};
+   Cluster(){};
    Cluster(std::vector<pcl::PointIndicesPtr> const &clusters, size_t pointIndexCount);
 
    std::vector<pcl::PointIndicesPtr> const &getClusters() const;

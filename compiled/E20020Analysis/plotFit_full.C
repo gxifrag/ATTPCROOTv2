@@ -347,14 +347,14 @@ void plotFit_full(std::string fileFolder = "data_t20_t0_87_10_20_cov01/")
                                        // HQval->Fill(Ex);
                                     }
                                  } // Xini
-                              } // Rad
-                           } // Z vertex
-                             //}//X-Y
-                        } // Chi2
-                     } // POCA
-                  } // Angle
-               } // Track length
-            } // Energy
+                              }    // Rad
+                           }       // Z vertex
+                                   //}//X-Y
+                        }          // Chi2
+                     }             // POCA
+                  }                // Angle
+               }                   // Track length
+            }                      // Energy
          }
       }
    }

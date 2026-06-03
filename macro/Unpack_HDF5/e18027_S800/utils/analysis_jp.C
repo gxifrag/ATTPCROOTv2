@@ -95,8 +95,23 @@ void analysis_jp(int runNumberS800, int runNumberATTPC)
    fstream ofile;
    ofile.open("test_ev.txt", ios::app);
    ofile << "run number=" << runNumberATTPC << endl;
-   ofile << "evnt" << "\t" << "theta1" << "\t" << "eLoss_p1_reco" << "\t" << "theta_cm" << "\t" << "vertexZ" << "\t"
-         << "range_p1" << "\t" << "Ex4" << "\t" << "S800_XfObj_tof" << "\t" << "S800_ObjCorr" << std::endl;
+   ofile << "evnt"
+         << "\t"
+         << "theta1"
+         << "\t"
+         << "eLoss_p1_reco"
+         << "\t"
+         << "theta_cm"
+         << "\t"
+         << "vertexZ"
+         << "\t"
+         << "range_p1"
+         << "\t"
+         << "Ex4"
+         << "\t"
+         << "S800_XfObj_tof"
+         << "\t"
+         << "S800_ObjCorr" << std::endl;
    SetERtable();
 
    FairRunAna *run = new FairRunAna(); // Forcing a dummy run
@@ -290,7 +305,8 @@ void analysis_jp(int runNumberS800, int runNumberATTPC)
       // ATMlesacMod* fATRansac  = dynamic_cast<ATMlesacMod*> (ransacArray->At(0));
       ATLmedsMod *fATRansac = dynamic_cast<ATLmedsMod *>(ransacArray->At(0));
       if (fATRansac == nullptr) {
-         std::cout << " Null pointer fATRansac " << "\n";
+         std::cout << " Null pointer fATRansac "
+                   << "\n";
          continue;
       }
 
@@ -474,8 +490,8 @@ void analysis_jp(int runNumberS800, int runNumberATTPC)
             anatree->Fill();
 
          } // all tracks
-      } // gated and  tracks.size()>1
-   } // Event loop
+      }    // gated and  tracks.size()>1
+   }       // Event loop
    ofile.close();
 
    /// --------------------- End event loop ---------------------------------------

@@ -192,7 +192,7 @@ std:
             // std::cout<<" Range_rec : "<<range_rec<<std::endl;
             // std::cout<<" energyLoss_rec : "<<energyLoss_rec<<std::endl;
 
-         } // TrackID == 2
+         }                                                     // TrackID == 2
          if (trackID == 1 && VolName == "drift_volume") {      // SCATTER
             range_sca = point->GetLength() * 10;               // mm
             energyLoss_sca += (point->GetEnergyLoss()) * 1000; // MeV

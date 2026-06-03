@@ -269,9 +269,9 @@ void AtGRAWUnpacker::ProcessFile(Int_t fileIdx)
             } else if (PadRefNum != -1 && fMap->IsInhibited(PadRefNum) == AtMap::InhibitType::kNone) {
                savePad(*frame, PadRef, fRawEvent, fileIdx);
             } // End check this is a pad to unpack (not FPN)
-         } // End loop over channel
-      } // End loop over aget
-   } // End loop over frame
+         }    // End loop over channel
+      }       // End loop over aget
+   }          // End loop over frame
 }
 void AtGRAWUnpacker::ProcessBasicFile(Int_t fileIdx)
 {
@@ -305,7 +305,7 @@ void AtGRAWUnpacker::ProcessBasicFile(Int_t fileIdx)
             savePad(*basicFrame, PadRef, fRawEvent, fileIdx);
 
       } // End loop over channel
-   } // End loop over aget
+   }    // End loop over aget
 }
 
 void AtGRAWUnpacker::savePad(GETBasicFrame &frame, AtPadReference PadRef, AtRawEvent *event, Int_t fileIdx)

@@ -485,7 +485,8 @@ std:
 
          if (!ok) {
             Error("line3Dfit", "Line3D Fit failed");
-            std::cout << "Proton 1" << "   Event: " << iEvent << std::endl;
+            std::cout << "Proton 1"
+                      << "   Event: " << iEvent << std::endl;
          }
          const ROOT::Fit::FitResult &result = fitter.Result();
          // std::cout << "Total final distance square " << result.MinFcnValue()<<"  "<<iEvent << std::endl;
@@ -526,7 +527,8 @@ std:
 
          if (!ok2) {
             Error("line3Dfit", "Line3D Fit failed");
-            std::cout << "Proton 2" << "   Event: " << iEvent << std::endl;
+            std::cout << "Proton 2"
+                      << "   Event: " << iEvent << std::endl;
          }
          const ROOT::Fit::FitResult &result2 = fitter2.Result();
          // std::cout << "Total final distance square " << result2.MinFcnValue()<<"  "<<iEvent << std::endl;

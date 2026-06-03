@@ -208,7 +208,7 @@ void calculate_efficiency_C16_pd()
 
          // Fill uncorrected histogram
          ExvsZpos->Fill(ex_energy_corr, zPos * 100.0); // MeV, cm
-         KineticEnergy->Fill(E_ej);                    // Usar energía calibrada para el histograma de energía cinética
+         KineticEnergy->Fill(E_ej); // Usar energía calibrada para el histograma de energía cinética
 
          Ang_Ener_Corr->Fill(theta_lab_corr * TMath::RadToDeg(),
                              E_ej); // theta lab!! -> I still have to implement the correction of catima?
@@ -242,7 +242,7 @@ void calculate_efficiency_C16_pd()
 
          // tEvents->Fill();
       } // events
-   } // Files
+   }    // Files
 
    //---------------- SIMULACION SIN DETECTOR ----------------//
    TFile *fSim = new TFile(

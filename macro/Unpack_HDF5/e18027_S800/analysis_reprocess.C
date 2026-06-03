@@ -302,7 +302,8 @@ void analysis_reprocess()
       // ATMlesacMod* fATRansac  = dynamic_cast<ATMlesacMod*> (ransacArray->At(0));
       // ATLmedsMod* fATRansac  = dynamic_cast<ATLmedsMod*> (ransacArray->At(0));
       if (fATRansac == nullptr) {
-         std::cout << " Null pointer fATRansac " << "\n";
+         std::cout << " Null pointer fATRansac "
+                   << "\n";
          continue;
       }
 
@@ -314,7 +315,8 @@ void analysis_reprocess()
       // TClonesArray* cArray = (TClonesArray*) fRootManager->GetObject("ATEventH");
       ATEvent *cevent = (ATEvent *)eventArray->At(0);
       if (cevent == nullptr) {
-         std::cout << " Null pointer cevent " << "\n";
+         std::cout << " Null pointer cevent "
+                   << "\n";
          continue;
       }
       Bool_t gated = cevent->IsExtGate();
@@ -562,8 +564,8 @@ void analysis_reprocess()
             delete hBr1;
 
          } // two proton pairs
-      } // gated and  tracks.size()>1
-   } // Event loop
+      }    // gated and  tracks.size()>1
+   }       // Event loop
 
    /// --------------------- End event loop ---------------------------------------
    outfile->cd();
