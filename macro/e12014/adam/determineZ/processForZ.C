@@ -4,13 +4,14 @@
  * Adam Anthony 2/23/22
  */
 
-#include "../helper.h"
 #include "AtTrack.h"
 
-#include "Math/Vector3D.h"
-#include "Math/Point3D.h"
-#include "TTree.h"
 #include "TFile.h"
+#include "TTree.h"
+
+#include "../helper.h"
+#include "Math/Point3D.h"
+#include "Math/Vector3D.h"
 
 /*** Forward declares ***/
 using XYZVector = ROOT::Math::XYZVector;

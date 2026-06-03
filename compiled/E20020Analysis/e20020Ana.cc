@@ -4,8 +4,8 @@
 #include "AtGenfit.h"
 
 #include <chrono>
-#include <thread>
 #include <iostream>
+#include <thread>
 
 #define cRED "\033[1;31m"
 #define cYELLOW "\033[1;33m"
@@ -242,7 +242,6 @@ int main(int argc, char *argv[])
    std::vector<Float_t> fNdfVec;
    std::vector<Float_t> bNdfVec;
 
-
    TString simFile;
 
    if (simulationConv)
@@ -304,12 +303,11 @@ int main(int argc, char *argv[])
    outputTree->Branch("trackLengthVec", &trackLengthVec);
    outputTree->Branch("POCAXtrVec", &POCAXtrVec);
    outputTree->Branch("trackIDVec", &trackIDVec);
-   outputTree->Branch("fChi2Vec",&fChi2Vec);
-   outputTree->Branch("bChi2Vec",&bChi2Vec);
-   outputTree->Branch("fNdfVec",&fNdfVec);
-   outputTree->Branch("bNdfVec",&bNdfVec);
+   outputTree->Branch("fChi2Vec", &fChi2Vec);
+   outputTree->Branch("bChi2Vec", &bChi2Vec);
+   outputTree->Branch("fNdfVec", &fNdfVec);
+   outputTree->Branch("bNdfVec", &bNdfVec);
 
-   
    for (auto iFile = 0; iFile < files.size(); ++iFile) {
 
       // fileNameWithPath = dir + filePath + files.at(iFile).Data();
@@ -385,12 +383,11 @@ int main(int argc, char *argv[])
          trackLengthVec.clear();
          POCAXtrVec.clear();
          trackIDVec.clear();
-	 fChi2Vec.clear();
+         fChi2Vec.clear();
          bChi2Vec.clear();
          fNdfVec.clear();
          bNdfVec.clear();
 
-	 
          std::cout << cGREEN << " ------ Event Number : " << i << cNORMAL << "\n";
 
          Reader1.Next();
@@ -448,7 +445,7 @@ int main(int argc, char *argv[])
                auto hitClusterArray = track.GetHitClusterArray();
                AtHitCluster iniCluster;
                Double_t zIniCal = 0;
-	       ROOT::Math::XYZPoint iniPos;
+               ROOT::Math::XYZPoint iniPos;
 
                /*for (auto cluster : *hitClusterArray) {
        TVector3 pos = cluster.GetPosition();
@@ -538,12 +535,12 @@ int main(int argc, char *argv[])
                         genfit::MeasuredStateOnPlane fitState = fitTrack->getFittedState();
                         // fitState.Print();
                         fitState.getPosMomCov(pos_res, mom_res, cov_res);
-			fChi2 = KalmanFitStatus->getForwardChi2();
+                        fChi2 = KalmanFitStatus->getForwardChi2();
                         bChi2 = KalmanFitStatus->getBackwardChi2();
-                        fNdf  = KalmanFitStatus->getForwardNdf();
-                        bNdf  = KalmanFitStatus->getBackwardNdf();
+                        fNdf = KalmanFitStatus->getForwardNdf();
+                        bNdf = KalmanFitStatus->getBackwardNdf();
 
-			trackLength = KalmanFitStatus->getTrackLen();
+                        trackLength = KalmanFitStatus->getTrackLen();
                         pVal = KalmanFitStatus->getPVal();
 
                         // fKalmanFitter -> getChiSquNdf(gfTrack, trackRep, bChi2, fChi2, bNdf, fNdf);
@@ -674,14 +671,13 @@ int main(int argc, char *argv[])
                EFitXtrVec.push_back(EFitXtr);
                ExVec.push_back(Ex);
                ExXtrVec.push_back(ExXtr);
-	       
-	       fChi2Vec.push_back(fChi2);
+
+               fChi2Vec.push_back(fChi2);
                bChi2Vec.push_back(bChi2);
                fNdfVec.push_back(fNdf);
                bNdfVec.push_back(bNdf);
 
-
-	    } // track loop
+            } // track loop
 
             outputTree->Fill();
 

@@ -48,29 +48,28 @@ void SeGA_Co60(Int_t nEvents = 100000, TString mcEngine = "TGeant4")
    FairPrimaryGenerator *primGen = new FairPrimaryGenerator();
 
    Double_t pdgId = 22;       // 22 for gamma emission, 2212 for proton emission
-     Double_t theta1 = 0;      // polar angle distribution: lower edge (50)
-     Double_t theta2 = 180.;    // polar angle distribution: upper edge (51)
-     Double_t momentum = 0.005; // GeV/c
-     Int_t multiplicity = 1;
-     AtTPCGammaDummyGenerator* gammasGen = new AtTPCGammaDummyGenerator(pdgId, multiplicity);
-     gammasGen->SetThetaRange(theta1, theta2);
-     gammasGen->SetCosTheta();
-     gammasGen->SetPRange(momentum, momentum);
-	gammasGen->SetNuclearDecayChain();
-     gammasGen->SetDecayChainPoint(0.001173240,0.499337);
-     /*gammasGen->SetDecayChainPoint(0.0008261,0.000076);
-    gammasGen->SetDecayChainPoint(0.00034714,0.000075);*/
-     gammasGen->SetDecayChainPoint(0.001332508,0.500663);
-    /* gammasGen->SetDecayChainPoint(0.00215861,0.000012);
-     gammasGen->SetDecayChainPoint(0.002505748,0.00000002);*/
-     gammasGen->SetPhiRange(0., 360.); //(2.5,4)
-    gammasGen->SetXYZ(0.0,0,0);
-     gammasGen->SetLorentzBoost(0.0); // for instance beta=0.8197505718204776 for 700 A MeV
-     // add the gamma generator
-     primGen->AddGenerator(gammasGen);
+   Double_t theta1 = 0;       // polar angle distribution: lower edge (50)
+   Double_t theta2 = 180.;    // polar angle distribution: upper edge (51)
+   Double_t momentum = 0.005; // GeV/c
+   Int_t multiplicity = 1;
+   AtTPCGammaDummyGenerator *gammasGen = new AtTPCGammaDummyGenerator(pdgId, multiplicity);
+   gammasGen->SetThetaRange(theta1, theta2);
+   gammasGen->SetCosTheta();
+   gammasGen->SetPRange(momentum, momentum);
+   gammasGen->SetNuclearDecayChain();
+   gammasGen->SetDecayChainPoint(0.001173240, 0.499337);
+   /*gammasGen->SetDecayChainPoint(0.0008261,0.000076);
+  gammasGen->SetDecayChainPoint(0.00034714,0.000075);*/
+   gammasGen->SetDecayChainPoint(0.001332508, 0.500663);
+   /* gammasGen->SetDecayChainPoint(0.00215861,0.000012);
+    gammasGen->SetDecayChainPoint(0.002505748,0.00000002);*/
+   gammasGen->SetPhiRange(0., 360.); //(2.5,4)
+   gammasGen->SetXYZ(0.0, 0, 0);
+   gammasGen->SetLorentzBoost(0.0); // for instance beta=0.8197505718204776 for 700 A MeV
+   // add the gamma generator
+   primGen->AddGenerator(gammasGen);
 
-
-     run->SetGenerator(primGen);
+   run->SetGenerator(primGen);
 
    // ------------------------------------------------------------------------
 

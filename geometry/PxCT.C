@@ -45,7 +45,7 @@ const TString CylinderVolumeMedium = "steel";
 const TString WindowMedium = "kapton";
 const TString MicromegasMedium = "G10";
 
-//PEEK
+// PEEK
 const TString PEEKMedium = "PEEK";
 
 // Detector Dimensions (cm)
@@ -87,7 +87,7 @@ const Float_t cage_support_shift = 2.71655;
 const Float_t cage_support_dia_in = 12.2174;
 const Float_t cage_support_dia_out = 13.8684;
 const Float_t cage_support_length = 38.6867;
-//PxCT
+// PxCT
 const Float_t QSD1DetectorToSourceDistance = 8.5;
 const Float_t QSD1DetectorThickness = 6.52;
 const Float_t QSD1DetectorDiameter = 8.48;
@@ -99,16 +99,16 @@ const Float_t QSD2DetectorThickness = 8.0;
 const Float_t QSD2DetectorDiameter = 7.98;
 const Float_t QSD2WindowThickness = 0.060;
 const Float_t QSD2DetectorToWindowDistance = 0.63;
-const Float_t zloc= drift_length/2;
+const Float_t zloc = drift_length / 2;
 
-//PEEK
-const Float_t fPDetCageSupportInnRad = 12.2174/2.0;
-const Float_t fPDetCageSupportOutRad = 13.8684/2.0;
-const Float_t fPDetCageSupportHalfLen = 37.6867/2.0;
-const Float_t fPDetCenter = drift_length/2; 
-const Float_t CutOutWindowAPos =  (31.4427-7.2441)/2.0;//z positions
-const Float_t CutOutWindowBPos =  (7.3711-31.3157)/2.0;//z positions
-const Float_t CutOutWindowCPos =  (19.083-19.6037)/2.0;//z positions
+// PEEK
+const Float_t fPDetCageSupportInnRad = 12.2174 / 2.0;
+const Float_t fPDetCageSupportOutRad = 13.8684 / 2.0;
+const Float_t fPDetCageSupportHalfLen = 37.6867 / 2.0;
+const Float_t fPDetCenter = drift_length / 2;
+const Float_t CutOutWindowAPos = (31.4427 - 7.2441) / 2.0; // z positions
+const Float_t CutOutWindowBPos = (7.3711 - 31.3157) / 2.0; // z positions
+const Float_t CutOutWindowCPos = (19.083 - 19.6037) / 2.0; // z positions
 // some global variables
 TGeoManager *gGeoMan = new TGeoManager("ATTPC", "ATTPC");
 ;                     // Pointer to TGeoManager instance
@@ -224,71 +224,89 @@ TGeoVolume *create_detector()
    TString CrystalName = "Crystal_";
    TString name_cry[3] = {"01", "02", "03"};
 
-//PxCT
-      Cry_vol[0] = gGeoManager->MakeTube(CrystalName + name_cry[0], pxctmatter, 0,QSD1DetectorDiameter/2,QSD1DetectorThickness/2);
-      Cry_vol[0]->SetLineColor(kCyan);
-      gGeoMan->GetVolume(geoVersion)
-         ->AddNode(Cry_vol[0],  1,
-                   new TGeoCombiTrans(tpc_diameter_out / 2+ QSD1WindowThickness+QSD1DetectorThickness/2,0,zloc,
-                                      new TGeoRotation(CrystalName + name_cry[0],90,90, 0)));
-      Cry_vol[0]->SetTransparency(90);
-    
-      TGeoVolume *window1 = gGeoManager->MakeTube("window1", windowmatter, 0, QSD1DetectorDiameter/2, QSD1WindowThickness);
-      window1->SetLineColor(kRed);
-      gGeoMan->GetVolume(geoVersion)
-         ->AddNode(window1, 1,
-                   new TGeoCombiTrans(tpc_diameter_out / 2+ QSD1WindowThickness,0,zloc,
-                                      new TGeoRotation("window1", 90,90, 0.0)));
-      window1->SetTransparency(90);
+   // PxCT
+   Cry_vol[0] = gGeoManager->MakeTube(CrystalName + name_cry[0], pxctmatter, 0, QSD1DetectorDiameter / 2,
+                                      QSD1DetectorThickness / 2);
+   Cry_vol[0]->SetLineColor(kCyan);
+   gGeoMan->GetVolume(geoVersion)
+      ->AddNode(Cry_vol[0], 1,
+                new TGeoCombiTrans(tpc_diameter_out / 2 + QSD1WindowThickness + QSD1DetectorThickness / 2, 0, zloc,
+                                   new TGeoRotation(CrystalName + name_cry[0], 90, 90, 0)));
+   Cry_vol[0]->SetTransparency(90);
 
-      Cry_vol[1] = gGeoManager->MakeTube(CrystalName + name_cry[1], pxctmatter, 0,QSD2DetectorDiameter/2,QSD2DetectorThickness/2);
-      Cry_vol[1]->SetLineColor(kCyan);
-      gGeoMan->GetVolume(geoVersion)
-         ->AddNode(Cry_vol[1],  1,
-                   new TGeoCombiTrans(-(tpc_diameter_out / 2+ QSD2WindowThickness+QSD2DetectorThickness/2),0,zloc,
-                                      new TGeoRotation(CrystalName + name_cry[1],-90,-90, 0)));
+   TGeoVolume *window1 =
+      gGeoManager->MakeTube("window1", windowmatter, 0, QSD1DetectorDiameter / 2, QSD1WindowThickness);
+   window1->SetLineColor(kRed);
+   gGeoMan->GetVolume(geoVersion)
+      ->AddNode(window1, 1,
+                new TGeoCombiTrans(tpc_diameter_out / 2 + QSD1WindowThickness, 0, zloc,
+                                   new TGeoRotation("window1", 90, 90, 0.0)));
+   window1->SetTransparency(90);
 
-      Cry_vol[1]->SetTransparency(90);
+   Cry_vol[1] = gGeoManager->MakeTube(CrystalName + name_cry[1], pxctmatter, 0, QSD2DetectorDiameter / 2,
+                                      QSD2DetectorThickness / 2);
+   Cry_vol[1]->SetLineColor(kCyan);
+   gGeoMan->GetVolume(geoVersion)
+      ->AddNode(Cry_vol[1], 1,
+                new TGeoCombiTrans(-(tpc_diameter_out / 2 + QSD2WindowThickness + QSD2DetectorThickness / 2), 0, zloc,
+                                   new TGeoRotation(CrystalName + name_cry[1], -90, -90, 0)));
 
-      TGeoVolume *window2 = gGeoManager->MakeTube("window2", windowmatter, 0, QSD2DetectorDiameter/2, QSD2WindowThickness);
-      window2->SetLineColor(kRed);
-      gGeoMan->GetVolume(geoVersion)
-         ->AddNode(window2, 1,
-                   new TGeoCombiTrans(-(tpc_diameter_out / 2+ QSD2WindowThickness),0,zloc,
-                                      new TGeoRotation("window2", -90, -90, 0.0)));
-      window2->SetTransparency(90);
+   Cry_vol[1]->SetTransparency(90);
 
+   TGeoVolume *window2 =
+      gGeoManager->MakeTube("window2", windowmatter, 0, QSD2DetectorDiameter / 2, QSD2WindowThickness);
+   window2->SetLineColor(kRed);
+   gGeoMan->GetVolume(geoVersion)
+      ->AddNode(window2, 1,
+                new TGeoCombiTrans(-(tpc_diameter_out / 2 + QSD2WindowThickness), 0, zloc,
+                                   new TGeoRotation("window2", -90, -90, 0.0)));
+   window2->SetTransparency(90);
 
-   //PEEK
-   TGeoTube *PEEK_vol = new TGeoTube("PEEK_vol", fPDetCageSupportInnRad, fPDetCageSupportOutRad, fPDetCageSupportHalfLen);
+   // PEEK
+   TGeoTube *PEEK_vol =
+      new TGeoTube("PEEK_vol", fPDetCageSupportInnRad, fPDetCageSupportOutRad, fPDetCageSupportHalfLen);
 
-   TGeoTube *HoleA = new TGeoTubeSeg("HoleA", fPDetCageSupportInnRad-0.1, fPDetCageSupportOutRad+0.1, 13.4874/2.0,(-90-65.4408867/2.0),(-90-65.4408867/2.0)+65.4408867);//
-   TGeoCombiTrans *HoleAtrans = new TGeoCombiTrans("HoleAtrans", 0, 0, CutOutWindowAPos, new TGeoRotation("HoleAtrans", 0, 0, 0));
+   TGeoTube *HoleA = new TGeoTubeSeg("HoleA", fPDetCageSupportInnRad - 0.1, fPDetCageSupportOutRad + 0.1, 13.4874 / 2.0,
+                                     (-90 - 65.4408867 / 2.0), (-90 - 65.4408867 / 2.0) + 65.4408867); //
+   TGeoCombiTrans *HoleAtrans =
+      new TGeoCombiTrans("HoleAtrans", 0, 0, CutOutWindowAPos, new TGeoRotation("HoleAtrans", 0, 0, 0));
    HoleAtrans->RegisterYourself();
 
-   TGeoTube *HoleB = new TGeoTubeSeg("HoleB", fPDetCageSupportInnRad-0.1, fPDetCageSupportOutRad+0.1, 13.4874/2.0,(-90-65.4408867/2.0+65.4408867+54.5587858),(-90-65.4408867/2.0+65.4408867+54.5587858)+65.4408867);
-   TGeoCombiTrans *HoleBtrans = new TGeoCombiTrans("HoleBtrans", 0, 0, CutOutWindowBPos, new TGeoRotation("HoleBtrans", 0, 0, 0));
+   TGeoTube *HoleB = new TGeoTubeSeg("HoleB", fPDetCageSupportInnRad - 0.1, fPDetCageSupportOutRad + 0.1, 13.4874 / 2.0,
+                                     (-90 - 65.4408867 / 2.0 + 65.4408867 + 54.5587858),
+                                     (-90 - 65.4408867 / 2.0 + 65.4408867 + 54.5587858) + 65.4408867);
+   TGeoCombiTrans *HoleBtrans =
+      new TGeoCombiTrans("HoleBtrans", 0, 0, CutOutWindowBPos, new TGeoRotation("HoleBtrans", 0, 0, 0));
    HoleBtrans->RegisterYourself();
 
-   TGeoTube *HoleC = new TGeoTubeSeg("HoleC", fPDetCageSupportInnRad-0.1, fPDetCageSupportOutRad+0.1, 13.4874/2.0,(-90-65.4408867/2.0+65.4408867+54.5587858+65.4408867+54.5387358),(-90-65.4408867/2.0+65.4408867+54.5587858+65.4408867+54.5387358)+65.4409);
-   TGeoCombiTrans *HoleCtrans = new TGeoCombiTrans("HoleCtrans", 0, 0, CutOutWindowCPos, new TGeoRotation("HoleCtrans", 0, 0, 0));
+   TGeoTube *HoleC =
+      new TGeoTubeSeg("HoleC", fPDetCageSupportInnRad - 0.1, fPDetCageSupportOutRad + 0.1, 13.4874 / 2.0,
+                      (-90 - 65.4408867 / 2.0 + 65.4408867 + 54.5587858 + 65.4408867 + 54.5387358),
+                      (-90 - 65.4408867 / 2.0 + 65.4408867 + 54.5587858 + 65.4408867 + 54.5387358) + 65.4409);
+   TGeoCombiTrans *HoleCtrans =
+      new TGeoCombiTrans("HoleCtrans", 0, 0, CutOutWindowCPos, new TGeoRotation("HoleCtrans", 0, 0, 0));
    HoleCtrans->RegisterYourself();
 
-TGeoCompositeShape *PeekCyl = new TGeoCompositeShape("PeekCyl", "(PEEK_vol - HoleA:HoleAtrans -HoleB:HoleBtrans- HoleC:HoleCtrans)");//- HoleB:HoleBtrans- HoleC:HoleCtrans
+   TGeoCompositeShape *PeekCyl = new TGeoCompositeShape(
+      "PeekCyl",
+      "(PEEK_vol - HoleA:HoleAtrans -HoleB:HoleBtrans- HoleC:HoleCtrans)"); //- HoleB:HoleBtrans- HoleC:HoleCtrans
 
-Cry_vol[2] = new TGeoVolume(CrystalName + name_cry[2], PeekCyl, pxctmatter);
-        Cry_vol[2]->SetLineColor(kMagenta);
-        gGeoMan->GetVolume(geoVersion)->AddNode(Cry_vol[2], 0, new TGeoCombiTrans(0,0,fPDetCenter, new TGeoRotation(CrystalName + name_cry[2], 0, 0, 0))); 
-        
-        Cry_vol[2]->SetTransparency(0); 
-        
+   Cry_vol[2] = new TGeoVolume(CrystalName + name_cry[2], PeekCyl, pxctmatter);
+   Cry_vol[2]->SetLineColor(kMagenta);
+   gGeoMan->GetVolume(geoVersion)
+      ->AddNode(Cry_vol[2], 0,
+                new TGeoCombiTrans(0, 0, fPDetCenter, new TGeoRotation(CrystalName + name_cry[2], 0, 0, 0)));
+
+   Cry_vol[2]->SetTransparency(0);
+
    // GADGET Main drift volume with peek
    TGeoTube *drift_volumes = new TGeoTube("drift_volumes", tpc_diameter_in / 2, tpc_diameter_out / 2, drift_length / 2);
-   TGeoCompositeShape *drift_vol = new TGeoCompositeShape("drift_vol", "(drift_volumes-(PEEK_vol - HoleA:HoleAtrans -HoleB:HoleBtrans- HoleC:HoleCtrans))");
-   
+   TGeoCompositeShape *drift_vol = new TGeoCompositeShape(
+      "drift_vol", "(drift_volumes-(PEEK_vol - HoleA:HoleAtrans -HoleB:HoleBtrans- HoleC:HoleCtrans))");
+
    double tpc_rot = 0;
-   TGeoVolume *drift_volume = new TGeoVolume("drift_volume", drift_vol,gas);
-//TGeoVolume *drift_volume = gGeoManager->MakeTube("drift_volume", gas, 0, tpc_diameter_in / 2, drift_length / 2);
+   TGeoVolume *drift_volume = new TGeoVolume("drift_volume", drift_vol, gas);
+   // TGeoVolume *drift_volume = gGeoManager->MakeTube("drift_volume", gas, 0, tpc_diameter_in / 2, drift_length / 2);
    gGeoMan->GetVolume(geoVersion)
       ->AddNode(drift_volume, 1,
                 new TGeoCombiTrans(0.0, 0, drift_length / 2.0, new TGeoRotation("drift_volume", 0, tpc_rot, 0)));
@@ -393,6 +411,6 @@ Cry_vol[2] = new TGeoVolume(CrystalName + name_cry[2], PeekCyl, pxctmatter);
       ->AddNode(cathode_mount, 1,
                 new TGeoCombiTrans(0.0, 0, cathode_mount_length / 2, new TGeoRotation("cathode_mount", 0, tpc_rot, 0)));
    downstream_cap->SetTransparency(90);
-   
+
    return Cry_vol[0];
 }

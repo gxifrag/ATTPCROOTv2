@@ -1,16 +1,14 @@
-void run_eve_new( TString OutputDataFile = "output.reco_display.root",
-             TString unpackDir = "Simulation/GADGET/")
-{  TString InputDataFile;
+void run_eve_new(TString OutputDataFile = "output.reco_display.root", TString unpackDir = "Simulation/GADGET/")
+{
+   TString InputDataFile;
    TString sim;
-   std::cin<<"Charge Dispersion (CD) or Diffusion (Diff)? :"<<sim<<std::endl;
-   if(sim == "CD"){
+   std::cin << "Charge Dispersion (CD) or Diffusion (Diff)? :" << sim << std::endl;
+   if (sim == "CD") {
       InputDataFile = "./data/CD_digi.root";
-   }
-   else if(sim == "Diff"){
+   } else if (sim == "Diff") {
       InputDataFile = "./diff_digi.root";
-   }
-   else{
-      std::cout<<"Please enter CD or Diff"<<std::endl;
+   } else {
+      std::cout << "Please enter CD or Diff" << std::endl;
    }
 
    FairLogger *fLogger = FairLogger::GetLogger();
@@ -33,7 +31,7 @@ void run_eve_new( TString OutputDataFile = "output.reco_display.root",
    fRun->SetSink(sink);
    fRun->SetGeomFile(GeoDataPath);
 
-  FairRuntimeDb *rtdb = fRun->GetRuntimeDb();
+   FairRuntimeDb *rtdb = fRun->GetRuntimeDb();
    FairParRootFileIo *parIo1 = new FairParRootFileIo();
    // parIo1->open("param.dummy.root");
    rtdb->setFirstInput(parIo1);
@@ -50,9 +48,8 @@ void run_eve_new( TString OutputDataFile = "output.reco_display.root",
    tabPad->DrawADC(0, 0);
    tabPad->DrawArrayAug("Q", 0, 1);
    eveMan->AddTab(std::move(tabPad));
-   
+
    eveMan->Init();
 
    std::cout << "Finished init" << std::endl;
-  
 }

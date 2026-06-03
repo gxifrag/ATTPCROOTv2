@@ -183,7 +183,6 @@ void O16He4_sim_C12alpha(Int_t nEvents = 1000, TString mcEngine = "TGeant4")
    qDecay.at(0).push_back(0);
    massDecay.at(0).push_back(4.00260325415);
 
-
    AtTPCIonDecay *decay =
       new AtTPCIonDecay(&zDecay, &aDecay, &qDecay, &massDecay, zB, aB, massDecayB, massTarget, exEnergy, &SepEne);
    decay->SetSequentialDecay(kTRUE);

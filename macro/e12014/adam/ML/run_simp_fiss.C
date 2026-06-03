@@ -7,7 +7,7 @@ void run_simp_fiss(int runNum = 0)
 {
 
    delete gRandom;
-   gRandom = new TRandom3;   
+   gRandom = new TRandom3;
    gRandom->SetSeed(0);
 
    //************ Things to change ************//
@@ -19,16 +19,16 @@ void run_simp_fiss(int runNum = 0)
    simEvent::beamZ = 83;
    simEvent::beamA = 200;
    simEvent::beamM = 199.9332;
-   simEvent::massFrac = 0.56; //Probably don't change
-   simEvent::massDev = 6; //Probably don't change
+   simEvent::massFrac = 0.56; // Probably don't change
+   simEvent::massDev = 6;     // Probably don't change
 
-   simEvent::beamE = 2.70013e+03; //Get from LISE
-   simEvent::beamEsig = 1.28122e+02; //Either set to 0 or maintain the same ratio with beamE
+   simEvent::beamE = 2.70013e+03;    // Get from LISE
+   simEvent::beamEsig = 1.28122e+02; // Either set to 0 or maintain the same ratio with beamE
 
    //************ End things to change ************//
 
    TString inOutDir = "./data/";
-   //TString outputFile = inOutDir + "symFissionLg.root";
+   // TString outputFile = inOutDir + "symFissionLg.root";
    TString outputFile = inOutDir + TString::Format("simFission%02d.root", runNum);
    TString geoFile = "ATTPC_v1.1_geomanager.root";
    TString scriptfile = "e12014_pad_mapping.xml";
@@ -39,7 +39,7 @@ void run_simp_fiss(int runNum = 0)
    // TString mcFile = "./data/sim_attpc.root";
 
    // Create the full parameter file paths
-   //TString digiParFile = dir + "/parameters/" + paramFile;
+   // TString digiParFile = dir + "/parameters/" + paramFile;
    TString GeoDataPath = dir + "/geometry/" + geoFile;
    TString digiParFile = paramFile;
    TString mapParFile = dir + "/scripts/" + scriptfile;
@@ -68,9 +68,9 @@ void run_simp_fiss(int runNum = 0)
    sim->SetDistanceStep(1);
 
    auto scModel = std::make_shared<AtLineChargeModel>();
-   //scModel->SetBeamLocation({7, -10, 0}, {0, 7, 1000});
+   // scModel->SetBeamLocation({7, -10, 0}, {0, 7, 1000});
    scModel->SetBeamLocation({0, -6, 0}, {10, 0, 1000});
-   //scModel->SetBeamLocation({1, -4, 0}, {-0.1197, 13.01, 1000});
+   // scModel->SetBeamLocation({1, -4, 0}, {-0.1197, 13.01, 1000});
    scModel->SetBeamRadius(0);
    sim->SetSpaceChargeModel(scModel);
 
@@ -84,9 +84,9 @@ void run_simp_fiss(int runNum = 0)
       sim->AddModel(Z, A, eloss);
    }
 
-      auto beamloss = std::make_shared<AtTools::AtELossTable>();
-      beamloss->LoadLiseTable(TString::Format("./eLoss/LISE/%d_%d.txt", 83, 200).Data(), 200, 0);
-      sim->AddModel(83, 200, beamloss);
+   auto beamloss = std::make_shared<AtTools::AtELossTable>();
+   beamloss->LoadLiseTable(TString::Format("./eLoss/LISE/%d_%d.txt", 83, 200).Data(), 200, 0);
+   sim->AddModel(83, 200, beamloss);
 
    simEvent::moveSim(std::move(sim));
    simEvent::ions = ions;
@@ -99,9 +99,8 @@ void run_simp_fiss(int runNum = 0)
 
    //  __ Init and run ___________________________________
 
-   //Response::Init();
+   // Response::Init();
    fRun->Init();
-
 
    timer.Start();
    // fRun->Run(0, 20001);
@@ -123,8 +122,7 @@ void run_simp_fiss(int runNum = 0)
 
 bool reduceFunc(AtRawEvent *evt)
 {
-   if(evt->GetEventID() % 2 == 0)
+   if (evt->GetEventID() % 2 == 0)
       return false;
    return (evt->GetNumPads() > 0) && evt->IsGood();
 }
-

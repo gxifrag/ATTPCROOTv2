@@ -58,14 +58,14 @@ void unpack_e20009_test(TString fileName = "run_0300")
    fAtMapPtr->ParseXMLMap(mapDir.Data());
    fAtMapPtr->GeneratePadPlane();
 
-   fAtMapPtr->AddAuxPad({10,0,0,34},"trigger_live");
-   fAtMapPtr->AddAuxPad({10,0,0,0},"mesh");
-   fAtMapPtr->AddAuxPad({10,0,1,34},"mesh_MCA");
-   fAtMapPtr->AddAuxPad({10,0,1,0},"IC");
-   fAtMapPtr->AddAuxPad({10,0,2,34},"IC_sca");
-   fAtMapPtr->AddAuxPad({10,0,2,0},"trigger_free");
-   fAtMapPtr->AddAuxPad({10,0,3,34},"DB_beam");
-   fAtMapPtr->AddAuxPad({10,0,3,0},"unassigned");
+   fAtMapPtr->AddAuxPad({10, 0, 0, 34}, "trigger_live");
+   fAtMapPtr->AddAuxPad({10, 0, 0, 0}, "mesh");
+   fAtMapPtr->AddAuxPad({10, 0, 1, 34}, "mesh_MCA");
+   fAtMapPtr->AddAuxPad({10, 0, 1, 0}, "IC");
+   fAtMapPtr->AddAuxPad({10, 0, 2, 34}, "IC_sca");
+   fAtMapPtr->AddAuxPad({10, 0, 2, 0}, "trigger_free");
+   fAtMapPtr->AddAuxPad({10, 0, 3, 34}, "DB_beam");
+   fAtMapPtr->AddAuxPad({10, 0, 3, 0}, "unassigned");
 
    auto unpacker = std::make_unique<AtHDFUnpacker>(fAtMapPtr);
    unpacker->SetInputFileName(inputFile.Data());
@@ -123,7 +123,7 @@ void unpack_e20009_test(TString fileName = "run_0300")
    auto numEvents = unpackTask->GetNumEvents();
    std::cout << "Unpacking " << numEvents << " events. " << std::endl;
 
-   run->Run(0,numEvents);
+   run->Run(0, numEvents);
 
    std::cout << std::endl << std::endl;
    std::cout << "Done unpacking events" << std::endl << std::endl;

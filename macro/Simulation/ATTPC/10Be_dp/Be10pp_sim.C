@@ -16,7 +16,6 @@ void Be10pp_sim(Int_t nEvents = 10000, TString mcEngine = "TGeant4")
 
    // gSystem->Load("libAtGen.so");
 
-
    // -----   Create simulation run   ----------------------------------------
    FairRunSim *run = new FairRunSim();
    run->SetName(mcEngine);      // Transport engine

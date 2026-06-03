@@ -4,7 +4,7 @@
 #define cGREEN "\033[1;32m"
 
 #include <sys/stat.h>
-//#include "FairLogger.h"
+// #include "FairLogger.h"
 
 bool check_file(const std::string &name);
 
@@ -112,17 +112,15 @@ void run_unpack_SpecMAT(TString dataFile = "./data/TTreesGETrun_9901.root")
     ->SetMap(scriptdir.Data()); run -> AddTask(HoughTask);
     */
 
-    AtPRAtask *praTask = new AtPRAtask();
-    praTask->SetPersistence(kTRUE);
-    run->AddTask(praTask);
+   AtPRAtask *praTask = new AtPRAtask();
+   praTask->SetPersistence(kTRUE);
+   run->AddTask(praTask);
 
-
-      /*
-     AtClusterizeTask *clusterizer = new AtClusterizeTask();
-     clusterizer->SetPersistence(kFALSE);
-     run->AddTask(clusterizer);
-     */
-     
+   /*
+  AtClusterizeTask *clusterizer = new AtClusterizeTask();
+  clusterizer->SetPersistence(kFALSE);
+  run->AddTask(clusterizer);
+  */
 
    std::cout << std::endl << "**** Begining Init ****" << std::endl;
    run->Init();
@@ -137,7 +135,6 @@ void run_unpack_SpecMAT(TString dataFile = "./data/TTreesGETrun_9901.root")
    // numEvents = 5;
 
    std::cout << "Unpacking 30 out of " << numEvents << " events. " << std::endl;
-
 
    std::cout << std::endl << std::endl;
    std::cout << "Macro finished succesfully." << std::endl << std::endl;

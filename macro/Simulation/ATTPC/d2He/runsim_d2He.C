@@ -31,7 +31,7 @@ void runsim_d2He(Int_t runNumber = 0, Double_t ExEje = 0, Int_t nEvents = 10, TS
 
    // -----   Create simulation run   ----------------------------------------
    FairRunSim *run = new FairRunSim();
-   run->SetName(mcEngine);      // Transport engine
+   run->SetName(mcEngine);                      // Transport engine
    run->SetSink(new FairRootFileSink(outFile)); // Output file
                                                 // run->SetOutputFile(outFile); // Output file
    FairRuntimeDb *rtdb = run->GetRuntimeDb();

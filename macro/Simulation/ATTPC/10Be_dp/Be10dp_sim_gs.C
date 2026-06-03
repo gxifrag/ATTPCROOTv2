@@ -1,6 +1,7 @@
+#include <time.h> /* time */
+
 #include <stdio.h>  /* printf, NULL */
 #include <stdlib.h> /* srand, rand */
-#include <time.h>   /* time */
 
 void Be10dp_sim_gs(Int_t nEvents = 10000, TString mcEngine = "TGeant4")
 {

@@ -32,7 +32,7 @@ public:
 
    InitStatus Init() override;
    void Exec(Option_t *option = "") override;
-   void Finish() override{};
+   void Finish() override {};
 
    void SetPatternBranchName(TString name) { fPatternBranchName = name; }
    void SetSaveResult(bool val) { fSaveResult = val; }

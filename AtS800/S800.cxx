@@ -507,8 +507,8 @@ unsigned short *S800::DecodeS800NewMultiHitTDC(unsigned short *p)
             break;
          default: break;
          } // end Switch i
-      }    // end for i
-   }       // end if raw[15]!=0
+      } // end for i
+   } // end if raw[15]!=0
 
    // cout<<"fNewTOF.fE1Up.size() "<<fNewTOF.fE1Up.size()<<endl;
    // cout<<"fNewTOF.fE1Down.size() "<<fNewTOF.fE1Down.size()<<endl;

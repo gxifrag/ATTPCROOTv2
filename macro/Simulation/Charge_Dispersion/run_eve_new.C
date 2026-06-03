@@ -1,6 +1,7 @@
+#include "TString.h"
+
 #include <iostream>
 #include <string>
-#include "TString.h"
 
 void run_eve_new(TString OutputDataFile = "output.reco_display.root", TString unpackDir = "Simulation/GADGET/")
 {
@@ -11,15 +12,12 @@ void run_eve_new(TString OutputDataFile = "output.reco_display.root", TString un
 
    if (sim == "CD") {
       InputDataFile = "./data/CD_digi.root";
-   }
-   else if (sim == "Diff") {
+   } else if (sim == "Diff") {
       InputDataFile = "./data/diff_digi.root";
-   }
-   else {
+   } else {
       std::cout << "Please enter CD or Diff" << std::endl;
       return;
    }
-
 
    FairLogger *fLogger = FairLogger::GetLogger();
    fLogger->SetLogToScreen(kTRUE);
@@ -41,7 +39,7 @@ void run_eve_new(TString OutputDataFile = "output.reco_display.root", TString un
    fRun->SetSink(sink);
    fRun->SetGeomFile(GeoDataPath);
 
-  FairRuntimeDb *rtdb = fRun->GetRuntimeDb();
+   FairRuntimeDb *rtdb = fRun->GetRuntimeDb();
    FairParRootFileIo *parIo1 = new FairParRootFileIo();
    // parIo1->open("param.dummy.root");
    rtdb->setFirstInput(parIo1);
@@ -58,9 +56,8 @@ void run_eve_new(TString OutputDataFile = "output.reco_display.root", TString un
    tabPad->DrawADC(0, 0);
    tabPad->DrawArrayAug("Q", 0, 1);
    eveMan->AddTab(std::move(tabPad));
-   
+
    eveMan->Init();
 
    std::cout << "Finished init" << std::endl;
-  
 }

@@ -1,18 +1,14 @@
 
-#include <sstream>
+#include <fstream>
 #include <iostream>
-#include<fstream>
-
+#include <sstream>
 
 void save_cut(TString CutName)
- {
+{
 
-	      TString rootname = CutName + ".root";
-        TFile *file = new TFile(rootname.Data(), "recreate");
-        file->cd();
-        gROOT->FindObject(CutName)->Write();
-        delete file;
-
-
-
+   TString rootname = CutName + ".root";
+   TFile *file = new TFile(rootname.Data(), "recreate");
+   file->cd();
+   gROOT->FindObject(CutName)->Write();
+   delete file;
 }

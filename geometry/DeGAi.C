@@ -7,6 +7,8 @@
  ********************************************************************************/
 // Note: In root all sizes are given in cm
 
+#include <Math/Polar3D.h>
+
 #include "TFile.h"
 #include "TGeoCompositeShape.h"
 #include "TGeoManager.h"
@@ -16,12 +18,11 @@
 #include "TGeoPgon.h"
 #include "TGeoVolume.h"
 #include "TList.h"
-#include "TROOT.h"
 #include "TMath.h"
+#include "TROOT.h"
 #include "TString.h"
 #include "TSystem.h"
 
-#include <Math/Polar3D.h>
 #include <iostream>
 
 // Name of geometry version and output file
@@ -77,7 +78,6 @@ const Float_t cage_support_dia_in = 12.2174;
 const Float_t cage_support_dia_out = 13.8684;
 const Float_t cage_support_length = 38.6867;
 
-
 // DeGAi
 const Float_t Box_Width = 10.1;
 const Float_t Box_Length = 7.0;
@@ -92,21 +92,19 @@ TGeoManager *gGeoMan = new TGeoManager("ATTPC", "ATTPC");
 TGeoVolume *gModules; // Global storage for module types
 
 // function to convert spherical coordinates to Cartesian coordinates
-void convert2coords(Double_t r, Double_t phi, Double_t theta, Double_t outputArray[3]) {
-    // Convert spherical coordinates to Cartesian coordinates with modified axes
-    Double_t x = -r * TMath::Sin(theta) * TMath::Cos(phi);
-    Double_t y = r * TMath::Cos(theta);
-    Double_t z = r * TMath::Sin(theta) * TMath::Sin(phi);
+void convert2coords(Double_t r, Double_t phi, Double_t theta, Double_t outputArray[3])
+{
+   // Convert spherical coordinates to Cartesian coordinates with modified axes
+   Double_t x = -r * TMath::Sin(theta) * TMath::Cos(phi);
+   Double_t y = r * TMath::Cos(theta);
+   Double_t z = r * TMath::Sin(theta) * TMath::Sin(phi);
 
-    // Assign values to the output array
-    outputArray[0] = x;
-    outputArray[1] = y;
-    outputArray[2] = z;
+   // Assign values to the output array
+   outputArray[0] = x;
+   outputArray[1] = y;
+   outputArray[2] = z;
 }
 
-  
-
-  
 // Forward declarations
 void create_materials_from_media_file();
 TGeoVolume *create_detector();
@@ -190,8 +188,6 @@ void create_materials_from_media_file()
    geoBuild->createMedium(G10);
    geoBuild->createMedium(germanium);
    geoBuild->createMedium(aluminium);
-
-
 }
 
 TGeoVolume *create_detector()
@@ -207,113 +203,229 @@ TGeoVolume *create_detector()
    TGeoMedium *degaimatter = gGeoMan->GetMedium(DeGAiMatter);
    TGeoMedium *mediumvacuum4 = gGeoMan->GetMedium(MediumVacuum);
 
+   // CLover
 
- // CLover
-
-   TGeoTube *Crystal = new TGeoTube("Det1", 0, Crystal_Diameter/2, Crystal_Length/2);
-   TGeoTube *Hole = new TGeoTube("Hole", 0, Hole_Diameter/2, Hole_Length/2);
+   TGeoTube *Crystal = new TGeoTube("Det1", 0, Crystal_Diameter / 2, Crystal_Length / 2);
+   TGeoTube *Hole = new TGeoTube("Hole", 0, Hole_Diameter / 2, Hole_Length / 2);
    TGeoCombiTrans *Holetrans = new TGeoCombiTrans("Holetrans", 0, 0, 2.0, new TGeoRotation("Holetrans", 0, 0, 0));
    Holetrans->RegisterYourself();
-   TGeoBBox *FlattenCrystalV = new TGeoBBox("FlattenCrystalV", 0.38, Crystal_Diameter/2, Crystal_Length/2+1);
-   TGeoCombiTrans *FlattenCrystaltrans1 = new TGeoCombiTrans("FlattenCrystaltrans1", 2.5, 0, 0, new TGeoRotation("FlattenCrystaltrans", 0, 0, 0));
-   TGeoCombiTrans *FlattenCrystaltrans2 = new TGeoCombiTrans("FlattenCrystaltrans2", -2.5, 0, 0, new TGeoRotation("FlattenCrystaltrans", 0, 0, 0));
-   TGeoBBox *FlattenCrystalH = new TGeoBBox("FlattenCrystalH",Crystal_Diameter/2, 0.38, Crystal_Length/2+1);
-   TGeoCombiTrans *FlattenCrystaltrans3 = new TGeoCombiTrans("FlattenCrystaltrans3", 0,2.5, 0, new TGeoRotation("FlattenCrystaltrans", 0, 0, 0));
-   TGeoCombiTrans *FlattenCrystaltrans4 = new TGeoCombiTrans("FlattenCrystaltrans4", 0,-2.5, 0, new TGeoRotation("FlattenCrystaltrans", 0, 0, 0));
+   TGeoBBox *FlattenCrystalV = new TGeoBBox("FlattenCrystalV", 0.38, Crystal_Diameter / 2, Crystal_Length / 2 + 1);
+   TGeoCombiTrans *FlattenCrystaltrans1 =
+      new TGeoCombiTrans("FlattenCrystaltrans1", 2.5, 0, 0, new TGeoRotation("FlattenCrystaltrans", 0, 0, 0));
+   TGeoCombiTrans *FlattenCrystaltrans2 =
+      new TGeoCombiTrans("FlattenCrystaltrans2", -2.5, 0, 0, new TGeoRotation("FlattenCrystaltrans", 0, 0, 0));
+   TGeoBBox *FlattenCrystalH = new TGeoBBox("FlattenCrystalH", Crystal_Diameter / 2, 0.38, Crystal_Length / 2 + 1);
+   TGeoCombiTrans *FlattenCrystaltrans3 =
+      new TGeoCombiTrans("FlattenCrystaltrans3", 0, 2.5, 0, new TGeoRotation("FlattenCrystaltrans", 0, 0, 0));
+   TGeoCombiTrans *FlattenCrystaltrans4 =
+      new TGeoCombiTrans("FlattenCrystaltrans4", 0, -2.5, 0, new TGeoRotation("FlattenCrystaltrans", 0, 0, 0));
    FlattenCrystaltrans1->RegisterYourself();
    FlattenCrystaltrans2->RegisterYourself();
    FlattenCrystaltrans3->RegisterYourself();
    FlattenCrystaltrans4->RegisterYourself();
 
- // Top Right clover
-   TGeoCompositeShape *Clover1 = new TGeoCompositeShape("Clover1", "(Det1 - Hole:Holetrans - FlattenCrystalV:FlattenCrystaltrans1  - FlattenCrystalH:FlattenCrystaltrans4)");
-// Top Left clover
-   TGeoCompositeShape *Clover2 = new TGeoCompositeShape("Clover2", "(Det1 - Hole:Holetrans - FlattenCrystalV:FlattenCrystaltrans2  - FlattenCrystalH:FlattenCrystaltrans4)");
-// Bottom Right clover
-   TGeoCompositeShape *Clover3 = new TGeoCompositeShape("Clover3", "(Det1 - Hole:Holetrans - FlattenCrystalV:FlattenCrystaltrans1  - FlattenCrystalH:FlattenCrystaltrans3)");
-// Bottom Left clover
-   TGeoCompositeShape *Clover4 = new TGeoCompositeShape("Clover4", "(Det1 - Hole:Holetrans - FlattenCrystalV:FlattenCrystaltrans2  - FlattenCrystalH:FlattenCrystaltrans3)");
-  
+   // Top Right clover
+   TGeoCompositeShape *Clover1 = new TGeoCompositeShape(
+      "Clover1",
+      "(Det1 - Hole:Holetrans - FlattenCrystalV:FlattenCrystaltrans1  - FlattenCrystalH:FlattenCrystaltrans4)");
+   // Top Left clover
+   TGeoCompositeShape *Clover2 = new TGeoCompositeShape(
+      "Clover2",
+      "(Det1 - Hole:Holetrans - FlattenCrystalV:FlattenCrystaltrans2  - FlattenCrystalH:FlattenCrystaltrans4)");
+   // Bottom Right clover
+   TGeoCompositeShape *Clover3 = new TGeoCompositeShape(
+      "Clover3",
+      "(Det1 - Hole:Holetrans - FlattenCrystalV:FlattenCrystaltrans1  - FlattenCrystalH:FlattenCrystaltrans3)");
+   // Bottom Left clover
+   TGeoCompositeShape *Clover4 = new TGeoCompositeShape(
+      "Clover4",
+      "(Det1 - Hole:Holetrans - FlattenCrystalV:FlattenCrystaltrans2  - FlattenCrystalH:FlattenCrystaltrans3)");
 
-// Cover
-   TGeoCombiTrans *TRtrans = new TGeoCombiTrans("TRtrans",-2.5+0.38, 2.5-0.38, 0, new TGeoRotation("TRtrans", 0, 0, 0));
+   // Cover
+   TGeoCombiTrans *TRtrans =
+      new TGeoCombiTrans("TRtrans", -2.5 + 0.38, 2.5 - 0.38, 0, new TGeoRotation("TRtrans", 0, 0, 0));
    TRtrans->RegisterYourself();
-   TGeoCombiTrans *TLtrans = new TGeoCombiTrans("TLtrans",2.5-0.38, 2.5-0.38, 0, new TGeoRotation("TLtrans", 0, 0, 0));
+   TGeoCombiTrans *TLtrans =
+      new TGeoCombiTrans("TLtrans", 2.5 - 0.38, 2.5 - 0.38, 0, new TGeoRotation("TLtrans", 0, 0, 0));
    TLtrans->RegisterYourself();
-   TGeoCombiTrans *BRtrans = new TGeoCombiTrans("BRtrans",-2.5+0.38, -2.5+0.38, 0, new TGeoRotation("BRtrans", 0, 0, 0));
+   TGeoCombiTrans *BRtrans =
+      new TGeoCombiTrans("BRtrans", -2.5 + 0.38, -2.5 + 0.38, 0, new TGeoRotation("BRtrans", 0, 0, 0));
    BRtrans->RegisterYourself();
-   TGeoCombiTrans *BLtrans = new TGeoCombiTrans("BLtrans",2.5-0.38,-2.5+0.38, 0, new TGeoRotation("BLtrans", 0, 0, 0));
+   TGeoCombiTrans *BLtrans =
+      new TGeoCombiTrans("BLtrans", 2.5 - 0.38, -2.5 + 0.38, 0, new TGeoRotation("BLtrans", 0, 0, 0));
    BLtrans->RegisterYourself();
-   
-   TGeoCompositeShape *Clover1hole = new TGeoCompositeShape("Clover1hole", "(Det1 - FlattenCrystalV:FlattenCrystaltrans1  - FlattenCrystalH:FlattenCrystaltrans4)");
-   TGeoCompositeShape *Clover2hole = new TGeoCompositeShape("Clover2hole", "(Det1 - FlattenCrystalV:FlattenCrystaltrans2  - FlattenCrystalH:FlattenCrystaltrans4)");
-   TGeoCompositeShape *Clover3hole = new TGeoCompositeShape("Clover3hole", "(Det1 - FlattenCrystalV:FlattenCrystaltrans1  - FlattenCrystalH:FlattenCrystaltrans3)");
-   TGeoCompositeShape *Clover4hole = new TGeoCompositeShape("Clover4hole", "(Det1 - FlattenCrystalV:FlattenCrystaltrans2  - FlattenCrystalH:FlattenCrystaltrans3)");
 
-   TGeoBBox *Box = new TGeoBBox("Box", Box_Width/2, Box_Width/2, Box_Length/2-0.01);
-   TGeoCompositeShape *CoverB = new TGeoCompositeShape("Cover", "Box - Clover1hole:TRtrans - Clover2hole:TLtrans - Clover3hole:BRtrans - Clover4hole:BLtrans ");
-   TGeoCompositeShape *Detector = new TGeoCompositeShape("Detector", "Cover + Clover1:TRtrans + Clover2:TLtrans + Clover3:BRtrans + Clover4:BLtrans");
-   //detector
+   TGeoCompositeShape *Clover1hole = new TGeoCompositeShape(
+      "Clover1hole", "(Det1 - FlattenCrystalV:FlattenCrystaltrans1  - FlattenCrystalH:FlattenCrystaltrans4)");
+   TGeoCompositeShape *Clover2hole = new TGeoCompositeShape(
+      "Clover2hole", "(Det1 - FlattenCrystalV:FlattenCrystaltrans2  - FlattenCrystalH:FlattenCrystaltrans4)");
+   TGeoCompositeShape *Clover3hole = new TGeoCompositeShape(
+      "Clover3hole", "(Det1 - FlattenCrystalV:FlattenCrystaltrans1  - FlattenCrystalH:FlattenCrystaltrans3)");
+   TGeoCompositeShape *Clover4hole = new TGeoCompositeShape(
+      "Clover4hole", "(Det1 - FlattenCrystalV:FlattenCrystaltrans2  - FlattenCrystalH:FlattenCrystaltrans3)");
+
+   TGeoBBox *Box = new TGeoBBox("Box", Box_Width / 2, Box_Width / 2, Box_Length / 2 - 0.01);
+   TGeoCompositeShape *CoverB = new TGeoCompositeShape(
+      "Cover", "Box - Clover1hole:TRtrans - Clover2hole:TLtrans - Clover3hole:BRtrans - Clover4hole:BLtrans ");
+   TGeoCompositeShape *Detector = new TGeoCompositeShape(
+      "Detector", "Cover + Clover1:TRtrans + Clover2:TLtrans + Clover3:BRtrans + Clover4:BLtrans");
+   // detector
    TGeoVolume **Cry_vol;
    Cry_vol = new TGeoVolume *[41];
 
    TString CrystalName = "Crystal_";
-   TString name_cry[40] = {"01", "02", "03", "04", "05", "06", "07", "08", "09","10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30", "31", "32", "33", "34", "35", "36", "37", "38", "39", "40"};
+   TString name_cry[40] = {"01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12", "13", "14",
+                           "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28",
+                           "29", "30", "31", "32", "33", "34", "35", "36", "37", "38", "39", "40"};
 
-   Double_t Poffset =7.54 ;
-   Double_t Toffset =6.14 ;
-   Double_t Rvals[40] ={19.77683114,19.77683114,19.77647621,19.77647621,19.77759725,19.77759725,19.77713387,19.77713387,19.77644147,19.77591297,19.77633936,19.77707173,11.56007718,11.56116122,11.56116122,11.56007718,11.56118215,11.56120531,11.56120531,11.56118215,11.56103566,11.56072343,11.56072343,11.56103566,19.77724805,19.77604363,19.77762107,19.77681679,19.77604363,19.77724805,19.77681679,19.77762107,19.77604363,19.77724805,19.77681679,19.77762107,19.77604363,19.77724805,19.77681679,19.77762107};
+   Double_t Poffset = 7.54;
+   Double_t Toffset = 6.14;
+   Double_t Rvals[40] = {19.77683114, 19.77683114, 19.77647621, 19.77647621, 19.77759725, 19.77759725, 19.77713387,
+                         19.77713387, 19.77644147, 19.77591297, 19.77633936, 19.77707173, 11.56007718, 11.56116122,
+                         11.56116122, 11.56007718, 11.56118215, 11.56120531, 11.56120531, 11.56118215, 11.56103566,
+                         11.56072343, 11.56072343, 11.56103566, 19.77724805, 19.77604363, 19.77762107, 19.77681679,
+                         19.77604363, 19.77724805, 19.77681679, 19.77762107, 19.77604363, 19.77724805, 19.77681679,
+                         19.77762107, 19.77604363, 19.77724805, 19.77681679, 19.77762107};
 
-   Double_t ThetaDet[40] = {128.8960565,128.8960565,116.6719632,116.6719632 ,128.8942659,128.8942659,116.6710061,116.6710061,128.4539467,128.4551626,116.2283226,116.2272773,100.5205834,100.5195857,79.4804143,79.47941659,100.5195664,100.5195451,79.48045487,79.48043356,100.5197013,100.5199886,79.4800114,79.48029875,66.30557111,66.30403974,54.07972043,54.07803245,66.30403974,66.30557111,54.07803245,54.07972043,
-   47.99924684+Toffset,47.99924684+Toffset,47.99924684-Toffset,47.99924684-Toffset,47.99924684+Toffset,47.99924684+Toffset,47.99924684-Toffset,47.99924684-Toffset}; 
-   //53.82653458,58.20928332,43.77046075, 38.21971664,58.21928332, 53.82653458, 38.21971664, 41.77046075};
+   Double_t ThetaDet[40] = {128.8960565,
+                            128.8960565,
+                            116.6719632,
+                            116.6719632,
+                            128.8942659,
+                            128.8942659,
+                            116.6710061,
+                            116.6710061,
+                            128.4539467,
+                            128.4551626,
+                            116.2283226,
+                            116.2272773,
+                            100.5205834,
+                            100.5195857,
+                            79.4804143,
+                            79.47941659,
+                            100.5195664,
+                            100.5195451,
+                            79.48045487,
+                            79.48043356,
+                            100.5197013,
+                            100.5199886,
+                            79.4800114,
+                            79.48029875,
+                            66.30557111,
+                            66.30403974,
+                            54.07972043,
+                            54.07803245,
+                            66.30403974,
+                            66.30557111,
+                            54.07803245,
+                            54.07972043,
+                            47.99924684 + Toffset,
+                            47.99924684 + Toffset,
+                            47.99924684 - Toffset,
+                            47.99924684 - Toffset,
+                            47.99924684 + Toffset,
+                            47.99924684 + Toffset,
+                            47.99924684 - Toffset,
+                            47.99924684 - Toffset};
+   // 53.82653458,58.20928332,43.77046075, 38.21971664,58.21928332, 53.82653458, 38.21971664, 41.77046075};
 
-   Double_t PhiDet[40] = {322.8804903,307.1195097,308.1415006,321.8584994,277.8814104,262.1185896,263.1405474,276.8594526,231.8670515,216.2007913,217.2029612,230.8687376,344.988577,323.5782166,323.5782166,344.988577,293.5633984,272.1514237,272.1514237,293.5633984,242.1293534,220.7318372,220.7318372,242.1293534,296.6944274,283.3072445,282.4272964,297.5769804,256.6927555,243.3055726,242.4230196,257.5727036,
-   333.9975437+Poffset,333.9975437-Poffset,333.9975437-Poffset-2.0,333.9975437+Poffset+2.0,206.0024563+Poffset,206.0024563-Poffset,206.0024563-Poffset-2.0,206.0024563+Poffset+2.0};
-   //346.4647812,328.0076872, 319.4166341, 342.2518078,211.9923128, 193.5352188, 197.7481922, 220.5833659}; offset
+   Double_t PhiDet[40] = {322.8804903,
+                          307.1195097,
+                          308.1415006,
+                          321.8584994,
+                          277.8814104,
+                          262.1185896,
+                          263.1405474,
+                          276.8594526,
+                          231.8670515,
+                          216.2007913,
+                          217.2029612,
+                          230.8687376,
+                          344.988577,
+                          323.5782166,
+                          323.5782166,
+                          344.988577,
+                          293.5633984,
+                          272.1514237,
+                          272.1514237,
+                          293.5633984,
+                          242.1293534,
+                          220.7318372,
+                          220.7318372,
+                          242.1293534,
+                          296.6944274,
+                          283.3072445,
+                          282.4272964,
+                          297.5769804,
+                          256.6927555,
+                          243.3055726,
+                          242.4230196,
+                          257.5727036,
+                          333.9975437 + Poffset,
+                          333.9975437 - Poffset,
+                          333.9975437 - Poffset - 2.0,
+                          333.9975437 + Poffset + 2.0,
+                          206.0024563 + Poffset,
+                          206.0024563 - Poffset,
+                          206.0024563 - Poffset - 2.0,
+                          206.0024563 + Poffset + 2.0};
+   // 346.4647812,328.0076872, 319.4166341, 342.2518078,211.9923128, 193.5352188, 197.7481922, 220.5833659}; offset
 
-   Double_t Phi[40] = {315,315,315,315,270,270,270,270,224.0322363,224.0322363,224.0322363,224.0322363,334.2891357,334.2891357,334.2891357,334.2891357,282.8617039,282.8617039,282.8617039,282.8617039,231.4275328,231.4275328,231.4275328,231.4275328,289.9974273,289.9974273,289.9974273,289.9974273,249.994283,249.994283,249.994283,249.994283,333.9975437,333.9975437,333.9975437,333.9975437,206.0024563,206.0024563,206.0024563,206.0024563};
+   Double_t Phi[40] = {315,         315,         315,         315,         270,         270,         270,
+                       270,         224.0322363, 224.0322363, 224.0322363, 224.0322363, 334.2891357, 334.2891357,
+                       334.2891357, 334.2891357, 282.8617039, 282.8617039, 282.8617039, 282.8617039, 231.4275328,
+                       231.4275328, 231.4275328, 231.4275328, 289.9974273, 289.9974273, 289.9974273, 289.9974273,
+                       249.994283,  249.994283,  249.994283,  249.994283,  333.9975437, 333.9975437, 333.9975437,
+                       333.9975437, 206.0024563, 206.0024563, 206.0024563, 206.0024563};
 
-   Double_t Theta[40] = {122.999694,122.999694,122.999694,122.999694,123.0014495,123.0014495,123.0014495,123.0014495,122.5555004,122.5555004,122.5555004,122.5555004,90,90,90,90,90,90,90,90,90,90,90,90,59.99763268,59.99763268,59.99763268,59.99763268,59.99893933,59.99893933,59.99893933,59.99893933,47.99924684,47.99924684,47.99924684,47.99924684,47.99924684,47.99924684,47.99924684,47.99924684};
+   Double_t Theta[40] = {122.999694,  122.999694,  122.999694,  122.999694,  123.0014495, 123.0014495, 123.0014495,
+                         123.0014495, 122.5555004, 122.5555004, 122.5555004, 122.5555004, 90,          90,
+                         90,          90,          90,          90,          90,          90,          90,
+                         90,          90,          90,          59.99763268, 59.99763268, 59.99763268, 59.99763268,
+                         59.99893933, 59.99893933, 59.99893933, 59.99893933, 47.99924684, 47.99924684, 47.99924684,
+                         47.99924684, 47.99924684, 47.99924684, 47.99924684, 47.99924684};
 
-   Int_t Color[40] = {600,400,416,632,600,400,416,632,600,400,416,632,600,400,416,632,600,400,416,632,600,400,416,632,600,400,416,632,600,400,416,632,600,400,416,632,600,400,416,632};
+   Int_t Color[40] = {600, 400, 416, 632, 600, 400, 416, 632, 600, 400, 416, 632, 600, 400,
+                      416, 632, 600, 400, 416, 632, 600, 400, 416, 632, 600, 400, 416, 632,
+                      600, 400, 416, 632, 600, 400, 416, 632, 600, 400, 416, 632};
 
-	
-  
-  
+   for (Int_t i = 0; i < 10; i++) {
+      Int_t index = 4 * i;
 
-for (Int_t i = 0; i < 10; i++) {
-    Int_t index = 4 * i;
-    
-    Double_t avec0[6];
-    convert2coords(Rvals[index]-.5, TMath::DegToRad() * Phi[index], TMath::DegToRad() * Theta[index], avec0);
-    TGeoVolume *Cover = new TGeoVolume(CrystalName + name_cry[index], CoverB, shellmatter);
-    Cover->SetLineColor(kGray);
-    gGeoMan->GetVolume(geoVersion)->AddNode(Cover, index + 1, new TGeoCombiTrans(avec0[2], avec0[0], avec0[1] + cage_support_length / 2, 
-    new TGeoRotation(CrystalName + name_cry[index], Phi[index], Theta[index], 0)));
-    Cover->SetTransparency(0);
+      Double_t avec0[6];
+      convert2coords(Rvals[index] - .5, TMath::DegToRad() * Phi[index], TMath::DegToRad() * Theta[index], avec0);
+      TGeoVolume *Cover = new TGeoVolume(CrystalName + name_cry[index], CoverB, shellmatter);
+      Cover->SetLineColor(kGray);
+      gGeoMan->GetVolume(geoVersion)
+         ->AddNode(Cover, index + 1,
+                   new TGeoCombiTrans(avec0[2], avec0[0], avec0[1] + cage_support_length / 2,
+                                      new TGeoRotation(CrystalName + name_cry[index], Phi[index], Theta[index], 0)));
+      Cover->SetTransparency(0);
 
-    for (Int_t j = 0; j < 4; j++) {
-        Int_t cryIndex = index + j;
-        Double_t avec[6];
-        convert2coords(Rvals[cryIndex], TMath::DegToRad() * PhiDet[cryIndex], TMath::DegToRad() * ThetaDet[cryIndex], avec);
-        TGeoVolume *Cry_vol = nullptr;
-        if (j == 0) {
+      for (Int_t j = 0; j < 4; j++) {
+         Int_t cryIndex = index + j;
+         Double_t avec[6];
+         convert2coords(Rvals[cryIndex], TMath::DegToRad() * PhiDet[cryIndex], TMath::DegToRad() * ThetaDet[cryIndex],
+                        avec);
+         TGeoVolume *Cry_vol = nullptr;
+         if (j == 0) {
             Cry_vol = new TGeoVolume(CrystalName + name_cry[cryIndex], Clover4, degaimatter);
-        } else if (j == 1) {
+         } else if (j == 1) {
             Cry_vol = new TGeoVolume(CrystalName + name_cry[cryIndex], Clover3, degaimatter);
-        } else if (j == 2) {
+         } else if (j == 2) {
             Cry_vol = new TGeoVolume(CrystalName + name_cry[cryIndex], Clover1, degaimatter);
-        } else if (j == 3) {
+         } else if (j == 3) {
             Cry_vol = new TGeoVolume(CrystalName + name_cry[cryIndex], Clover2, degaimatter);
-        }
-        Cry_vol->SetLineColor(Color[cryIndex]);
-        gGeoMan->GetVolume(geoVersion)->AddNode(Cry_vol, cryIndex + 1, new TGeoCombiTrans(avec[2], avec[0], avec[1] + cage_support_length / 2, 
-        new TGeoRotation(CrystalName + name_cry[cryIndex], Phi[cryIndex], Theta[cryIndex], 0)));
-        Cry_vol->SetTransparency(0);
-    }
-}
-
+         }
+         Cry_vol->SetLineColor(Color[cryIndex]);
+         gGeoMan->GetVolume(geoVersion)
+            ->AddNode(Cry_vol, cryIndex + 1,
+                      new TGeoCombiTrans(
+                         avec[2], avec[0], avec[1] + cage_support_length / 2,
+                         new TGeoRotation(CrystalName + name_cry[cryIndex], Phi[cryIndex], Theta[cryIndex], 0)));
+         Cry_vol->SetTransparency(0);
+      }
+   }
 
    // GADGET Main drift volume
    double tpc_rot = 0;
@@ -414,4 +526,3 @@ for (Int_t i = 0; i < 10; i++) {
 
    return drift_volume;
 }
-

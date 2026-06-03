@@ -26,8 +26,8 @@ int main(int argc, char *argv[])
    bool simulationConv = 0;
    bool enableMerging = 1;
    bool enableSingleVertexTrack = 1;
-   bool enableReclustering = 1;     // For benchmarking purposes
-   Double_t clusterRadius = 0.5;    // mm
+   bool enableReclustering = 1;    // For benchmarking purposes
+   Double_t clusterRadius = 0.5;   // mm
    Double_t clusterDistance = 1.0; // mm
    Exp exp = SpecMAT;
 

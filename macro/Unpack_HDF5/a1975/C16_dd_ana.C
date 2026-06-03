@@ -192,9 +192,9 @@ void C16_dd_ana()
    std::vector<std::pair<TString, TString>> filepairs;
    filepairs.push_back(std::make_pair("run_0011.root", "run_0011_FRIB_sorted.root"));
    filepairs.push_back(std::make_pair("run_0013.root", "run_0013_FRIB_sorted.root"));
-   filepairs.push_back(std::make_pair("run_0014.root","run_0014_FRIB_sorted.root"));
-   filepairs.push_back(std::make_pair("run_0015.root","run_0015_FRIB_sorted.root"));
-   filepairs.push_back(std::make_pair("run_0016.root","run_0016_FRIB_sorted.root"));
+   filepairs.push_back(std::make_pair("run_0014.root", "run_0014_FRIB_sorted.root"));
+   filepairs.push_back(std::make_pair("run_0015.root", "run_0015_FRIB_sorted.root"));
+   filepairs.push_back(std::make_pair("run_0016.root", "run_0016_FRIB_sorted.root"));
    filepairs.push_back(std::make_pair("run_0017.root", "run_0017_FRIB_sorted.root"));
    filepairs.push_back(std::make_pair("run_0018.root", "run_0018_FRIB_sorted.root"));
    filepairs.push_back(std::make_pair("run_0019.root", "run_0019_FRIB_sorted.root"));

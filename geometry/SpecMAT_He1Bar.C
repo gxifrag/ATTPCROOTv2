@@ -408,8 +408,8 @@ TGeoVolume *create_detector()
       rotmGeo.RotateY(90);  //** rotation matrix for positioning segments
       rotmGeo.RotateZ(phi); //** rotation matrix for positioning segments
 
-      rotm2.RotateX(360 - phi); //### rotation matrix for reconstruction of crystal positions
-      rotm3.RotateY(90);        //### rotation matrix for reconstruction of crystal positions
+      rotm2.RotateX(360 - phi); // ### rotation matrix for reconstruction of crystal positions
+      rotm3.RotateY(90);        // ### rotation matrix for reconstruction of crystal positions
 
       TVector3 uz(std::cos(phi * twopi / 360), std::sin(phi * twopi / 360),
                   0.); // coeficient which will be used for preliminary rotation of the segments and crystals

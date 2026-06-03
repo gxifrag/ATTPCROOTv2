@@ -1,6 +1,6 @@
 int main(void)
 {
-	int i = nullptr;
+   int i = nullptr;
 
-	return 1;
+   return 1;
 }

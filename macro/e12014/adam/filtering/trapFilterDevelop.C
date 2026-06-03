@@ -3,13 +3,13 @@
  * Filter from: "Digital techniques for real-time pulse shaping in radiation measurements"
  *
  */
-#include "TString.h"
-#include "TH1.h"
 #include "TCanvas.h"
 #include "TFrame.h"
+#include "TH1.h"
+#include "TString.h"
 
-#include <iostream>
 #include <fstream>
+#include <iostream>
 #include <sstream>
 #include <vector>
 
@@ -48,8 +48,7 @@ void testFilter(float MIn = 17.5, int kIn = 10, int lIn = 30, TString waveformFi
 
    auto waveform = readFile(waveFile);
    auto start = removeBaselineAndGetStart(waveform, 100);
-   
-   
+
    std::cout << "Start at tb: " << start << std::endl;
 
    vecFloat shiftedWaveform;
@@ -58,28 +57,24 @@ void testFilter(float MIn = 17.5, int kIn = 10, int lIn = 30, TString waveformFi
 
    std::cout << "Shifted waveform" << std::endl;
 
-   
    vecFloat filtered;
-   for (int i = 0; i < waveform->size(); ++i)
-   {
+   for (int i = 0; i < waveform->size(); ++i) {
       if (i < start)
          filtered.push_back(0);
       else
-	 filtered.push_back(s(shiftedWaveform, i - start));
-
+         filtered.push_back(s(shiftedWaveform, i - start));
    }
    auto trapMax = getMax(filtered, start);
-   
-   rescaleWaveform(waveform, start, trapMax/2.0);
-   
+
+   rescaleWaveform(waveform, start, trapMax / 2.0);
+
    auto waveHist = createHistogram(*waveform, "unfiltered");
    auto filterHist = createHistogram(filtered, "filtered");
 
-
-   TCanvas *c = new TCanvas("c1","");
+   TCanvas *c = new TCanvas("c1", "");
    filterHist->Draw("hist");
    waveHist->Draw("hist SAME");
-   filterHist->GetYaxis()->SetRangeUser(-trapMax*0.2, trapMax * 1.1);
+   filterHist->GetYaxis()->SetRangeUser(-trapMax * 0.2, trapMax * 1.1);
 }
 int removeBaselineAndGetStart(vecFloat *data, int threshold)
 {
@@ -87,7 +82,7 @@ int removeBaselineAndGetStart(vecFloat *data, int threshold)
    for (int i = 1; i < 21; ++i) {
       baseline += data->at(i) / 20;
    }
-   
+
    int start = -1;
    for (int i = 0; i < data->size(); ++i) {
       data->at(i) -= baseline;
@@ -142,7 +137,7 @@ float p(const vecFloat &signal, int n)
 }
 float s(const vecFloat &signal, int n)
 {
-   //if (n < 0 || n > 2*k + l)
+   // if (n < 0 || n > 2*k + l)
    if (n < 0)
       return 0;
    return s(signal, n - 1) + r(signal, n);
@@ -158,16 +153,15 @@ void rescaleWaveform(vecFloat *data, int start, float scale)
    auto max = getMax(*data, start);
    scale /= max;
 
-   for(auto &elem : *data)
+   for (auto &elem : *data)
       elem *= scale;
-      
 }
 
 int getMax(const vecFloat &data, int start)
 {
    float max = 0;
-   for(int i = start; i < 10+start; ++i)
+   for (int i = start; i < 10 + start; ++i)
       if (data.at(i) > max)
-	 max = data.at(i);
+         max = data.at(i);
    return max;
 }

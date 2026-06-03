@@ -535,14 +535,14 @@ void plotFit_full_dp(std::string fileFolder = "data_181_366/") //"dataFull/")//"
                                        // HQval->Fill(Ex);
                                     }
                                  } // Xini
-                              }    // Rad
-                           }       // Z vertex
-                                   //}//X-Y
-                        }          // Chi2
-                     }             // POCA
-                  }                // Angle
-               }                   // Track length
-            }                      // Energy
+                              } // Rad
+                           } // Z vertex
+                             //}//X-Y
+                        } // Chi2
+                     } // POCA
+                  } // Angle
+               } // Track length
+            } // Energy
          }
       }
    }

@@ -39,7 +39,7 @@ public:
    AtFissionEvent();
    AtFissionEvent(const AtFissionEvent &);
    AtFissionEvent(const AtPatternEvent &);
-   AtFissionEvent(const AtBaseEvent &event) : AtPatternEvent(event){};
+   AtFissionEvent(const AtBaseEvent &event) : AtPatternEvent(event) {};
    AtFissionEvent &operator=(AtFissionEvent);
    virtual ~AtFissionEvent() = default;
 

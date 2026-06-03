@@ -7,13 +7,12 @@
 #include "FairRunAna.h"
 */
 
-
-//Event viewer to look at space-charge corrected Hits
-
+// Event viewer to look at space-charge corrected Hits
 
 void run_eve_Corrected(int runNum = 206, TString OutputDataFile = "output.reco_display.root")
 {
-   TString InputDataFile = TString::Format("/mnt/analysis/hira_collaboration/e12014/Joe/UnpackedRuns/runC_%04d.root", runNum);
+   TString InputDataFile =
+      TString::Format("/mnt/analysis/hira_collaboration/e12014/Joe/UnpackedRuns/runC_%04d.root", runNum);
    std::cout << "Opening: " << InputDataFile << std::endl;
 
    TString dir = getenv("VMCWORKDIR");

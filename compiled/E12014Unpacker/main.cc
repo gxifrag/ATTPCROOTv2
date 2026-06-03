@@ -7,110 +7,103 @@
 using namespace std;
 
 void run_unpack_adam(std::string dataFile = "/mnt/user/e12014/attpc/run_0260.h5",
-		     TString parameterFile = "ATTPC.e12014.par", TString mappath="")
+                     TString parameterFile = "ATTPC.e12014.par", TString mappath = "")
 {
 
-  //dataFile="/mnt/analysis/e18505_attpc/ND2019/run_0171.h5";
-  //dataFile = "/mnt/user/e12014/attpc/run_0157.h5";
-  
-  // -----   Timer   --------------------------------------------------------
-  TStopwatch timer;
-  timer.Start();
- // ------------------------------------------------------------------------
+   // dataFile="/mnt/analysis/e18505_attpc/ND2019/run_0171.h5";
+   // dataFile = "/mnt/user/e12014/attpc/run_0157.h5";
 
-  gSystem->Load("libXMLParser.so");
+   // -----   Timer   --------------------------------------------------------
+   TStopwatch timer;
+   timer.Start();
+   // ------------------------------------------------------------------------
 
-  // -----------------------------------------------------------------
-  // Set file names
-  TString scriptfile = "Lookup20150611.xml";
+   gSystem->Load("libXMLParser.so");
 
+   // -----------------------------------------------------------------
+   // Set file names
+   TString scriptfile = "Lookup20150611.xml";
 
-  TString dir = getenv("VMCWORKDIR");
-  TString scriptdir = dir + "/scripts/"+ scriptfile;
-  TString dataDir   = dir + "/macro/data/";
-  TString geomDir   = dir + "/geometry/";
-  gSystem -> Setenv("GEOMPATH", geomDir.Data());
+   TString dir = getenv("VMCWORKDIR");
+   TString scriptdir = dir + "/scripts/" + scriptfile;
+   TString dataDir = dir + "/macro/data/";
+   TString geomDir = dir + "/geometry/";
+   gSystem->Setenv("GEOMPATH", geomDir.Data());
 
-  TString outputFile  = "output.root";
+   TString outputFile = "output.root";
 
-  //TString mcParFile   = dataDir + name + ".params.root";
+   // TString mcParFile   = dataDir + name + ".params.root";
 
-  TString loggerFile  = dataDir + "ATTPCLog.log";
-  TString digiParFile = dir + "/parameters/" + parameterFile;
-  TString geoManFile  = dir + "/geometry/ATTPC_v1.1.root";
+   TString loggerFile = dataDir + "ATTPCLog.log";
+   TString digiParFile = dir + "/parameters/" + parameterFile;
+   TString geoManFile = dir + "/geometry/ATTPC_v1.1.root";
 
-  // -----------------------------------------------------------------
-  // Logger
-  FairLogger *fLogger = FairLogger::GetLogger();
-  fLogger -> SetLogFileName(TString(dir + "/macro/Unpack_HDF5/ATTPCLog.log").Data());
-  fLogger -> SetLogToScreen(kTRUE);
-  fLogger -> SetLogToFile(kTRUE);
-  fLogger -> SetLogVerbosityLevel("LOW");
+   // -----------------------------------------------------------------
+   // Logger
+   FairLogger *fLogger = FairLogger::GetLogger();
+   fLogger->SetLogFileName(TString(dir + "/macro/Unpack_HDF5/ATTPCLog.log").Data());
+   fLogger->SetLogToScreen(kTRUE);
+   fLogger->SetLogToFile(kTRUE);
+   fLogger->SetLogVerbosityLevel("LOW");
 
-  FairRunAna* run = new FairRunAna();
-  run -> SetOutputFile(outputFile);
-  run -> SetGeomFile(geoManFile);
+   FairRunAna *run = new FairRunAna();
+   run->SetOutputFile(outputFile);
+   run->SetGeomFile(geoManFile);
 
-  FairRuntimeDb* rtdb = run->GetRuntimeDb();
-  FairParAsciiFileIo* parIo1 = new FairParAsciiFileIo();
-  parIo1 -> open(digiParFile.Data(), "in");
-  
-  //FairParRootFileIo* parIo2 = new FairParRootFileIo();
-  //parIo2 -> open("param.dummy_proto.root");
-  // rtdb -> setFirstInput(parIo2);
-  rtdb -> setSecondInput(parIo1);
+   FairRuntimeDb *rtdb = run->GetRuntimeDb();
+   FairParAsciiFileIo *parIo1 = new FairParAsciiFileIo();
+   parIo1->open(digiParFile.Data(), "in");
 
-  
-  ATHDFParserTask* HDFParserTask = new ATHDFParserTask();
-  HDFParserTask->SetPersistence(kTRUE);
-  HDFParserTask->SetATTPCMap(scriptdir.Data());
-  HDFParserTask->SetFileName(dataFile);
-  HDFParserTask->SetOldFormat(false);
-  HDFParserTask->SetTimestampIndex(2);
-  
-  ATPSATask *psaTask = new ATPSATask();
-  psaTask -> SetPersistence(kTRUE);
-  psaTask -> SetThreshold(10);
-  psaTask -> SetPSAMode(1); //NB: 1 is ATTPC - 2 is pATTPC - 3 Filter for ATTPC - 4: Full Time Buckets
-  psaTask -> SetMaxFinder();
-    
-  ATRansacTask *RansacTask = new ATRansacTask();
-  RansacTask -> SetPersistence(kTRUE);
-  RansacTask -> SetDistanceThreshold(10.0);
-  RansacTask -> SetTiltAngle(0);
-  RansacTask -> SetFullMode();
+   // FairParRootFileIo* parIo2 = new FairParRootFileIo();
+   // parIo2 -> open("param.dummy_proto.root");
+   //  rtdb -> setFirstInput(parIo2);
+   rtdb->setSecondInput(parIo1);
 
-  
-  run -> AddTask(HDFParserTask);
-  run -> AddTask(psaTask);
-  run -> AddTask(RansacTask);
+   ATHDFParserTask *HDFParserTask = new ATHDFParserTask();
+   HDFParserTask->SetPersistence(kTRUE);
+   HDFParserTask->SetATTPCMap(scriptdir.Data());
+   HDFParserTask->SetFileName(dataFile);
+   HDFParserTask->SetOldFormat(false);
+   HDFParserTask->SetTimestampIndex(2);
 
-  run -> Init();
-  auto numEvents = HDFParserTask->GetNumEvents();
-  
-  std::cout << "There are " << numEvents << " Events." << std::endl;
-  
-  //Only look at first 10 events
-  //run->Run(0,10);
+   ATPSATask *psaTask = new ATPSATask();
+   psaTask->SetPersistence(kTRUE);
+   psaTask->SetThreshold(10);
+   psaTask->SetPSAMode(1); // NB: 1 is ATTPC - 2 is pATTPC - 3 Filter for ATTPC - 4: Full Time Buckets
+   psaTask->SetMaxFinder();
 
-  // Unpack all events
-  run->Run(0,numEvents);
+   ATRansacTask *RansacTask = new ATRansacTask();
+   RansacTask->SetPersistence(kTRUE);
+   RansacTask->SetDistanceThreshold(10.0);
+   RansacTask->SetTiltAngle(0);
+   RansacTask->SetFullMode();
 
+   run->AddTask(HDFParserTask);
+   run->AddTask(psaTask);
+   run->AddTask(RansacTask);
 
+   run->Init();
+   auto numEvents = HDFParserTask->GetNumEvents();
 
-  std::cout << std::endl << std::endl;
-  std::cout << "Macro finished succesfully."  << std::endl << std::endl;
-  std::cout << "- Output file : " << outputFile << std::endl << std::endl;
-  // -----   Finish   -------------------------------------------------------
-  timer.Stop();
-  Double_t rtime = timer.RealTime();
-  Double_t ctime = timer.CpuTime();
-  cout << endl << endl;
-  cout << "Real time " << rtime << " s, CPU time " << ctime << " s" << endl;
-  cout << endl;
-  // ------------------------------------------------------------------------
+   std::cout << "There are " << numEvents << " Events." << std::endl;
 
-  gApplication->Terminate();
+   // Only look at first 10 events
+   // run->Run(0,10);
 
+   // Unpack all events
+   run->Run(0, numEvents);
+
+   std::cout << std::endl << std::endl;
+   std::cout << "Macro finished succesfully." << std::endl << std::endl;
+   std::cout << "- Output file : " << outputFile << std::endl << std::endl;
+   // -----   Finish   -------------------------------------------------------
+   timer.Stop();
+   Double_t rtime = timer.RealTime();
+   Double_t ctime = timer.CpuTime();
+   cout << endl << endl;
+   cout << "Real time " << rtime << " s, CPU time " << ctime << " s" << endl;
+   cout << endl;
+   // ------------------------------------------------------------------------
+
+   gApplication->Terminate();
 }
-

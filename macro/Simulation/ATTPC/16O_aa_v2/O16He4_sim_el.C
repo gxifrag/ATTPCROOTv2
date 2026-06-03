@@ -20,8 +20,6 @@ void O16He4_sim_el(Int_t nEvents = 100, TString mcEngine = "TGeant4")
 
    // gSystem->Load("libAtGen.so");
 
-   
-
    // -----   Create simulation run   ----------------------------------------
    FairRunSim *run = new FairRunSim();
    run->SetName(mcEngine);      // Transport engine

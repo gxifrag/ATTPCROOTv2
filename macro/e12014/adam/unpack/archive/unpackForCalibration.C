@@ -12,7 +12,7 @@ void unpack(int runNumber)
    // Set the input/output directories
    TString inputDir = "/mnt/rawdata/e12014_attpc/h5";
    TString outDir = "/mnt/analysis/e12014/TPC/unpacked";
-   
+
    // Set the in/out files
    TString inputFile = inputDir + TString::Format("/run_%04d.h5", runNumber);
    TString outputFile = outDir + TString::Format("/run_%04d.root", runNumber);
@@ -53,7 +53,7 @@ void unpack(int runNumber)
    fAtMapPtr->AddAuxPad({10, 0, 1, 0}, "MCP_DS");
    fAtMapPtr->AddAuxPad({10, 0, 2, 34}, "IC");
    fAtMapPtr->GenerateAtTpc();
-   
+
    // Create the unpacker task
    AtHDFParserTask *HDFParserTask = new AtHDFParserTask();
    HDFParserTask->SetPersistence(kTRUE);
@@ -75,7 +75,7 @@ void unpack(int runNumber)
    // Add unpacker to the run
    run->AddTask(HDFParserTask);
    run->AddTask(psaTask);
-   //run->AddTask(RansacTask);
+   // run->AddTask(RansacTask);
 
    run->Init();
 
@@ -83,7 +83,7 @@ void unpack(int runNumber)
    auto numEvents = HDFParserTask->GetNumEvents() / 2;
 
    // numEvents = 1700;//217;
-   //numEvents = 10;
+   // numEvents = 10;
 
    std::cout << "Unpacking " << numEvents << " events. " << std::endl;
 

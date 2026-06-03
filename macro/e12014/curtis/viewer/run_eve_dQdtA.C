@@ -5,12 +5,11 @@
 #include "FairParRootFileIo.h"
 #include "FairRunAna.h"
 */
-#include "FairLogger.h"
-
-#include "HEISTpid3.h"
 #include "ADCsumPlot.h"
-#include "QsumPlot.h"
 #include "DrawAuxPad.h"
+#include "FairLogger.h"
+#include "HEISTpid3.h"
+#include "QsumPlot.h"
 #include "TestTPC.h"
 
 void run_eve_dQdtA(int runNum = 210, TString OutputDataFile = "./data/output.reco_display.root")
@@ -23,9 +22,9 @@ void run_eve_dQdtA(int runNum = 210, TString OutputDataFile = "./data/output.rec
 
    TString InputDataFile = "/mnt/analysis/e12014/TPC/fission_linked/run_0279.root";
    TString evtInputDataFile = "/mnt/analysis/e12014/TPC/fission_linked/evtRun_0279.root";
-   //TString InputDataFile = TString::Format("../unpacking/data/linked/run_%04d.root", runNum);
+   // TString InputDataFile = TString::Format("../unpacking/data/linked/run_%04d.root", runNum);
    std::cout << "Opening: " << InputDataFile << std::endl;
-   //TString evtInputDataFile = TString::Format("../unpacking/data/linked/evtRun_%04d.root", runNum);
+   // TString evtInputDataFile = TString::Format("../unpacking/data/linked/evtRun_%04d.root", runNum);
    std::cout << "Opening: " << evtInputDataFile << std::endl;
    TString inputCuts = "/mnt/projects/hira/e12014/tpcSharedInfo/PIDcuts/Run323Yield.root"; // 150 torr
 
@@ -49,9 +48,9 @@ void run_eve_dQdtA(int runNum = 210, TString OutputDataFile = "./data/output.rec
 
    FairRuntimeDb *rtdb = fRun->GetRuntimeDb();
    FairParAsciiFileIo *parIo1 = new FairParAsciiFileIo();
-   //FairParRootFileIo *parIo1 = new FairParRootFileIo();
-   // parIo1->open("param.dummy.root");
-   //rtdb->setFirstInput(parIo1);
+   // FairParRootFileIo *parIo1 = new FairParRootFileIo();
+   //  parIo1->open("param.dummy.root");
+   // rtdb->setFirstInput(parIo1);
 
    std::cout << "Setting par file: " << digiParFile << std::endl;
    parIo1->open(digiParFile.Data(), "in");
@@ -90,7 +89,7 @@ void run_eve_dQdtA(int runNum = 210, TString OutputDataFile = "./data/output.rec
 
    AtCutHEIST *cut = new AtCutHEIST(evtInputDataFile, inputCuts);
    cut->AddAllSpecies();
-   //cut->AddSpecies("Pb197");
+   // cut->AddSpecies("Pb197");
 
    auto boolMacEvt = new AtTabInfoFairRoot<AtRawEvent>(eveMan->GetRawEventName());
    auto boolFunc = TestTPC;
@@ -101,7 +100,7 @@ void run_eve_dQdtA(int runNum = 210, TString OutputDataFile = "./data/output.rec
 
    auto sideSpec = new AtSidebarInfoMacro(eveMan->GetCurrentEntry(), eveMan->GetSidebar());
    sideSpec->SetLabel("Species");
-   sideSpec->SetFunction([cut]() { return cut->GetSpecies();} );
+   sideSpec->SetFunction([cut]() { return cut->GetSpecies(); });
    eveMan->GetSidebar()->AddSidebarFrame(sideSpec);
 
    auto tabMain = std::make_unique<AtTabMain>();
@@ -115,7 +114,7 @@ void run_eve_dQdtA(int runNum = 210, TString OutputDataFile = "./data/output.rec
    tabSum->GetTabInfo()->AddAugment(std::move(sumInfo));
    tabSum->SetDrawEventFunction(ADCsumPlot, 0, 0);
    tabSum->SetDrawEventFunction(QsumPlot, 0, 1);
-   tabSum->SetDrawEventFunction([auxName, auxFunc](AtTabInfo *info){auxFunc(info, auxName); }, 1, 1);
+   tabSum->SetDrawEventFunction([auxName, auxFunc](AtTabInfo *info) { auxFunc(info, auxName); }, 1, 1);
 
    /*auto tabPad = std::make_unique<AtTabPad>(2, 2);
    tabPad->DrawRawADC(0, 0);

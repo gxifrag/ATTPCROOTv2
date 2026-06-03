@@ -1,9 +1,9 @@
 struct foo {
-	int baz;
-	double bar;
+   int baz;
+   double bar;
 };
 
 int main(void)
 {
-	return (sizeof(foo::bar) == 4) ? 0 : 1;
+   return (sizeof(foo::bar) == 4) ? 0 : 1;
 }

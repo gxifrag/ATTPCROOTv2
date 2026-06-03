@@ -23,7 +23,7 @@ public:
    int id;
    std::set<size_t> cluster_ids;
 
-   Point(){};
+   Point() {};
    Point(const std::vector<double> &point);
    Point(const std::vector<double> &point, const std::set<size_t> &cluster_ids);
    Point(double x, double y, double z);

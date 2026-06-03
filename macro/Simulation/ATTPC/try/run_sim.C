@@ -41,7 +41,7 @@ void run_sim(Int_t nEvents = 10, TString mcEngine = "TGeant4")
 
    FairDetector *ATTPC = new AtTpc("ATTPC", kTRUE);
    ATTPC->SetGeometryFileName("/home/georgina/fair_install/ATTPCROOTv2_KF/geometry/ATTPC_H300torr.root");
-   //ATTPC->SetModifyGeometry(kTRUE);
+   // ATTPC->SetModifyGeometry(kTRUE);
    run->AddModule(ATTPC);
 
    // ------------------------------------------------------------------------
@@ -49,22 +49,20 @@ void run_sim(Int_t nEvents = 10, TString mcEngine = "TGeant4")
    // -----   Magnetic field   -------------------------------------------
    // Constant Field
    AtConstField *fMagField = new AtConstField();
-   fMagField->SetField(0., 0., 10.);                     // values are in kG
+   fMagField->SetField(0., 0., 10.);                      // values are in kG
    fMagField->SetFieldRegion(-50, 50, -50, 50, -10, 230); // values are in cm
                                                           //  (xmin,xmax,ymin,ymax,zmin,zmax)
-   //run->SetField(fMagField);
-   // --------------------------------------------------------------------
-
-  
+   // run->SetField(fMagField);
+   //  --------------------------------------------------------------------
 
    // -----   Create PrimaryGenerator   --------------------------------------
 
-   Int_t pdgCode = 2212; // Proton
+   Int_t pdgCode = 2212;   // Proton
    Int_t multiplicity = 1; // 1 proton por evento para ver las tracks claras
 
    /*
    FairBoxGenerator* boxGen = new FairBoxGenerator(pdgCode, multiplicity);
-   
+
    boxGen->SetPRange(4e6, 4e6);    // Momentum (GeV/c)
    boxGen->SetPhiRange(0., 360.);   // Cobertura azimutal completa
    boxGen->SetThetaRange(0, 90.); // Cobertura polar completa
@@ -76,7 +74,9 @@ void run_sim(Int_t nEvents = 10, TString mcEngine = "TGeant4")
    */
 
    FairPrimaryGenerator *primGen = new FairPrimaryGenerator();
-   auto ionGen = new FairIonGenerator(9,25,9,1,0.,0.,10, 0.,0., -50.); // Z, A, Q, Multiplicity, Px, Py, Pz, Excitation Energy, Mass, Nominal Energy
+   auto ionGen =
+      new FairIonGenerator(9, 25, 9, 1, 0., 0., 10, 0., 0.,
+                           -50.); // Z, A, Q, Multiplicity, Px, Py, Pz, Excitation Energy, Mass, Nominal Energy
    primGen->AddGenerator(ionGen);
    run->SetGenerator(primGen);
 
@@ -119,4 +119,3 @@ void run_sim(Int_t nEvents = 10, TString mcEngine = "TGeant4")
    cout << "Real time " << rtime << " s, CPU time " << ctime << "s" << endl << endl;
    // ------------------------------------------------------------------------
 }
-

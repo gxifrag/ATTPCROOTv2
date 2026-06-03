@@ -3,10 +3,10 @@
 #include "AtFitter.h"
 #include "AtGenfit.h"
 
-#include <memory>
 #include <chrono>
-#include <thread>
 #include <iostream>
+#include <memory>
+#include <thread>
 
 #define cRED "\033[1;31m"
 #define cYELLOW "\033[1;33m"
@@ -446,8 +446,8 @@ int main(int argc, char *argv[])
             for (auto auxpad : auxPadArray) {
                if (auxpad.GetAuxName().compare(std::string("IC_sca")) == 0) {
                   std::cout << " Auxiliary pad name " << auxpad.GetAuxName() << "\n";
-                  Double_t *adc = const_cast<double*>(auxpad.GetADC().data());
-		  
+                  Double_t *adc = const_cast<double *>(auxpad.GetADC().data());
+
                   ICMult = GetNPeaksHRS(&ICTimeVec, &ICVec, adc);
                }
                if (auxpad.GetAuxName().compare(std::string("IC")) == 0) {
@@ -492,7 +492,7 @@ int main(int argc, char *argv[])
                AtHitCluster endCluster;
                Double_t zIniCal = 0;
                Double_t zEndCal = 0;
-	       ROOT::Math::XYZPoint iniPos;
+               ROOT::Math::XYZPoint iniPos;
                ROOT::Math::XYZPoint secPos;
                ROOT::Math::XYZPoint endPos;
 
@@ -577,11 +577,11 @@ int main(int argc, char *argv[])
                PhiPRA = phi * TMath::RadToDeg();
 
                std::cout << " Theta : " << theta * TMath::RadToDeg() << " Phi : " << phi * TMath::RadToDeg() << "\n";
-	       
+
                auto hitClusterArray = track.GetHitClusterArray();
                AtHitCluster iniCluster;
                Double_t zIniCal = 0;
-	       ROOT::Math::XYZPoint iniPos;
+               ROOT::Math::XYZPoint iniPos;
 
                // for (auto cluster : *hitClusterArray) {
                // TVector3 pos = cluster.GetPosition();
@@ -804,7 +804,7 @@ int main(int argc, char *argv[])
                                       << particleQ << " " << fChi2 << " " << fNdf << "\n";
 
                      } // Kalman fit
-                  }    // Kalman status
+                  } // Kalman status
                } catch (std::exception &e) {
                   std::cout << " " << e.what() << "\n";
                   continue;
@@ -1403,7 +1403,7 @@ void Clusterize3D(AtTrack &track, Float_t distance, Float_t radius)
                sigma_y /= hitQ;
                sigma_z /= hitTBArray.size();
 
-	       ROOT::Math::XYZPoint clustPos(x, y, z);
+               ROOT::Math::XYZPoint clustPos(x, y, z);
                Bool_t checkDistance = kTRUE;
 
                // Check distance with respect to existing clusters
@@ -1482,7 +1482,7 @@ void ClusterizeSmooth3D(AtTrack &track, Float_t distance, Float_t radius)
    Double_t D_L = TMath::Sqrt((2.0 * d_l) / driftVel);
 
    if (hitArray.size() > 0) {
-      
+
       auto refPos = hitArray.at(0).GetPosition(); // First hit
       // TODO: Create a clustered hit from the very first hit (test)
 
@@ -1548,7 +1548,7 @@ void ClusterizeSmooth3D(AtTrack &track, Float_t distance, Float_t radius)
                sigma_y /= hitQ;
                sigma_z /= hitTBArray.size();
 
-	       ROOT::Math::XYZPoint clustPos(x, y, z);
+               ROOT::Math::XYZPoint clustPos(x, y, z);
                Bool_t checkDistance = kTRUE;
 
                // Check distance with respect to existing clusters
@@ -1616,7 +1616,7 @@ void ClusterizeSmooth3D(AtTrack &track, Float_t distance, Float_t radius)
 
             auto clusBack = hitClusterArray->at(iHitCluster).GetPosition();
             auto clusForw = hitClusterArray->at(iHitCluster + 1).GetPosition();
-            auto clusMidPos = (clusBack - clusForw) * 0.5 + clusForw ;
+            auto clusMidPos = (clusBack - clusForw) * 0.5 + clusForw;
             std::vector<ROOT::Math::XYZPoint> renormClus{clusBack, clusMidPos};
 
             if (iHitCluster == (hitClusterArray->size() - 2))
@@ -1625,9 +1625,10 @@ void ClusterizeSmooth3D(AtTrack &track, Float_t distance, Float_t radius)
             // Create a new cluster and renormalize the charge of the other with half the radius.
             for (auto iClus : renormClus) {
                hitTBArray.clear();
-               std::copy_if(
-                  hitArray.begin(), hitArray.end(), std::back_inserter(hitTBArray),
-                  [&iClus, radius](AtHit &hitIn) { return TMath::Sqrt((hitIn.GetPosition() - iClus).Mag2()) < radius; });
+               std::copy_if(hitArray.begin(), hitArray.end(), std::back_inserter(hitTBArray),
+                            [&iClus, radius](AtHit &hitIn) {
+                               return TMath::Sqrt((hitIn.GetPosition() - iClus).Mag2()) < radius;
+                            });
 
                if (hitTBArray.size() > 0) {
                   double x = 0, y = 0, z = 0;
@@ -1635,7 +1636,7 @@ void ClusterizeSmooth3D(AtTrack &track, Float_t distance, Float_t radius)
 
                   int timeStamp;
                   std::shared_ptr<AtHitCluster> hitCluster = std::make_shared<AtHitCluster>();
-		  hitCluster->SetClusterID(clusterID);
+                  hitCluster->SetClusterID(clusterID);
                   Double_t hitQ = 0.0;
                   std::for_each(hitTBArray.begin(), hitTBArray.end(),
                                 [&x, &y, &z, &hitQ, &timeStamp, &sigma_x, &sigma_y, &sigma_z, &D_T, &D_L, &driftVel,
@@ -1665,7 +1666,7 @@ void ClusterizeSmooth3D(AtTrack &track, Float_t distance, Float_t radius)
                   sigma_x /= hitQ;
                   sigma_y /= hitQ;
                   sigma_z /= hitTBArray.size();
-		  
+
                   TVector3 clustPos(x, y, z);
                   hitCluster->SetCharge(hitQ);
                   hitCluster->SetPosition(x, y, z);
@@ -1730,7 +1731,7 @@ void Clusterize(AtTrack &track)
       if (hitTBArray.size() > 0) {
          double x = 0, y = 0;
          std::shared_ptr<AtHitCluster> hitCluster = std::make_shared<AtHitCluster>();
-	 hitCluster->SetClusterID(clusterID);
+         hitCluster->SetClusterID(clusterID);
          Double_t hitQ = 0.0;
          std::for_each(hitTBArray.begin(), hitTBArray.end(), [&x, &y, &hitQ](AtHit &hit) {
             auto pos = hit.GetPosition();

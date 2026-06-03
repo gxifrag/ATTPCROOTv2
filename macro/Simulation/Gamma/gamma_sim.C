@@ -1,5 +1,5 @@
 
-void gamma_sim(Double_t energy=0.01,Int_t nEvents=10, TString mcEngine = "TGeant4" )
+void gamma_sim(Double_t energy = 0.01, Int_t nEvents = 10, TString mcEngine = "TGeant4")
 
 {
 
@@ -11,7 +11,6 @@ void gamma_sim(Double_t energy=0.01,Int_t nEvents=10, TString mcEngine = "TGeant
 
    // Parameter file name
    TString parFile = "./data/PxCTpar.root";
-
 
    // -----   Timer   --------------------------------------------------------
    TStopwatch timer;
@@ -41,36 +40,35 @@ void gamma_sim(Double_t energy=0.01,Int_t nEvents=10, TString mcEngine = "TGeant
    /*FairModule* pipe = new AtPipe("Pipe");
    run->AddModule(pipe);*/
 
-
    FairDetector *PxCT = new AtPxCT("AtPxCT", kTRUE);
    PxCT->SetGeometryFileName("PxCT.root");
    // ATTPC->SetModifyGeometry(kTRUE);
    run->AddModule(PxCT);
 
    // ------------------------------------------------------------------------
-  srand((unsigned)time(NULL));
+   srand((unsigned)time(NULL));
    UInt_t seed = (float)rand() / RAND_MAX * 100000;
    gRandom->SetSeed(seed);
-   //gRandom->SetSeed(subnum);
+   // gRandom->SetSeed(subnum);
 
    // -----   Create PrimaryGenerator   --------------------------------------
    FairPrimaryGenerator *primGen = new FairPrimaryGenerator();
 
-   Double_t pdgId = 22;       // 22 for gamma emission, 2212 for proton emission
-     Double_t theta1 = 0;      // polar angle distribution: lower edge (50)
-     Double_t theta2 = 180.;    // polar angle distribution: upper edge (51)
-     // GeV/c
-     
-     Int_t multiplicity = 1;
-     auto boxGen = new FairBoxGenerator(22, 1);
+   Double_t pdgId = 22;    // 22 for gamma emission, 2212 for proton emission
+   Double_t theta1 = 0;    // polar angle distribution: lower edge (50)
+   Double_t theta2 = 180.; // polar angle distribution: upper edge (51)
+   // GeV/c
+
+   Int_t multiplicity = 1;
+   auto boxGen = new FairBoxGenerator(22, 1);
    boxGen->SetXYZ(0, 0, 20);
-    boxGen->SetThetaRange(theta1, theta2);
-    boxGen->SetPhiRange(0, 360);
-    //boxGen->SetPRange();
-   boxGen->SetEkinRange(energy/1000, energy/1000);
+   boxGen->SetThetaRange(theta1, theta2);
+   boxGen->SetPhiRange(0, 360);
+   // boxGen->SetPRange();
+   boxGen->SetEkinRange(energy / 1000, energy / 1000);
 
    primGen->AddGenerator(boxGen);
-  run->SetGenerator(primGen);
+   run->SetGenerator(primGen);
 
    // ------------------------------------------------------------------------
 
@@ -78,7 +76,6 @@ void gamma_sim(Double_t energy=0.01,Int_t nEvents=10, TString mcEngine = "TGeant
    //--- Use it only to display but not for production!
 
    run->SetStoreTraj(kFalse);
-
 
    // -----   Initialize simulation run   ------------------------------------
    run->Init();

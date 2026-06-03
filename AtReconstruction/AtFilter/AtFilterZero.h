@@ -22,8 +22,8 @@ private:
 public:
    void SetThreshold(double val) { fThreshold = std::abs(val); }
 
-   virtual void Init() override{};
-   virtual void InitEvent(AtRawEvent *) override{};
+   virtual void Init() override {};
+   virtual void InitEvent(AtRawEvent *) override {};
    virtual void Filter(AtPad *pad, AtPadReference *padReference) override;
    virtual bool IsGoodEvent() override { return true; }
 

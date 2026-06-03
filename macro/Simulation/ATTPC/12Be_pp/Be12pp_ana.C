@@ -1,10 +1,10 @@
-#include "TString.h"
-#include "TFile.h"
-#include "TTree.h"
 #include "TClonesArray.h"
+#include "TFile.h"
+#include "TString.h"
+#include "TTree.h"
 
-#include <iostream>
 #include <fstream>
+#include <iostream>
 
 Double_t Gauss(Double_t mu, Double_t sigma)
 {

@@ -62,7 +62,7 @@ void plotFit_full_noIC(std::string fileFolder = "data/")
 
    TH2F *QvsTrackLengthH = new TH2F("QvsTrackLengthH", "QvsTrackLengthH", 1000, -10, 50, 1000, 0, 1000);
 
-   TH2F *EvsTrackLengthH = new TH2F("EvsTrackLengthH", "EvsTrackLengthH", 1000, 0,20, 1000, 0, 100);
+   TH2F *EvsTrackLengthH = new TH2F("EvsTrackLengthH", "EvsTrackLengthH", 1000, 0, 20, 1000, 0, 100);
 
    TH2F *QvsAng_Xtr = new TH2F("QvsAng_Xtr", "QvsAng_Xtr", 1000, -10, 10, 720, 0, 179);
 
@@ -465,22 +465,21 @@ void plotFit_full_noIC(std::string fileFolder = "data/")
 
                  std::cout<<"\n";*/
 
-	    //Get the track with maximum angle 
-	    auto itMax =
+            // Get the track with maximum angle
+            auto itMax =
                std::max_element(APRAVec->begin(), APRAVec->end(), [](const auto &a, const auto &b) { return b > a; });
             Int_t maxAIndex = std::distance(APRAVec->begin(), itMax);
             ;
 
-	    //Calculate mean distance to vertex (0,0) of each track
-	    Double_t meanDist = 0.0;
-	    for(auto index =0; index<xiniPRAVec->size();++index)
-	      {
-		Double_t x = (*xiniPRAVec)[index];
-		Double_t y = (*yiniPRAVec)[index];
-		Double_t z = (*ziniPRAVec)[index];
-		meanDist+= TMath::Sqrt(x*x+y*y);
-	      }
-	    meanDist/=xiniPRAVec->size();
+            // Calculate mean distance to vertex (0,0) of each track
+            Double_t meanDist = 0.0;
+            for (auto index = 0; index < xiniPRAVec->size(); ++index) {
+               Double_t x = (*xiniPRAVec)[index];
+               Double_t y = (*yiniPRAVec)[index];
+               Double_t z = (*ziniPRAVec)[index];
+               meanDist += TMath::Sqrt(x * x + y * y);
+            }
+            meanDist /= xiniPRAVec->size();
 
             for (auto index = 0; index < EFitVec->size(); ++index) {
 
@@ -493,11 +492,7 @@ void plotFit_full_noIC(std::string fileFolder = "data/")
                Ang_Ener_PRA->Fill(APRA, EPRA);
                PhiPRAH->Fill(PhiPRA);
 
-
-	       
-	       
-
-	       // if((*lengthOrbZVec)[index]<30)
+               // if((*lengthOrbZVec)[index]<30)
                // continue;
 
                // if((*brhoVec)[index]>0.8)
@@ -507,7 +502,7 @@ void plotFit_full_noIC(std::string fileFolder = "data/")
                // continue;
 
                // if((*AFitVec)[index]>82 || (*AFitVec)[index]<70)
-		  // continue;
+               // continue;
 
                // Particle ID
                /*ELossvsBrho->Fill((*eLossADC)[index], (*brhoVec)[index]);
@@ -519,30 +514,30 @@ void plotFit_full_noIC(std::string fileFolder = "data/")
 
                if (cutT->IsInside((*eLossADC)[index], (*brhoVec)[index])) // particleID
                   continue;
-	       */
+          */
                // if(!cutDEDX->IsInside((*dEdxADC)[index], (*brhoVec)[index]))
                // continue;
 
-               //if ((*dEdxADC)[index] < 3000) // particleID
-		 //continue;
+               // if ((*dEdxADC)[index] < 3000) // particleID
+               // continue;
 
-	       //if ((*trackLengthVec)[index] < 14.0 || (*trackLengthVec)[index] > 28.0)
-	       //continue;
+               // if ((*trackLengthVec)[index] < 14.0 || (*trackLengthVec)[index] > 28.0)
+               // continue;
 
-               //if ((*fitConvergedVec)[index] == 0)
-	       // continue;
+               // if ((*fitConvergedVec)[index] == 0)
+               // continue;
 
                // if((*trackPointsVec)[index]<20)
                // continue;
 
-               //if (evMult != 3)
-	       //continue;
+               // if (evMult != 3)
+               // continue;
 
                // if ((*POCAXtrVec)[index] > 2000.0)
                // continue;
 
-               //if ((*ziniFitVec)[index] < 10.0 || (*ziniFitVec)[index] > 60.0)
-	       //   continue;
+               // if ((*ziniFitVec)[index] < 10.0 || (*ziniFitVec)[index] > 60.0)
+               //   continue;
 
                /*if ((*EFitVec)[index] > 100)
                      continue;
@@ -553,9 +548,9 @@ void plotFit_full_noIC(std::string fileFolder = "data/")
                     if ((*xiniFitVec)[index] < -1000.0)
                     continue;*/
 
-	       dedxvsBrhoCond->Fill((*dEdxADC)[index], (*brhoVec)[index]);
-	       
-	       Double_t angle = (*AFitVec)[index];
+               dedxvsBrhoCond->Fill((*dEdxADC)[index], (*brhoVec)[index]);
+
+               Double_t angle = (*AFitVec)[index];
                if (dataFile.find("sim") != std::string::npos) {
                   angle = (*AFitVec)[index];
                }
@@ -564,7 +559,6 @@ void plotFit_full_noIC(std::string fileFolder = "data/")
                   hARecvsASca->Fill((*AFitVec)[0], (*AFitVec)[1]);
                }
 
-               
                // Chi2
                fChi2H->Fill((*fChi2Vec)[index]);
                bChi2H->Fill((*bChi2Vec)[index]);
@@ -582,15 +576,13 @@ void plotFit_full_noIC(std::string fileFolder = "data/")
                Double_t ex_energy_exp_xtr =
                   kine_2b(m_O16, m_a, m_b, m_B, Ebeam_buff, angle * TMath::DegToRad(), (*EFitXtrVec)[index]);
 
-	       // List of events
+               // List of events
                outputFileEvents << dataFile << " - Event : " << i << " - PRA Multiplicity : " << praMult
                                 << " - Max angle PRA : " << (*APRAVec)[index]
-                                << " - Max Angle Fit : " << (*AFitVec)[index]
-				<< " - Q value       : " << ex_energy_exp
+                                << " - Max Angle Fit : " << (*AFitVec)[index] << " - Q value       : " << ex_energy_exp
                                 << " - Track points : " << (*trackPointsVec)[index] << "\n";
-	       
-	       
-	       HQval->Fill(ex_energy_exp);
+
+               HQval->Fill(ex_energy_exp);
                HQval_Xtr->Fill(ex_energy_exp_xtr);
                HQval_Xtr_recalc->Fill(ex_energy_exp);
 
@@ -623,8 +615,8 @@ void plotFit_full_noIC(std::string fileFolder = "data/")
                QvsTrackLengthH->Fill(QcorrZ, (*trackLengthVec)[index]);
                //--------------
 
-	       EvsTrackLengthH->Fill((*EFitXtrVec)[index],(*trackLengthVec)[index]);
-	       
+               EvsTrackLengthH->Fill((*EFitXtrVec)[index], (*trackLengthVec)[index]);
+
                // Positions
                hxpos_fit->Fill((*xiniFitVec)[index]);
                hypos_fit->Fill((*yiniFitVec)[index]);
@@ -693,8 +685,6 @@ void plotFit_full_noIC(std::string fileFolder = "data/")
                   double Qdep = kine_2b(m_O16, m_a, m_b, m_B, iEb, angle * TMath::DegToRad(), (*EFitVec)[index]);
                   QvsEb->Fill(Qdep, iEb);
                }
-
-	       
 
                // HQval->Fill(Ex);
             }
@@ -969,7 +959,7 @@ void plotFit_full_noIC(std::string fileFolder = "data/")
    PhiPRAH->Draw();
 
    TCanvas *c8 = new TCanvas();
-   c8->Divide(2,2);
+   c8->Divide(2, 2);
    c8->Draw();
    c8->cd(1);
    QvsEb->Draw("zcol");

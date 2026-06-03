@@ -66,7 +66,7 @@ public:
     */
    void SetIntNumber(std::string label, Long_t value);
 
-   void FillFrame() override{};
+   void FillFrame() override {};
 
    ClassDefOverride(AtSidebarAddon, 1);
 };

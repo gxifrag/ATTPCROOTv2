@@ -3,8 +3,8 @@ void rundigi_sim_CD(
    TString mapParFile =
       "/mnt/simulations/attpcroot/fair_install_2020/yassid/ATTPCROOTv2/scripts/scripts/Lookup20150611.xml",
    TString trigParFile = "/mnt/simulations/attpcroot/fair_install_2020/yassid/ATTPCROOTv2/parameters/AT.trigger.par")
-{  
-   
+{
+
    // -----   Timer   --------------------------------------------------------
    TStopwatch timer;
    timer.Start();
@@ -41,7 +41,7 @@ void rundigi_sim_CD(
    AtClusterizeTask *clusterizer = new AtClusterizeTask();
    clusterizer->SetPersistence(kFALSE);
 
-auto pulseImp = std::make_shared<AtPulseGADGET>(mapping);
+   auto pulseImp = std::make_shared<AtPulseGADGET>(mapping);
    auto *pulse = new AtPulseTask(pulseImp);
    pulseImp->SetAdjecentPads(2);
    pulse->SetPersistence(kTRUE);
@@ -57,8 +57,7 @@ auto pulseImp = std::make_shared<AtPulseGADGET>(mapping);
    AtPRAtask *praTask = new AtPRAtask();
    praTask->SetPersistence(kTRUE);
 
-   auto *wHDF = new AtHDF5WriteTask(
-    ("data/CD_digi_" + std::string(filename.Data()) + ".h5").c_str(), "AtEventH");
+   auto *wHDF = new AtHDF5WriteTask(("data/CD_digi_" + std::string(filename.Data()) + ".h5").c_str(), "AtEventH");
 
    /*ATTriggerTask *trigTask = new ATTriggerTask();
      trigTask  ->  SetAtMap(mapParFile);
@@ -79,7 +78,6 @@ auto pulseImp = std::make_shared<AtPulseGADGET>(mapping);
    std::cout << std::endl << std::endl;
    std::cout << "Macro finished succesfully." << std::endl << std::endl;
    // -----   Finish   -------------------------------------------------------
-   
 
    timer.Stop();
    Double_t rtime = timer.RealTime();

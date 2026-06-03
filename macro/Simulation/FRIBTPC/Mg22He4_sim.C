@@ -71,9 +71,8 @@ void Mg22He4_sim(Int_t nEvents = 1000, TString mcEngine = "TGeant4")
    Double_t Bmass = 21.999573843;
    Double_t NomEnergy = 65;
 
-   AtTPCIonGenerator *ionGen =
-      new AtTPCIonGenerator("Ion", z, a, q, m, px, py, pz, BExcEner, Bmass, NomEnergy);
-      ionGen->SetSpotRadius(0, -100, 9.3,0.5);
+   AtTPCIonGenerator *ionGen = new AtTPCIonGenerator("Ion", z, a, q, m, px, py, pz, BExcEner, Bmass, NomEnergy);
+   ionGen->SetSpotRadius(0, -100, 9.3, 0.5);
    // add the ion generator
 
    primGen->AddGenerator(ionGen);

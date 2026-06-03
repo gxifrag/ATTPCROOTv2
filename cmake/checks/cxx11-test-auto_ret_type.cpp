@@ -1,8 +1,9 @@
-auto foo(int i) -> int {
-	return i - 1;
+auto foo(int i) -> int
+{
+   return i - 1;
 }
 
 int main()
 {
-	return foo(1);
+   return foo(1);
 }

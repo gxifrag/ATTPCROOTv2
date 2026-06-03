@@ -1,31 +1,27 @@
 void test_map()
 {
 
+   TStopwatch timer;
+   timer.Start();
 
+   AtTpcMap *fAtMapPtr = new AtTpcMap();
+   fAtMapPtr->GenerateATTPC();
+   TH2Poly *fPadPlane = fAtMapPtr->GetATTPCPlane();
+   fAtMapPtr->Dump();
 
+   Float_t x = 0;
+   Float_t y = 0;
+   Float_t z = 0;
 
-  TStopwatch timer;
-  timer.Start();
+   gSystem->Load("libATTPCReco.so");
 
-  AtTpcMap* fAtMapPtr = new AtTpcMap();
-  fAtMapPtr->GenerateATTPC();
-  TH2Poly *fPadPlane = fAtMapPtr->GetATTPCPlane();
-  fAtMapPtr->Dump();
+   FairRunAna *run = new FairRunAna(); // Forcing a dummy run
 
-  Float_t x=0;
-  Float_t y=0;
-  Float_t z=0;
-
-  gSystem->Load("libATTPCReco.so");
- 
-  FairRunAna* run = new FairRunAna(); //Forcing a dummy run
- 
-
-    TString workdir = getenv("VMCWORKDIR");
-    TString FileNameHead = "output";
-    TString FilePath = workdir + "/macro/Unpack_HDF5/";
-    TString FileNameTail = ".root";
-    TString FileName     = FilePath + FileNameHead + FileNameTail;
+   TString workdir = getenv("VMCWORKDIR");
+   TString FileNameHead = "output";
+   TString FilePath = workdir + "/macro/Unpack_HDF5/";
+   TString FileNameTail = ".root";
+   TString FileName = FilePath + FileNameHead + FileNameTail;
 
    /* std::cout<<" Opening File : "<<FileName.Data()<<std::endl;
     TFile* file = new TFile(FileName.Data(),"READ");
@@ -36,7 +32,7 @@ void test_map()
 
     TTreeReader Reader1("cbmsim", file);
     TTreeReaderValue<TClonesArray> eventArray(Reader1, "ATEventH");
-    
+
 
     for(Int_t i=0;i<nEvents;i++){
           //while (Reader1.Next()) {
@@ -55,36 +51,31 @@ void test_map()
               ATHit hit = event->GetHit(iHit);
               TVector3 hitPos = hit.GetPosition();
               Int_t bin=  fPadPlane->Fill(hitPos.X(),hitPos.Y(),hit.GetCharge());
-             } 
+             }
 
     }*/
 
-            for(Int_t i=0;i<100000;i++)
-            {
+   for (Int_t i = 0; i < 100000; i++) {
 
-                  x = x + 0.001;
-                  y = y + 0.001;
-                  z = z + 0.001;
-                  Int_t bin=  fPadPlane->Fill(x,y,z);
+      x = x + 0.001;
+      y = y + 0.001;
+      z = z + 0.001;
+      Int_t bin = fPadPlane->Fill(x, y, z);
+   }
 
+   fPadPlane->Draw("COL L0");
+   fPadPlane->SetMinimum(1.0);
+   gStyle->SetOptStat(0);
+   gStyle->SetPalette(103);
+   gPad->Update();
 
-            }
-
-            fPadPlane->Draw("COL L0");
-            fPadPlane -> SetMinimum(1.0);
-            gStyle->SetOptStat(0);
-            gStyle->SetPalette(103);
-            gPad ->Update();
-
-
-            std::cout << std::endl << std::endl;
-            std::cout << "Macro finished succesfully."  << std::endl << std::endl;
-            // -----   Finish   -------------------------------------------------------
-            timer.Stop();
-            Double_t rtime = timer.RealTime();
-            Double_t ctime = timer.CpuTime();
-            cout << endl << endl;
-            cout << "Real time " << rtime << " s, CPU time " << ctime << " s" << endl;
-            cout << endl;
-
+   std::cout << std::endl << std::endl;
+   std::cout << "Macro finished succesfully." << std::endl << std::endl;
+   // -----   Finish   -------------------------------------------------------
+   timer.Stop();
+   Double_t rtime = timer.RealTime();
+   Double_t ctime = timer.CpuTime();
+   cout << endl << endl;
+   cout << "Real time " << rtime << " s, CPU time " << ctime << " s" << endl;
+   cout << endl;
 }

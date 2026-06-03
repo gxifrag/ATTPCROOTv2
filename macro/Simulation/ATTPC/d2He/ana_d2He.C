@@ -450,8 +450,8 @@ void ana_d2He()
             ivt = i;
             anatree->Fill();
          } // for tv size (itv)
-      }    // RANSAC null pointer
-   }       // Event loop
+      } // RANSAC null pointer
+   } // Event loop
 
    /// --------------------- End event loop ---------------------------------------
    outfile->cd();

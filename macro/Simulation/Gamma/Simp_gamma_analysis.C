@@ -1,123 +1,106 @@
-#include <iostream>
-#include <string>
-#include <map>
-#include <vector>
-#include "TString.h"
-#include "TFile.h"
-#include "TTree.h"
-#include "TClonesArray.h"
-#include "TH1D.h"
 #include "TCanvas.h"
-#include "TRandom3.h"
+#include "TClonesArray.h"
+#include "TFile.h"
+#include "TH1D.h"
 #include "TMath.h"
+#include "TRandom3.h"
+#include "TString.h"
+#include "TTree.h"
 
+#include <iostream>
+#include <map>
+#include <string>
+#include <vector>
 
-//THIS IS A SIMPLE VERSION OF THE SPECTRUM.C CODE. This outputs the photopeak efficency only.
-void Simp_gamma_analysis(Double_t energy=11,Int_t num_ev=10000)
+// THIS IS A SIMPLE VERSION OF THE SPECTRUM.C CODE. This outputs the photopeak efficency only.
+void Simp_gamma_analysis(Double_t energy = 11, Int_t num_ev = 10000)
 
 {
-   
-    std::string fileName = "test";
-    
-    
 
-    TString mcFileNameHead = "./data/PxCT_";
-    TString mcFileNameTail = ".root";
-    TString mcFileName = mcFileNameHead + TString(fileName.c_str()) + mcFileNameTail;
-    TString outFileNameHead = "./data/PxCTana";
+   std::string fileName = "test";
 
-    TString outFileNameTail = ".root";
-    TString outFileName = outFileNameHead + outFileNameTail;
+   TString mcFileNameHead = "./data/PxCT_";
+   TString mcFileNameTail = ".root";
+   TString mcFileName = mcFileNameHead + TString(fileName.c_str()) + mcFileNameTail;
+   TString outFileNameHead = "./data/PxCTana";
 
-    AtMCPoint* point = new AtMCPoint();
-    TClonesArray* pointArray = 0;
+   TString outFileNameTail = ".root";
+   TString outFileName = outFileNameHead + outFileNameTail;
 
-    TFile* file = new TFile(mcFileName.Data(), "READ");
-    TTree* tree = (TTree*)file->Get("cbmsim");
+   AtMCPoint *point = new AtMCPoint();
+   TClonesArray *pointArray = 0;
 
-    tree->SetBranchAddress("AtMCPoint", &pointArray);
-    Int_t nEvents = tree->GetEntriesFast();
+   TFile *file = new TFile(mcFileName.Data(), "READ");
+   TTree *tree = (TTree *)file->Get("cbmsim");
 
-    if (nEvents > num_ev)
-        nEvents = num_ev;
+   tree->SetBranchAddress("AtMCPoint", &pointArray);
+   Int_t nEvents = tree->GetEntriesFast();
 
-    // Histograms
-    Int_t Bins = 11000;
-    Int_t MeV = 11;
-    TH1D* Energy_loss = new TH1D("Energy_loss", "Photopeak Efficency: ", Bins, 0, MeV);
+   if (nEvents > num_ev)
+      nEvents = num_ev;
 
-    Double_t Count = 0.0;
-    Double_t PhotopeakCount = 0.0;
+   // Histograms
+   Int_t Bins = 11000;
+   Int_t MeV = 11;
+   TH1D *Energy_loss = new TH1D("Energy_loss", "Photopeak Efficency: ", Bins, 0, MeV);
 
-    TRandom3* gRandom = new TRandom3();
+   Double_t Count = 0.0;
+   Double_t PhotopeakCount = 0.0;
 
-    std::map<std::string, int> crystalHits; // Map to store hit count for each VolName
+   TRandom3 *gRandom = new TRandom3();
 
-    for (Int_t iEvent = 0; iEvent < nEvents; iEvent++)
-    {
-        tree->GetEvent(iEvent);
-        Int_t n = pointArray->GetEntries();
-        Double_t energyLoss = 0.0;
+   std::map<std::string, int> crystalHits; // Map to store hit count for each VolName
 
-        Double_t energyLosspeek = 0.0;
+   for (Int_t iEvent = 0; iEvent < nEvents; iEvent++) {
+      tree->GetEvent(iEvent);
+      Int_t n = pointArray->GetEntries();
+      Double_t energyLoss = 0.0;
 
+      Double_t energyLosspeek = 0.0;
 
-        for (Int_t i = 0; i < n; i++) {
+      for (Int_t i = 0; i < n; i++) {
 
-            point = (AtMCPoint*)pointArray->At(i);
-            auto VolName = point->GetVolName();
+         point = (AtMCPoint *)pointArray->At(i);
+         auto VolName = point->GetVolName();
 
-            auto trackID = point->GetTrackID();
+         auto trackID = point->GetTrackID();
 
-            if (VolName.Contains("Crystal_") && !VolName.Contains("Crystal_03")) {
+         if (VolName.Contains("Crystal_") && !VolName.Contains("Crystal_03")) {
 
+            // Gaussian smearing
+            // Float_t fResolutionGe = .30;
+            Double_t inputEnergy = point->GetEnergyLoss();
+            // Double_t randomIs = gRandom->Gaus(0, inputEnergy * fResolutionGe * 1000 / (235 * sqrt(inputEnergy *
+            // 1000))); energyLoss += (inputEnergy + randomIs / 1000) * 1000; // MeV
+            energyLoss += inputEnergy * 1000;
+            Count++;
 
-                // Gaussian smearing
-                //Float_t fResolutionGe = .30;
-                Double_t inputEnergy = point->GetEnergyLoss();
-                //Double_t randomIs = gRandom->Gaus(0, inputEnergy * fResolutionGe * 1000 / (235 * sqrt(inputEnergy * 1000)));
-                //energyLoss += (inputEnergy + randomIs / 1000) * 1000; // MeV
-                energyLoss += inputEnergy * 1000;
-                Count++;
-
-                 crystalHits[VolName.Data()]++;
-            }
-            
-
-            
-
-                
+            crystalHits[VolName.Data()]++;
          }
-          if (energyLoss != 0.0) {
-          
-            Energy_loss->Fill(energyLoss);
-        }
-        }
-         
+      }
+      if (energyLoss != 0.0) {
 
-        
-    
+         Energy_loss->Fill(energyLoss);
+      }
+   }
 
-    // Calculate photopeak efficency
-    // Define the range
-    Double_t lowerBound = energy - 0.01;
-    Double_t upperBound = energy + 0.01;
+   // Calculate photopeak efficency
+   // Define the range
+   Double_t lowerBound = energy - 0.01;
+   Double_t upperBound = energy + 0.01;
 
+   for (Int_t bin = Energy_loss->GetXaxis()->FindBin(lowerBound); bin <= Energy_loss->GetXaxis()->FindBin(upperBound);
+        bin++) {
+      PhotopeakCount += Energy_loss->GetBinContent(bin);
+   }
+   Double_t photopeakEfficency = (PhotopeakCount / num_ev) * 100.0;
+   Double_t Err = (TMath::Sqrt(PhotopeakCount) / PhotopeakCount) * photopeakEfficency;
 
-    for (Int_t bin = Energy_loss->GetXaxis()->FindBin(lowerBound); bin <= Energy_loss->GetXaxis()->FindBin(upperBound); bin++) {
-    PhotopeakCount += Energy_loss->GetBinContent(bin);
-}
-    Double_t photopeakEfficency = (PhotopeakCount / num_ev) * 100.0;
-    Double_t Err = (TMath::Sqrt(PhotopeakCount)/PhotopeakCount) *photopeakEfficency;
+   for (const auto &crystal : crystalHits) {
+      std::cout << "VolName: " << crystal.first << " had " << crystal.second << " hits." << std::endl;
+   }
 
-    for (const auto& crystal : crystalHits) {
-        std::cout << "VolName: " << crystal.first << " had " << crystal.second << " hits." << std::endl;
-    }
-
-
-    std::cout << "Total number of events : " << num_ev << std::endl;
-    std::cout << "Number of events in photopeak : " << PhotopeakCount << std::endl;
-    std::cout << "Photopeak Efficency : " << photopeakEfficency << "%" << std::endl;
-    std::cout<<"Error: " << Err << std::endl;
-
-
+   std::cout << "Total number of events : " << num_ev << std::endl;
+   std::cout << "Number of events in photopeak : " << PhotopeakCount << std::endl;
+   std::cout << "Photopeak Efficency : " << photopeakEfficency << "%" << std::endl;
+   std::cout << "Error: " << Err << std::endl;

@@ -235,7 +235,7 @@ void AtPSASimple2::Analyze(AtRawEvent *rawEvent, AtEvent *event)
                   mesh[iTb] += floatADC[iTb];
 
             } // Valid Threshold
-         }    // Peak Loop
+         } // Peak Loop
 
          //    #pragma omp ordered
          // if(fValidThreshold && fValidBuff)
@@ -245,7 +245,7 @@ void AtPSASimple2::Analyze(AtRawEvent *rawEvent, AtEvent *event)
          PadMultiplicity.insert(std::pair<Int_t, Int_t>(pad->GetPadNum(), 1));
 
       } // if Valid Num Peaks
-   }    // Pad Loop
+   } // Pad Loop
 
    // RhoVariance = Rho2 - (pow(RhoMean, 2) / (event->GetNumHits()));
    RhoVariance = Rho2 - (event->GetNumHits() * pow((RhoMean / event->GetNumHits()), 2));

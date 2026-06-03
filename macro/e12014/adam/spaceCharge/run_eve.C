@@ -7,8 +7,7 @@
 #include "FairRunAna.h"
 */
 
-
-//Event viewer to look at space-charge corrected Hits
+// Event viewer to look at space-charge corrected Hits
 
 void run_eve(int runNum = 206, TString OutputDataFile = "output.reco_display.root")
 {

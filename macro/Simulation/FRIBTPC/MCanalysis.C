@@ -67,7 +67,7 @@ void MCanalysis()
             // - Angle : " << angle << " - Atomic Number : " << z << std::endl;
 
          } // Volume selection
-      }    // Point loop
+      } // Point loop
 
       // Filling histograms
       std::cout << " ---------- Beam energy loss " << beamEloss << " at Z vertex : " << beamVertex << "\n";

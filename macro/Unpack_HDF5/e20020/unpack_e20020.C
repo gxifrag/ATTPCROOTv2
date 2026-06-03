@@ -66,7 +66,7 @@ void unpack_e20020(TString fileName = "run_0161")
    psaTask->SetPersistence(kTRUE);
 
    AtPRAtask *praTask = new AtPRAtask();
-   praTask->SetPersistence(kTRUE);   
+   praTask->SetPersistence(kTRUE);
    praTask->SetMaxNumHits(3000);
    praTask->SetMinNumHits(200);
 
@@ -82,7 +82,7 @@ void unpack_e20020(TString fileName = "run_0161")
    auto numEvents = unpackTask->GetNumEvents();
    std::cout << "Unpacking " << numEvents << " events. " << std::endl;
 
-   run->Run(0,numEvents);
+   run->Run(0, numEvents);
 
    std::cout << std::endl << std::endl;
    std::cout << "Done unpacking events" << std::endl << std::endl;

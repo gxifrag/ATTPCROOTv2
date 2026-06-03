@@ -1,4 +1,4 @@
-//Code to take MC tracks and digitize
+// Code to take MC tracks and digitize
 
 void rundigi_sim()
 {

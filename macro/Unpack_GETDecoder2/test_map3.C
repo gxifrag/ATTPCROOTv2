@@ -1,41 +1,32 @@
 void test_map3()
 {
 
+   TStopwatch timer;
+   timer.Start();
 
+   TString scriptfile = "e12014_pad_map_size.xml";
+   TString dir = getenv("VMCWORKDIR");
+   TString scriptdir = dir + "/scripts/" + scriptfile;
 
+   AtTpcMap *fAtMapPtr = new AtTpcMap();
+   fAtMapPtr->GenerateATTPC();
+   TH2Poly *fPadPlane = fAtMapPtr->GetATTPCPlane();
+   fAtMapPtr->Dump();
+   Bool_t MapIn = fAtMapPtr->ParseXMLMap(scriptdir);
 
-  TStopwatch timer;
-  timer.Start();
+   Float_t x = 0;
+   Float_t y = 0;
+   Float_t z = 0;
 
-  TString scriptfile = "e12014_pad_map_size.xml";
-  TString dir = getenv("VMCWORKDIR");
-  TString scriptdir = dir + "/scripts/"+ scriptfile;
+   gSystem->Load("libATTPCReco.so");
 
+   FairRunAna *run = new FairRunAna(); // Forcing a dummy run
 
-  AtTpcMap* fAtMapPtr = new AtTpcMap();
-  fAtMapPtr->GenerateATTPC();
-  TH2Poly *fPadPlane = fAtMapPtr->GetATTPCPlane();
-  fAtMapPtr->Dump();
-  Bool_t MapIn = fAtMapPtr->ParseXMLMap(scriptdir);
-
-
-
-
-
-  Float_t x=0;
-  Float_t y=0;
-  Float_t z=0;
-
-  gSystem->Load("libATTPCReco.so");
-
-  FairRunAna* run = new FairRunAna(); //Forcing a dummy run
-
-
-    TString workdir = getenv("VMCWORKDIR");
-    TString FileNameHead = "output";
-    TString FilePath = workdir + "/macro/Unpack_HDF5/";
-    TString FileNameTail = ".root";
-    TString FileName     = FilePath + FileNameHead + FileNameTail;
+   TString workdir = getenv("VMCWORKDIR");
+   TString FileNameHead = "output";
+   TString FilePath = workdir + "/macro/Unpack_HDF5/";
+   TString FileNameTail = ".root";
+   TString FileName = FilePath + FileNameHead + FileNameTail;
 
    /* std::cout<<" Opening File : "<<FileName.Data()<<std::endl;
     TFile* file = new TFile(FileName.Data(),"READ");
@@ -68,37 +59,36 @@ void test_map3()
              }
 
     }*/
-            std::vector<Float_t> PadCenterCoord;
+   std::vector<Float_t> PadCenterCoord;
 
-            for(Int_t i=0;i<10240;i++)
-            {
-                PadCenterCoord = fAtMapPtr->CalcPadCenter(i);
-                  x = PadCenterCoord[0];
-                  y = PadCenterCoord[1];
-                  int sizeval = fAtMapPtr->GetPadSize(i);
-                  if(sizeval==0) z = 1;
-                  else if(sizeval==1) z = 10;
-                  else cout<<i<<"  "<<sizeval<<endl;
-                  Int_t bin=  fPadPlane->Fill(x,y,z);
-                  PadCenterCoord.clear();
+   for (Int_t i = 0; i < 10240; i++) {
+      PadCenterCoord = fAtMapPtr->CalcPadCenter(i);
+      x = PadCenterCoord[0];
+      y = PadCenterCoord[1];
+      int sizeval = fAtMapPtr->GetPadSize(i);
+      if (sizeval == 0)
+         z = 1;
+      else if (sizeval == 1)
+         z = 10;
+      else
+         cout << i << "  " << sizeval << endl;
+      Int_t bin = fPadPlane->Fill(x, y, z);
+      PadCenterCoord.clear();
+   }
 
-            }
+   fPadPlane->Draw("COL L0");
+   fPadPlane->SetMinimum(1.0);
+   gStyle->SetOptStat(0);
+   // gStyle->SetPalette(103);
+   // gPad ->Update();
 
-            fPadPlane->Draw("COL L0");
-            fPadPlane -> SetMinimum(1.0);
-            gStyle->SetOptStat(0);
-            //gStyle->SetPalette(103);
-            //gPad ->Update();
-
-
-            std::cout << std::endl << std::endl;
-            std::cout << "Macro finished succesfully."  << std::endl << std::endl;
-            // -----   Finish   -------------------------------------------------------
-            timer.Stop();
-            Double_t rtime = timer.RealTime();
-            Double_t ctime = timer.CpuTime();
-            cout << endl << endl;
-            cout << "Real time " << rtime << " s, CPU time " << ctime << " s" << endl;
-            cout << endl;
-
+   std::cout << std::endl << std::endl;
+   std::cout << "Macro finished succesfully." << std::endl << std::endl;
+   // -----   Finish   -------------------------------------------------------
+   timer.Stop();
+   Double_t rtime = timer.RealTime();
+   Double_t ctime = timer.CpuTime();
+   cout << endl << endl;
+   cout << "Real time " << rtime << " s, CPU time " << ctime << " s" << endl;
+   cout << endl;
 }

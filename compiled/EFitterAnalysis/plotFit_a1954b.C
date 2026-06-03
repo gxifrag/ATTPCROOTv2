@@ -689,7 +689,7 @@ void plotFit_a1954b(std::string fileFolder = "data_143_215/")
                auto [exPRA, thetacmPRA] = kine_2b(m_Be12, m_p, m_b, m_B, Ebeam_buff, APRA * TMath::DegToRad(), EPRA);
 
                // Excitation energy correction
-               Double_t p0 = 0.0;   //-3.048;
+               Double_t p0 = 0.0;    //-3.048;
                Double_t p1 = 0.0035; // 0.0513295;
                Double_t mFactor = 1.00;
                Double_t offSet = 0.0;

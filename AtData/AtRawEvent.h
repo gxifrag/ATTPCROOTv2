@@ -49,7 +49,7 @@ private:
    friend class AtFilterFFT;
 
 public:
-   AtRawEvent() : AtBaseEvent("AtRawEvent"){};
+   AtRawEvent() : AtBaseEvent("AtRawEvent") {};
    AtRawEvent(AtRawEvent &&obj) = default;
    AtRawEvent(const AtRawEvent &object);
    AtRawEvent(const AtBaseEvent &object) : AtBaseEvent(object) { SetName("AtRawEvent"); }

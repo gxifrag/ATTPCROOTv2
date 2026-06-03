@@ -1,4 +1,4 @@
-void gamma_sim(Double_t energy,Int_t nEvents, TString mcEngine = "TGeant4" )
+void gamma_sim(Double_t energy, Int_t nEvents, TString mcEngine = "TGeant4")
 {
 
    TString dir = getenv("VMCWORKDIR");
@@ -47,21 +47,21 @@ void gamma_sim(Double_t energy,Int_t nEvents, TString mcEngine = "TGeant4" )
    // -----   Create PrimaryGenerator   --------------------------------------
    FairPrimaryGenerator *primGen = new FairPrimaryGenerator();
 
-   Double_t pdgId = 22;       // 22 for gamma emission, 2212 for proton emission
-     Double_t theta1 = 0;      // polar angle distribution: lower edge (50)
-     Double_t theta2 = 180.;    // polar angle distribution: upper edge (51)
-     // GeV/c
-     
-     Int_t multiplicity = 1;
-     auto boxGen = new FairBoxGenerator(22, 1);
+   Double_t pdgId = 22;    // 22 for gamma emission, 2212 for proton emission
+   Double_t theta1 = 0;    // polar angle distribution: lower edge (50)
+   Double_t theta2 = 180.; // polar angle distribution: upper edge (51)
+   // GeV/c
+
+   Int_t multiplicity = 1;
+   auto boxGen = new FairBoxGenerator(22, 1);
    boxGen->SetXYZ(0, 0, 20);
-    boxGen->SetThetaRange(theta1, theta2);
-    boxGen->SetPhiRange(0, 360);
-    //boxGen->SetPRange();
-   boxGen->SetEkinRange(energy/1000, energy/1000);
+   boxGen->SetThetaRange(theta1, theta2);
+   boxGen->SetPhiRange(0, 360);
+   // boxGen->SetPRange();
+   boxGen->SetEkinRange(energy / 1000, energy / 1000);
 
    primGen->AddGenerator(boxGen);
-  run->SetGenerator(primGen);
+   run->SetGenerator(primGen);
 
    // ------------------------------------------------------------------------
 

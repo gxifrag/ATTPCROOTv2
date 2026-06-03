@@ -115,8 +115,8 @@ void filteringTest()
                } // end if record traces
 
             } // end loop over timebuckets in ch0
-         }    // end if ch0
-      }       // End loop over pads to get difference
+         } // end if ch0
+      } // End loop over pads to get difference
 
       // Write the traces to disk and delete the histograms
       if (eventNumber < nEventToPrint) {

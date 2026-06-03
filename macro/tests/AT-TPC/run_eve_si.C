@@ -42,15 +42,15 @@ void run_eve_si(int runNum = 29, TString OutputDataFile = "./data/output.reco_di
    eveMan->AddTab(std::move(tabMain));
 
    auto tab1903 = std::make_unique<AtTabPad>(2, 4, "1903");
-   tab1903->DrawRawGenTrace(1,0,0);
-   tab1903->DrawRawGenTrace(2,0,1);
-   tab1903->DrawRawGenTrace(3,0,2);
-   tab1903->DrawRawGenTrace(4,0,3);
+   tab1903->DrawRawGenTrace(1, 0, 0);
+   tab1903->DrawRawGenTrace(2, 0, 1);
+   tab1903->DrawRawGenTrace(3, 0, 2);
+   tab1903->DrawRawGenTrace(4, 0, 3);
 
-   tab1903->DrawRawGenTrace(5,1,0);
-   tab1903->DrawRawGenTrace(6,1,1);
-   tab1903->DrawRawGenTrace(7,1,2);
-   tab1903->DrawRawGenTrace(8,1,3);
+   tab1903->DrawRawGenTrace(5, 1, 0);
+   tab1903->DrawRawGenTrace(6, 1, 1);
+   tab1903->DrawRawGenTrace(7, 1, 2);
+   tab1903->DrawRawGenTrace(8, 1, 3);
    eveMan->AddTab(std::move(tab1903));
 
    eveMan->Init();

@@ -1,5 +1,5 @@
 
-//#include "AtPattern.h"
+// #include "AtPattern.h"
 
 static Double_t proton_mass = 1.0078250322 * 931.494 - 0.511;
 static Double_t proj_mass = 14.008596359 * 931.494 - 0.511 * 8.;
@@ -568,8 +568,8 @@ void ana_d2He(Int_t runNumber)
             ivt = i;
             anatree->Fill();
          } // for tv size (ive)
-      }    // RANSAC null pointer
-   }       // Event loop
+      } // RANSAC null pointer
+   } // Event loop
 
    /// --------------------- End event loop ---------------------------------------
    outfile->cd();

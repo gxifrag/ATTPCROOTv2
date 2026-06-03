@@ -85,7 +85,7 @@ public:
     **/
    void SetNonUniformity(Double_t nonU);
 
-   inline void ResetParameters(){};
+   inline void ResetParameters() {};
 
    /** Private method AddCrystalCal
     **

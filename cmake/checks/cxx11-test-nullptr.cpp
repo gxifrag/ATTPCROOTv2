@@ -1,6 +1,6 @@
 int main(void)
 {
-	void *v = nullptr;
+   void *v = nullptr;
 
-	return v ? 1 : 0;
+   return v ? 1 : 0;
 }

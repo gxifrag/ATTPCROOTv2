@@ -8,7 +8,6 @@ bool reduceFunc(AtRawEvent *evt)
    return (evt->GetNumPads() > 0) && evt->IsGood();
 }
 
-
 void unpack_e20009(TString fileName = "run_0260")
 {
 
@@ -17,8 +16,7 @@ void unpack_e20009(TString fileName = "run_0260")
 
    TStopwatch timer;
    timer.Start();
-  
-  
+
    TString parameterFile = "ATTPC.e20009.par";
    TString mappath = "";
    TString filepath = "/mnt/daqtesting/e20009_attpc_transfer/h5/";
@@ -31,11 +29,11 @@ void unpack_e20009(TString fileName = "run_0260")
    TString dataDir = dir + "/macro/data/";
    TString geomDir = dir + "/geometry/";
    gSystem->Setenv("GEOMPATH", geomDir.Data());
-   TString outputFile =  fileName + ".root"; 
+   TString outputFile = fileName + ".root";
    TString loggerFile = dataDir + "ATTPCLog.log";
    TString digiParFile = dir + "/parameters/" + parameterFile;
    TString geoManFile = dir + "/geometry/ATTPC_He1bar_v2.root";
-   
+
    FairRunAna *run = new FairRunAna();
    run->SetOutputFile(outputFile);
    run->SetGeomFile(geoManFile);
@@ -55,15 +53,15 @@ void unpack_e20009(TString fileName = "run_0260")
    fAtMapPtr->ParseXMLMap(mapDir.Data());
    fAtMapPtr->GeneratePadPlane();
 
-   fAtMapPtr->AddAuxPad({10,0,0,34},"trigger_live");
-   fAtMapPtr->AddAuxPad({10,0,0,0},"mesh");
-   fAtMapPtr->AddAuxPad({10,0,1,34},"mesh_MCA");
-   fAtMapPtr->AddAuxPad({10,0,1,0},"IC");
-   fAtMapPtr->AddAuxPad({10,0,2,34},"IC_sca");
-   fAtMapPtr->AddAuxPad({10,0,2,0},"trigger_free");
-   fAtMapPtr->AddAuxPad({10,0,3,34},"DB_beam");
-   fAtMapPtr->AddAuxPad({10,0,3,0},"unassigned");
-   
+   fAtMapPtr->AddAuxPad({10, 0, 0, 34}, "trigger_live");
+   fAtMapPtr->AddAuxPad({10, 0, 0, 0}, "mesh");
+   fAtMapPtr->AddAuxPad({10, 0, 1, 34}, "mesh_MCA");
+   fAtMapPtr->AddAuxPad({10, 0, 1, 0}, "IC");
+   fAtMapPtr->AddAuxPad({10, 0, 2, 34}, "IC_sca");
+   fAtMapPtr->AddAuxPad({10, 0, 2, 0}, "trigger_free");
+   fAtMapPtr->AddAuxPad({10, 0, 3, 34}, "DB_beam");
+   fAtMapPtr->AddAuxPad({10, 0, 3, 0}, "unassigned");
+
    auto unpacker = std::make_unique<AtHDFUnpacker>(fAtMapPtr);
    unpacker->SetInputFileName(inputFile.Data());
    unpacker->SetNumberTimestamps(2);
@@ -71,7 +69,7 @@ void unpack_e20009(TString fileName = "run_0260")
 
    auto unpackTask = new AtUnpackTask(std::move(unpacker));
    unpackTask->SetPersistence(false);
-   
+
    AtFilterSubtraction *filter = new AtFilterSubtraction(fAtMapPtr);
    filter->SetThreshold(50);
    filter->SetIsGood(false);
@@ -101,7 +99,7 @@ void unpack_e20009(TString fileName = "run_0260")
    run->AddTask(filterTask);
    run->AddTask(psaTask);
    run->AddTask(praTask);
-   
+
    std::cout << "***** Starting Init ******" << std::endl;
    run->Init();
    std::cout << "***** Ending Init ******" << std::endl;
@@ -110,7 +108,7 @@ void unpack_e20009(TString fileName = "run_0260")
    auto numEvents = unpackTask->GetNumEvents();
    std::cout << "Unpacking " << numEvents << " events. " << std::endl;
 
-   run->Run(0,numEvents);
+   run->Run(0, numEvents);
 
    std::cout << std::endl << std::endl;
    std::cout << "Done unpacking events" << std::endl << std::endl;
