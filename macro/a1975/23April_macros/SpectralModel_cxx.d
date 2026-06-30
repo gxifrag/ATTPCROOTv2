@@ -1,0 +1,57 @@
+
+# DO NOT DELETE
+
+./SpectralModel_cxx.so: SpectralModel.h
+./SpectralModel_cxx.so: /home/georgina/fair_install/FairSoftInstall/include/root/TF1.h
+./SpectralModel_cxx.so: /home/georgina/fair_install/FairSoftInstall/include/root/RConfigure.h
+./SpectralModel_cxx.so: /home/georgina/fair_install/FairSoftInstall/include/root/TFormula.h
+./SpectralModel_cxx.so: /home/georgina/fair_install/FairSoftInstall/include/root/TNamed.h
+./SpectralModel_cxx.so: /home/georgina/fair_install/FairSoftInstall/include/root/TObject.h
+./SpectralModel_cxx.so: /home/georgina/fair_install/FairSoftInstall/include/root/Rtypes.h
+./SpectralModel_cxx.so: /home/georgina/fair_install/FairSoftInstall/include/root/RtypesCore.h
+./SpectralModel_cxx.so: /home/georgina/fair_install/FairSoftInstall/include/root/ROOT/RConfig.hxx
+./SpectralModel_cxx.so: /home/georgina/fair_install/FairSoftInstall/include/root/RVersion.h
+./SpectralModel_cxx.so: /usr/include/features.h
+./SpectralModel_cxx.so: /home/georgina/fair_install/FairSoftInstall/include/root/DllImport.h
+./SpectralModel_cxx.so: /home/georgina/fair_install/FairSoftInstall/include/root/strtok.h
+./SpectralModel_cxx.so: /home/georgina/fair_install/FairSoftInstall/include/root/strlcpy.h
+./SpectralModel_cxx.so: /usr/include/unistd.h
+./SpectralModel_cxx.so: /home/georgina/fair_install/FairSoftInstall/include/root/snprintf.h
+./SpectralModel_cxx.so: /usr/include/stdio.h
+./SpectralModel_cxx.so: /home/georgina/fair_install/FairSoftInstall/include/root/TGenericClassInfo.h
+./SpectralModel_cxx.so: /home/georgina/fair_install/FairSoftInstall/include/root/TSchemaHelper.h
+./SpectralModel_cxx.so: /home/georgina/fair_install/FairSoftInstall/include/root/TIsAProxy.h
+./SpectralModel_cxx.so: /home/georgina/fair_install/FairSoftInstall/include/root/TVirtualIsAProxy.h
+./SpectralModel_cxx.so: /home/georgina/fair_install/FairSoftInstall/include/root/TStorage.h
+./SpectralModel_cxx.so: /home/georgina/fair_install/FairSoftInstall/include/root/TVersionCheck.h
+./SpectralModel_cxx.so: /home/georgina/fair_install/FairSoftInstall/include/root/RVersion.h
+./SpectralModel_cxx.so: /home/georgina/fair_install/FairSoftInstall/include/root/TString.h
+./SpectralModel_cxx.so: /home/georgina/fair_install/FairSoftInstall/include/root/TMathBase.h
+./SpectralModel_cxx.so: /home/georgina/fair_install/FairSoftInstall/include/root/ROOT/RStringView.hxx
+./SpectralModel_cxx.so: /home/georgina/fair_install/FairSoftInstall/include/root/ROOT/TypeTraits.hxx
+./SpectralModel_cxx.so: /home/georgina/fair_install/FairSoftInstall/include/root/TBits.h
+./SpectralModel_cxx.so: /usr/include/string.h
+./SpectralModel_cxx.so: /home/georgina/fair_install/FairSoftInstall/include/root/TInterpreter.h
+./SpectralModel_cxx.so: /home/georgina/fair_install/FairSoftInstall/include/root/TDataType.h
+./SpectralModel_cxx.so: /home/georgina/fair_install/FairSoftInstall/include/root/TDictionary.h
+./SpectralModel_cxx.so: /home/georgina/fair_install/FairSoftInstall/include/root/ESTLType.h
+./SpectralModel_cxx.so: /home/georgina/fair_install/FairSoftInstall/include/root/TInterpreterValue.h
+./SpectralModel_cxx.so: /home/georgina/fair_install/FairSoftInstall/include/root/TVirtualRWMutex.h
+./SpectralModel_cxx.so: /home/georgina/fair_install/FairSoftInstall/include/root/TVirtualMutex.h
+./SpectralModel_cxx.so: /home/georgina/fair_install/FairSoftInstall/include/root/Math/Types.h
+./SpectralModel_cxx.so: /home/georgina/fair_install/FairSoftInstall/include/root/TMethodCall.h
+./SpectralModel_cxx.so: /home/georgina/fair_install/FairSoftInstall/include/root/TAttLine.h
+./SpectralModel_cxx.so: /home/georgina/fair_install/FairSoftInstall/include/root/TAttFill.h
+./SpectralModel_cxx.so: /home/georgina/fair_install/FairSoftInstall/include/root/TAttMarker.h
+./SpectralModel_cxx.so: /home/georgina/fair_install/FairSoftInstall/include/root/TF1AbsComposition.h
+./SpectralModel_cxx.so: /home/georgina/fair_install/FairSoftInstall/include/root/TMath.h
+./SpectralModel_cxx.so: /home/georgina/fair_install/FairSoftInstall/include/root/TError.h
+./SpectralModel_cxx.so: /usr/include/math.h
+./SpectralModel_cxx.so: /home/georgina/fair_install/FairSoftInstall/include/root/Math/ParamFunctor.h
+./SpectralModel_cxx.so: /home/georgina/fair_install/FairSoftInstall/include/root/TF1Convolution.h
+./SpectralModel_cxx.so: /home/georgina/fair_install/FairSoftInstall/include/root/TGraph.h
+./SpectralModel_cxx.so: /home/georgina/fair_install/FairSoftInstall/include/root/TVectorFfwd.h
+./SpectralModel_cxx.so: /home/georgina/fair_install/FairSoftInstall/include/root/TVectorDfwd.h
+./SpectralModel_cxx.so: /home/georgina/fair_install/FairSoftInstall/include/root/TFitResultPtr.h
+./SpectralModel_cxx.so: /home/georgina/fair_install/FairSoftInstall/include/root/RVersion.h /home/georgina/fair_install/FairSoftInstall/include/root/RConfig.h /home/georgina/fair_install/FairSoftInstall/include/root/TClass.h /home/georgina/fair_install/FairSoftInstall/include/root/TDictAttributeMap.h /home/georgina/fair_install/FairSoftInstall/include/root/TInterpreter.h /home/georgina/fair_install/FairSoftInstall/include/root/TROOT.h /home/georgina/fair_install/FairSoftInstall/include/root/TBuffer.h /home/georgina/fair_install/FairSoftInstall/include/root/TMemberInspector.h /home/georgina/fair_install/FairSoftInstall/include/root/TError.h /home/georgina/fair_install/FairSoftInstall/include/root/RtypesImp.h /home/georgina/fair_install/FairSoftInstall/include/root/TIsAProxy.h /home/georgina/fair_install/FairSoftInstall/include/root/TFileMergeInfo.h /home/georgina/fair_install/FairSoftInstall/include/root/TCollectionProxyInfo.h /home/georgina/fair_install/FairSoftInstall/bin/rootcling
+SpectralModel_cxx__ROOTBUILDVERSION= 6.26/10

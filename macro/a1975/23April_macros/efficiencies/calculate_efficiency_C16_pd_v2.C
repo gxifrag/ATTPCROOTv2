@@ -40,7 +40,7 @@ kine_2b(Double_t m1, Double_t m2, Double_t m3, Double_t m4, Double_t K_proj, Dou
 }
 
 //-------------------------------main function---------------------------------------
-void calculate_efficiency_C16_pd_clean()
+void calculate_efficiency_C16_pd_v2()
 {
    bool guardar_en_pdf = false;
    gROOT->ProcessLine(".X /home/georgina/fair_install/ATTPCROOTv2/macro/a1975/myStyle.C");
@@ -48,22 +48,21 @@ void calculate_efficiency_C16_pd_clean()
    gStyle->SetTitleX(0.5);
    gROOT->SetBatch(guardar_en_pdf ? kTRUE : kFALSE);
 
-   // --- Histogramas que sí se usan ---
-   auto *hexCorr2 = new TH1F("hexCorr2", "C16(p,d)", NumberBins, Ebin_min, Ebin_max);
-   // Usa el mismo binning para ambos: 180 bins, [0, 180]
-   auto *hDat_lab_corr = new TH1F("hDat_lab_corr", "Data #theta_{CM}", 180, 0, 180);
-   auto *hSim_lab_corr = new TH1F("hSim_lab_corr", "Sim #theta_{CM}", 180, 0, 180);
-   auto *h_simEx = new TH1F("h_simEx", "simEx", NumberBins, Ebin_min, Ebin_max);
-   auto *ExCorrvsZpos = new TH2F("ExCorrvsZpos", "ExCorrvsZpos", 130, -3.0, 10.0, 110, -5, 105);
+   // --- Binning común para θ_CM [grados] ---
+   // FIX: ambos histogramas usan θ_CM en grados, mismo rango y bins
+   const int nBinsCM = 80;
+   const double tCM_min = 10.;
+   const double tCM_max = 90.;
 
-   auto *h_Eff_lab_corr = new TH1F("h_Eff_lab_corr", "Efficiency vs #theta_{CM}", 180, 0, 180);
+   // Histogramas de θ_CM: reconstruidos (numerador) y generados (denominador)
+   // FIX: nombres claros para evitar confusión lab/CM
+   auto *hReco_tCM = new TH1F("hReco_tCM", "Reco #theta_{CM};#theta_{CM} (#circ);Counts", nBinsCM, tCM_min, tCM_max);
+   auto *hGen_tCM = new TH1F("hGen_tCM", "Gen #theta_{CM};#theta_{CM} (#circ);Counts", nBinsCM, tCM_min, tCM_max);
 
-   // --- Histogramas 2D para eficiencia en (Ex, theta_lab) ---
-   int nBinsEx = NumberBins; // mismo número de bins que en hexCorr2
-
-   auto *hDat_2D = new TH2F("hDat_2D", "Data; Ex (MeV); #theta_{lab} (#circ)", nBinsEx, Ebin_min, Ebin_max, 45, 0,
-                            45); // ajusta según tu rango real
-   auto *hSim_2D = new TH2F("hSim_2D", "Sim; Ex (MeV); #theta_{lab} (#circ)", nBinsEx, Ebin_min, Ebin_max, 45, 0, 45);
+   // Histogramas auxiliares de diagnóstico
+   auto *hexCorr2 = new TH1F("hexCorr2", "C16(p,d) Data Ex;Ex (MeV);Counts", NumberBins, Ebin_min, Ebin_max);
+   auto *h_simEx = new TH1F("h_simEx", "Sim Ex;Ex (MeV);Counts", NumberBins, Ebin_min, Ebin_max);
+   auto *ExCorrvsZpos = new TH2F("ExCorrvsZpos", "Ex vs Zpos;Ex (MeV);z (cm)", 130, -3.0, 10.0, 110, -5, 105);
 
    // --- Masas (MeV/c²) ---
    Double_t m_p = 938.272076;
@@ -85,21 +84,16 @@ void calculate_efficiency_C16_pd_clean()
    elossH2.SetMaterial(catima::Material(1, 1));
    elossH2.SetProjectile(16, 6, 16.0147);
 
-   // --- Datos reconstruidos ---
-   std::vector<TString> filenames;
-   // std::set<int> excluded = {111, 121, 148, 149};
+   // =========================================================
+   // --- DATOS RECONSTRUIDOS (numerador de eficiencia) ---
+   // =========================================================
    TChain *chain = new TChain("parquettree");
    for (int i = 104; i <= 186; i++) {
-      // for (int i = 0; i <= 19; i++) {
-      // if (excluded.count(i)) continue;
       char name[64];
       std::snprintf(name, sizeof(name), "run_%04d_2H.root", i);
-      filenames.push_back(name);
       chain->Add(
          ("/home/georgina/engine_ExUniform_pd/engine_ExUniform_pd/InterpSolver/InterpSolverRoot/" + std::string(name))
             .c_str());
-      // chain->Add(("/home/georgina/my_sim/engine_Ex_GS_C16_pd/InterpSolver/interpSolverRoot/" +
-      // std::string(name)).c_str());
    }
    cout << "Total entries (reconstruction): " << chain->GetEntries() << endl;
 
@@ -111,7 +105,7 @@ void calculate_efficiency_C16_pd_clean()
    chain->SetBranchAddress("redchisq", &redchi);
    chain->SetBranchAddress("vertex_z", &zPos);
    chain->SetBranchAddress("ke", &ke);
-   chain->SetBranchAddress("vertex_x", &vx_pos); // m
+   chain->SetBranchAddress("vertex_x", &vx_pos);
    chain->SetBranchAddress("vertex_y", &vy_pos);
 
    for (Long64_t i = 0; i < chain->GetEntries(); i++) {
@@ -121,28 +115,28 @@ void calculate_efficiency_C16_pd_clean()
       Double_t E_ej = TMath::Sqrt(p_ej * p_ej + m_ej * m_ej) - m_ej;
 
       double dist3D = TMath::Sqrt(vx_pos * vx_pos + vy_pos * vy_pos + zPos * zPos) * 100.0;
-      Double_t Ebeam_at_z =
-         elossH2.GetEnergy(Ebeam_buff, dist3D * 10.0); // Convertir dist3D a mm para la corrección de energía
+      Double_t Ebeam_at_z = elossH2.GetEnergy(Ebeam_buff, dist3D * 10.0);
 
       double kethe = 13.;
       double theta_lab_corr_tilt = theta - (2.0 * TMath::Pi() / 4000) * (E_ej - kethe);
 
+      // FIX: kine_2b devuelve (Ex, theta_CM en grados) — usamos theta_cm_corr_tilt
       auto [ex_corr_tilt, theta_cm_corr_tilt] = kine_2b(m_C16, m_p, m_b, m_B, Ebeam_at_z, theta_lab_corr_tilt, E_ej);
 
-      if (zPos * 100 > 2.0 && zPos * 100 < 60.0 && E_ej > 5.0 &&
-          E_ej < 20.0) { // cm y MeV (zPos is in meters, E_ej is in MeV)
+      if (zPos * 100 > 2.0 && zPos * 100 < 60.0 && E_ej > 5.0 && E_ej < 15.0) {
          hexCorr2->Fill(ex_corr_tilt);
-         hDat_lab_corr->Fill(theta_lab_corr_tilt);
          ExCorrvsZpos->Fill(ex_corr_tilt, zPos * 100);
 
-         double theta_lab_deg = theta_lab_corr_tilt * TMath::RadToDeg();
-         hDat_2D->Fill(ex_corr_tilt, theta_lab_deg);
+         // FIX: rellenar con θ_CM en grados (no θ_lab en radianes)
+         hReco_tCM->Fill(theta_cm_corr_tilt);
       }
    }
-   // --- Simulación sin detector ---
+
+   // =========================================================
+   // --- SIMULACIÓN GENERADA (denominador de eficiencia) ---
+   // =========================================================
    TFile *fSim = new TFile(
       "/home/georgina/fair_install/ATTPCROOTv2/macro/a1975/23April_macros/efficiencies/rawSim/output_16Cpd.root",
-      //"/home/georgina/my_sim/output_generateKin_gs.root",
       "READ");
    TTree *tSim = (TTree *)fSim->Get("kinematics");
 
@@ -160,99 +154,107 @@ void calculate_efficiency_C16_pd_clean()
    tSim->SetBranchAddress("vertex_y", &sim_vy);
    tSim->SetBranchAddress("vertex_z", &sim_vz);
 
+   // Contamos total de eventos generados (deuterones) para normalización
+   Long64_t N_gen_total = 0;
    cout << "Total simulation entries: " << tSim->GetEntries() << endl;
 
    for (Long64_t i = 0; i < tSim->GetEntries(); i++) {
       tSim->GetEntry(i);
       if (!(sim_Z == 1 && sim_A == 2))
          continue;
+      N_gen_total++;
 
       Double_t sim_p = TMath::Sqrt(sim_px * sim_px + sim_py * sim_py + sim_pz * sim_pz);
       Double_t sim_ke = sim_energy - m_d;
 
-      double sim_dist3D = TMath::Sqrt(sim_vx * sim_vx + sim_vy * sim_vy + sim_vz * sim_vz) * 100.0; // cm
-      Double_t sim_Ebeam_at_z =
-         elossH2.GetEnergy(Ebeam_buff, sim_dist3D * 10.0); // Convertir sim_dist3D a mm para la corrección de energía
+      double sim_dist3D = TMath::Sqrt(sim_vx * sim_vx + sim_vy * sim_vy + sim_vz * sim_vz) * 100.0;
+      Double_t sim_Ebeam_at_z = elossH2.GetEnergy(Ebeam_buff, sim_dist3D * 10.0);
 
       Double_t sim_theta_lab = TMath::ACos(sim_pz / sim_p);
+      // FIX: kine_2b devuelve theta_CM en grados directamente
       auto [sim_ex, sim_theta_cm] = kine_2b(m_C16, m_p, m_d, m_C15, sim_Ebeam_at_z, sim_theta_lab, sim_ke);
 
-      hSim_lab_corr->Fill(sim_theta_cm);
-      h_simEx->Fill(sim_ex);
-      ExCorrvsZpos->Fill(sim_ex, sim_vz * 100.0);
-      // cout << "sim_ex = " << sim_ex << "  sim_theta_cm = " << sim_theta_cm << "  sim_vz = " << sim_vz*100.0 << endl;
+      // Rellenamos θ_CM del generado (denominador)
+      if (sim_vz * 100 > 2.0 && sim_vz * 100 < 60.0 && sim_ke > 5.0 && sim_ke < 20.0) {
+         hGen_tCM->Fill(sim_theta_cm);
+         h_simEx->Fill(sim_ex);
+      }
+   }
+   cout << "N_gen_total (deuterons) = " << N_gen_total << endl;
 
-      double sim_theta_lab_deg = sim_theta_lab * TMath::RadToDeg();
-      hSim_2D->Fill(sim_ex, sim_theta_lab_deg);
+   // =========================================================
+   // --- CÁLCULO DE EFICIENCIA ---
+   // =========================================================
+   // ε(θ_CM) = N_reco(θ_CM) / N_gen(θ_CM)
+   // El denominador ya tiene el jacobiano implícito (PolarUniform → no plano en θ_CM)
+   // Al dividir bin a bin se cancela.
+   //
+   // FIX: NO escalamos hGen_tCM a hReco_tCM antes de dividir.
+   // La eficiencia absoluta requiere que hGen_tCM esté en unidades de
+   // "eventos generados por bin", que ya lo está.
+   //
+   // Sin embargo, como los datos reales tienen N_ev != N_sim, necesitamos
+   // escalar el denominador por N_reco_sim / N_gen para obtener ε ∈ [0,1].
+   // Lo hacemos con un TH1 clonado normalizado:
+
+   // =========================================================
+   // --- CÁLCULO DE EFICIENCIA CON TEfficiency ---
+   // =========================================================
+
+   if (!TEfficiency::CheckConsistency(*hReco_tCM, *hGen_tCM)) {
+      std::cerr << "Histograms not consistent for TEfficiency" << std::endl;
+      return;
    }
 
-   Double_t scale = (hSim_2D->Integral() > 0) ? hDat_2D->Integral() / hSim_2D->Integral() : 1.0;
-   hSim_2D->Scale(scale);
+   TEfficiency *pEff = new TEfficiency(*hReco_tCM, *hGen_tCM);
+   pEff->SetStatisticOption(TEfficiency::kFCP); // Clopper-Pearson (recommended)
+   pEff->SetTitle("Efficiency vs #theta_{CM};#theta_{CM} (deg);#varepsilon");
 
-   TH2F *hEff_2D = (TH2F *)hDat_2D->Clone("hEff_2D");
-   hEff_2D->Divide(hSim_2D);
+   // Guardar en archivo
+   TFile *fEff = new TFile("efficiency_tCM.root", "RECREATE");
+   pEff->Write("efficiency_tCM");
+   hReco_tCM->Write("hReco_tCM");
+   hGen_tCM->Write("hGen_tCM");
+   fEff->Close();
 
-   // --- Canvas 1: Espectro de energía de excitación ---
+   // =========================================================
+   // --- PLOTS ---
+   // =========================================================
+
+   // Canvas 1: Espectro Ex
    TCanvas *c_ExEner = new TCanvas("ExEner", "Excited Energy spectra", 1200, 800);
-   c_ExEner->cd();
-   h_simEx->GetXaxis()->SetTitle("Excitation Energy (MeV)");
-   h_simEx->GetYaxis()->SetTitle("Counts");
    h_simEx->SetLineColor(kRed);
    h_simEx->Draw("HIST");
    hexCorr2->Draw("HIST same");
-
    auto leg1 = new TLegend(0.6, 0.7, 0.9, 0.9);
    leg1->AddEntry(hexCorr2, "Data (corrected)", "l");
    leg1->AddEntry(h_simEx, "Sim (raw)", "l");
    leg1->Draw();
    c_ExEner->Update();
 
-   // --- Canvas 2: Check theta_CM ---
-   TCanvas *c_eff_check = new TCanvas("c_eff_check", "Efficiency check", 1200, 600);
-   c_eff_check->Divide(2, 1);
+   // Canvas 2: θ_CM generado vs reconstruido
+   TCanvas *c_eff_check = new TCanvas("c_eff_check", "Efficiency check", 1400, 600);
+   c_eff_check->Divide(3, 1);
 
    c_eff_check->cd(1);
-   hSim_lab_corr->SetLineColor(kRed);
-   hSim_lab_corr->GetXaxis()->SetTitle("#theta_{CM} (#circ)");
-   hSim_lab_corr->GetYaxis()->SetTitle("Counts");
-   hSim_lab_corr->GetYaxis()->SetMaxDigits(3);
-   hSim_lab_corr->SetTitle("Simulacion sin detector");
+   hGen_tCM->SetLineColor(kRed);
+   hGen_tCM->GetYaxis()->SetMaxDigits(3);
+   hGen_tCM->SetTitle("Generado (sin detector)");
    gPad->SetTopMargin(0.15);
-   hSim_lab_corr->Draw("HIST");
+   hGen_tCM->Draw("HIST");
 
    c_eff_check->cd(2);
-   hDat_lab_corr->SetLineColor(kBlue);
-   hDat_lab_corr->GetXaxis()->SetTitle("#theta_{CM} (#circ)");
-   hDat_lab_corr->GetYaxis()->SetTitle("Counts");
-   hDat_lab_corr->GetYaxis()->SetMaxDigits(3);
-   hDat_lab_corr->SetTitle("Datos (con cortes)");
+   hReco_tCM->SetLineColor(kBlue);
+   hReco_tCM->GetYaxis()->SetMaxDigits(3);
+   hReco_tCM->SetTitle("Reconstruido (SPYRAL, con cortes)");
    gPad->SetTopMargin(0.15);
-   hDat_lab_corr->Draw("HIST");
+   hReco_tCM->Draw("HIST");
+
+   // Canvas 3: Eficiencia
+   c_eff_check->cd(3);
+   pEff->SetTitle("Efficiency vs #theta_{CM};#theta_{CM} (deg);#varepsilon, E_ej cut: 5-15 MeV");
+   pEff->Draw("AP"); // A = axis, P = points
+
    c_eff_check->Update();
-
-   // --- Canvas 3: Eficiencia ---
-   TCanvas *c_eff = new TCanvas("c_eff", "Efficiency vs #theta_{CM}", 800, 600);
-   c_eff->cd();
-   TEfficiency *pEff = new TEfficiency(*hDat_lab_corr, *hSim_lab_corr);
-   pEff->SetMarkerStyle(20);
-   pEff->SetMarkerColor(kBlue);
-   pEff->SetLineColor(kBlue);
-   pEff->Draw("AP");
-   c_eff->Update();
-
-   // --- Canvas: Eficiencia 2D (Ex vs theta_lab) ---
-   TCanvas *c_eff2D = new TCanvas("c_eff2D", "Efficiency vs Ex and #theta_{lab}", 900, 700);
-   c_eff2D->cd();
-
-   // Dividir bin a bin: eff = datos / sim (con protección contra división por cero)
-   hEff_2D->SetTitle("Efficiency; Ex (MeV); #theta_{lab} (#circ); Efficiency");
-   hEff_2D->SetMaximum(1.0);
-   hEff_2D->SetMinimum(0.0);
-   hEff_2D->Draw("COLZ");
-   c_eff2D->Update();
-
-   // --- Guardar eficiencia ---
-   TFile *fEff = new TFile("efficiency.root", "RECREATE");
-   pEff->Write("pEff");
-   fEff->Close();
+   c_eff_check->SaveAs("efficiency_thetaCM_KE_lt_15.png");
 }

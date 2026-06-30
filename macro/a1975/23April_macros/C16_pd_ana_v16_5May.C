@@ -138,7 +138,13 @@ void C16_pd_ana_v16_5May()
    auto *hexvstheta_CM = new TH2F("hexVStheta_CM", "hexVStheta_CM", NumberBins, Ebin_min, Ebin_max, 180, 0, 180);
    auto *hexvstheta_lab = new TH2F("hexVStheta_lab", "hexVStheta_lab", NumberBins, Ebin_min, Ebin_max, 50, 0, 50);
 
-   auto *KEvsEx = new TH2F("KEvsEx", "KEvsEx", 20, 0, 60, NumberBins, -4.5, Ebin_max);
+   auto *KEvsEx = new TH2F("h_KE_Ex", "All states: KE vs E_{x};KE (MeV);E_{x} (MeV)", 200, 0, 80, 200, -3, 10);
+
+   // --- Systematic bias: ΔK = K_reconstructed - K_kinematic ---
+   auto *hdK_vs_thetaLab = new TH2F("hdK_vs_thetaLab", "#DeltaK vs #theta_{lab};#theta_{lab} (#circ);#DeltaK (MeV)",
+                                    120, 10, 40, 200, -15, 15);
+   auto *hdK_vs_thetaCM =
+      new TH2F("hdK_vs_thetaCM", "#DeltaK vs #theta_{CM};#theta_{CM} (#circ);#DeltaK (MeV)", 180, 0, 180, 200, -15, 15);
    //--------------------------------------------------------------------------------------
 
    Double_t nc_tot[200];
@@ -202,13 +208,8 @@ void C16_pd_ana_v16_5May()
    std::vector<std::string> files = {"C16_pd_C15_gs_Ebeam11_5.txt", "C16_pd_C15_740keV_Ebeam11_5.txt",
                                      "C16_pd_C15_3103keV_Ebeam11_5.txt", "C16_pd_C15_4780keV_Ebeam11_5.txt",
                                      "C16_pd_C15_6841keV_Ebeam11_5.txt"};
-   /*std::vector<std::string> labels = {
-      "Ground State", "1st Excited State (740keV)", "2nd Excited State (3103keV)",
-      "3rd Excited State (4780keV)", "4th Excited State(6841keV)"
-   };*/
-
-   std::vector<std::string> labels = {"Ground State", "1st Excited State", "2nd Excited State", "3rd Excited State",
-                                      "4th Excited State"};
+   std::vector<std::string> labels = {"Ground State", "1st Excited State (740keV)", "2nd Excited State (3103keV)",
+                                      "3rd Excited State (4780keV)", "4th Excited State(6841keV)"};
 
    std::vector<int> colors = {kOrange + 7, kBlue, kGreen + 2, kMagenta, kRed + 2};
    std::vector<TGraph *> graphs;
@@ -342,59 +343,67 @@ void C16_pd_ana_v16_5May()
             kine_2b(m_C16, m_p, m_b, m_B, Ebeam_at_z, theta_lab_corr_tiltCorr,
                     E_ej); // energies: MeV, angles: radians
 
-         // Convertir theta_cm a grados para evaluar la eficiencia
-         double theta_cm_deg =
-            theta_cm_corr_tiltCorr; // theta_cm_corr_tiltCorr ya está en grados según la función kine_2b
+         KEvsEx->Fill(E_ej, ex_energy_corr_tiltCorr); // MeV
 
-         hex_noEff->Fill(
-            ex_energy_corr_tiltCorr); // Llenar el histograma sin corregir por eficiencia, sin cortes, "RAW"
+         if (zPos * 100 > 2.0 && zPos * 100 < 60.0 && E_ej > 5.0 && E_ej < 20.0) {
+            double theta_cm_deg =
+               theta_cm_corr_tiltCorr; // theta_cm_corr_tiltCorr ya está en grados según la función kine_2b
 
-         KineticEnergy->Fill(E_ej); // Usar energía calibrada para el histograma de energía cinética
+            KineticEnergy->Fill(E_ej); // Usar energía calibrada para el histograma de energía cinética
 
-         // if ( ex_energy_corr_tiltCorr > 0.0) {
+            Ang_Ener_tiltCorr->Fill(theta_lab_corr_tiltCorr * TMath::RadToDeg(), E_ej); // calibrado
 
-         Ang_Ener_tiltCorr->Fill(theta_lab_corr_tiltCorr * TMath::RadToDeg(), E_ej); // calibrado
+            Ang_Ener_Corr->Fill(theta_lab_corr * TMath::RadToDeg(),
+                                E_ej); // theta lab!! -> I still have to implement the correction of catima?
+            // }
+            double theta_deg = theta * TMath::RadToDeg();
 
-         Ang_Ener_Corr->Fill(theta_lab_corr * TMath::RadToDeg(),
-                             E_ej); // theta lab!! -> I still have to implement the correction of catima?
-         // }
-         double theta_deg = theta * TMath::RadToDeg();
-
-         // Fill corrected histogram
-
-         KEvsEx->Fill(E_ej, ex_energy_corr);                           // MeV, MeV sin corrección tilt
-         if (zPos * 100 > 2.0 && zPos * 100 < 60.0 && E_ej < 14.0) {   // cm y MeV (zPos is in meters, E_ej is in MeV)
+            // cm y MeV (zPos is in meters, E_ej is in MeV)
             ExCorrvsZpos->Fill(ex_energy_corr_tiltCorr, zPos * 100.0); // MeV, cm
             ExvsZpos->Fill(ex_energy_corr, zPos * 100.0);              // MeV, cm
             hex->Fill(ex_energy_corr);               // Llenar el histograma con corrección de eficiencia
             hexCorr->Fill(ex_energy_corr_tiltCorr);  // Llenar el histograma con corrección de eficiencia
             hexCorr2->Fill(ex_energy_corr_tiltCorr); // Llenar el histograma con corrección de eficiencia
+            hexCorr1->Fill(ex_energy_corr);
+
+            // Histograms
+
+            Double_t vx = TMath::Sin(theta) * TMath::Sqrt(ke);
+            Double_t vy = TMath::Cos(theta) * TMath::Sqrt(ke);
+
+            hVxVy->Fill(vx, vy);
+
+            AngDistr->Fill(theta * TMath::RadToDeg());
+            AngDistrCM->Fill(theta_cm_corr_tiltCorr);
+            hexvstheta_CM->Fill(ex_energy_corr_tiltCorr,
+                                theta_cm_corr_tiltCorr); // theta_cm_corr_tiltCorr is already in degrees,
+                                                         // ex_energy_corr_tiltCorr is in MeV
+            hexvstheta_lab->Fill(
+               ex_energy_corr_tiltCorr,
+               theta_lab_corr_tiltCorr *
+                  TMath::RadToDeg()); // theta_lab_corr_tiltCorr is in radians, convert to degrees for
+                                      // the histogram ExvsTrackLength->Fill(ex_energy_corr, arclength);
+
+            // --- ΔK = E_ej(medido) - E_ej(esperado desde cinemática, Ex=0) ---
+            // Reconstruimos qué KE debería tener el deuterón en GS para este ángulo
+            // usando kine_2b al revés: fijamos Ex=0 y buscamos K_expected
+            // Aproximación directa: evaluar el TGraph del GS en theta_lab_deg
+
+            double theta_lab_deg_corr = theta_lab_corr_tiltCorr * TMath::RadToDeg();
+            double K_expected_GS =
+               (graphs.size() > 0 && graphs[0] != nullptr) ? graphs[0]->Eval(theta_lab_deg_corr) : -999.0;
+
+            // Només events de la regió del GS
+            if (ex_energy_corr_tiltCorr > -0.3 && ex_energy_corr_tiltCorr < 0.3) {
+               double dK = E_ej - K_expected_GS;
+               hdK_vs_thetaLab->Fill(theta_lab_deg_corr, dK);
+               hdK_vs_thetaCM->Fill(theta_cm_corr_tiltCorr, dK);
+            }
          }
-
-         if (zPos * 100 > 2.0 && zPos * 100 < 60.0 && E_ej < 20.0) { // cm y MeV
-            hexCorr1->Fill(ex_energy_corr_tiltCorr); // Llenar el histograma con corrección de eficiencia
-         }
-         // Histograms
-
-         Double_t vx = TMath::Sin(theta) * TMath::Sqrt(ke);
-         Double_t vy = TMath::Cos(theta) * TMath::Sqrt(ke);
-
-         hVxVy->Fill(vx, vy);
-
-         AngDistr->Fill(theta * TMath::RadToDeg());
-         AngDistrCM->Fill(theta_cm_corr_tiltCorr);
-         hexvstheta_CM->Fill(
-            ex_energy_corr_tiltCorr,
-            theta_cm_corr_tiltCorr); // theta_cm_corr_tiltCorr is already in degrees, ex_energy_corr_tiltCorr is in MeV
-         hexvstheta_lab->Fill(
-            ex_energy_corr_tiltCorr,
-            theta_lab_corr_tiltCorr *
-               TMath::RadToDeg()); // theta_lab_corr_tiltCorr is in radians, convert to degrees for the histogram
-         // ExvsTrackLength->Fill(ex_energy_corr, arclength);
 
          // tEvents->Fill();
       } // events
-   }    // Files
+   } // Files
 
    AngDistrCM->Divide(new TF1("sin", "sin(x * TMath::DegToRad())", 0, 180));
 
@@ -402,6 +411,16 @@ void C16_pd_ana_v16_5May()
    KEvsEx->GetYaxis()->SetTitle("Excitation Energy (MeV)");
    KEvsEx->GetXaxis()->SetTitle("Kinetic Energy of Ejectile (MeV)");
    KEvsEx->Draw("colz");
+   TLine *lineKEmin = new TLine(5, 0, 5, 10);
+   lineKEmin->SetLineColor(kRed);
+   lineKEmin->SetLineStyle(kDashed);
+   lineKEmin->SetLineWidth(4);
+   lineKEmin->Draw("same");
+   TLine *lineKEmax = new TLine(20, 0, 20, 10);
+   lineKEmax->SetLineColor(kRed);
+   lineKEmax->SetLineStyle(kDashed);
+   lineKEmax->SetLineWidth(4);
+   lineKEmax->Draw("same");
 
    TCanvas *hexthetaCanvas_CMandlab = new TCanvas("hexvsthetaCanvas_CMandlab", "hexvstheta_CM and lab", 1200, 800);
    hexthetaCanvas_CMandlab->Divide(2, 1); // dos pads: arriba el 2D, abajo la proyección
@@ -420,14 +439,25 @@ void C16_pd_ana_v16_5May()
 
    //-----------------------------------------------------
    TCanvas *hexthetaCanvas = new TCanvas("hexvsthetaCanvas", "hexvstheta_CM", 1200, 800);
-   hexthetaCanvas->Divide(4, 3); // dos pads: arriba el 2D, abajo la proyección
+   hexthetaCanvas->Divide(4, 2); // dos pads: arriba el 2D, abajo la proyección
 
    // Pad 1: el 2D completo
    hexthetaCanvas->cd(1);
    hexvstheta_CM->GetXaxis()->SetTitle("Excitation Energy (MeV)");
    hexvstheta_CM->GetYaxis()->SetTitle("#theta_{CM} (#circ)");
-
    hexvstheta_CM->Draw("colz");
+
+   TLine *linetheta20 = new TLine(Ebin_min, 20, Ebin_max, 20);
+   linetheta20->SetLineColor(kRed);
+   linetheta20->SetLineStyle(kDashed);
+   linetheta20->SetLineWidth(2);
+   linetheta20->Draw("same");
+
+   TLine *linetheta80 = new TLine(Ebin_min, 80, Ebin_max, 80);
+   linetheta80->SetLineColor(kRed);
+   linetheta80->SetLineStyle(kDashed);
+   linetheta80->SetLineWidth(2);
+   linetheta80->Draw("same");
 
    // Pad 2: proyección en Ex para 20° < θ_cm < 30°
    hexthetaCanvas->cd(2);
@@ -438,7 +468,7 @@ void C16_pd_ana_v16_5May()
    hEx_slice->GetYaxis()->SetTitle("Counts");
 
    hEx_slice->SetTitle("20#circ < #theta_{CM} < 30#circ");
-   hEx_slice->Draw("E1");
+   hEx_slice->Draw("HIST");
 
    // Pad 3: proyección en Ex para 30° < θ_cm < 40°
    hexthetaCanvas->cd(3);
@@ -449,7 +479,7 @@ void C16_pd_ana_v16_5May()
    hEx_slice->GetYaxis()->SetTitle("Counts");
 
    hEx_slice->SetTitle("30#circ < #theta_{CM} < 40#circ");
-   hEx_slice->Draw("E1");
+   hEx_slice->Draw("HIST");
 
    // Pad 4: proyección en Ex para 40° < θ_cm < 50°
    hexthetaCanvas->cd(4);
@@ -460,7 +490,7 @@ void C16_pd_ana_v16_5May()
    hEx_slice->GetYaxis()->SetTitle("Counts");
 
    hEx_slice->SetTitle("40#circ < #theta_{CM} < 50#circ");
-   hEx_slice->Draw("E1");
+   hEx_slice->Draw("HIST");
 
    // Pad 5: proyección en Ex para 50° < θ_cm < 60°
    hexthetaCanvas->cd(5);
@@ -471,7 +501,7 @@ void C16_pd_ana_v16_5May()
    hEx_slice->GetYaxis()->SetTitle("Counts");
 
    hEx_slice->SetTitle("50#circ < #theta_{CM} < 60#circ");
-   hEx_slice->Draw("E1");
+   hEx_slice->Draw("HIST");
 
    // Pad 6: proyección en Ex para 60° < θ_cm < 70°
    hexthetaCanvas->cd(6);
@@ -482,7 +512,7 @@ void C16_pd_ana_v16_5May()
    hEx_slice->GetYaxis()->SetTitle("Counts");
 
    hEx_slice->SetTitle("60#circ < #theta_{CM} < 70#circ");
-   hEx_slice->Draw("E1");
+   hEx_slice->Draw("HIST");
 
    // Pad 7: proyección en Ex para 70° < θ_cm < 80°
    hexthetaCanvas->cd(7);
@@ -493,62 +523,7 @@ void C16_pd_ana_v16_5May()
    hEx_slice->GetYaxis()->SetTitle("Counts");
 
    hEx_slice->SetTitle("70#circ < #theta_{CM} < 80#circ");
-   hEx_slice->Draw("E1");
-
-   // Pad 8: proyección en Ex para 80° < θ_cm < 90°
-   hexthetaCanvas->cd(8);
-   bin_min = hexvstheta_CM->GetYaxis()->FindBin(80);
-   bin_max = hexvstheta_CM->GetYaxis()->FindBin(90);
-   hEx_slice = hexvstheta_CM->ProjectionX("hEx_80_90", bin_min, bin_max);
-   hEx_slice->GetXaxis()->SetTitle("Excitation Energy (MeV)");
-   hEx_slice->GetYaxis()->SetTitle("Counts");
-
-   hEx_slice->SetTitle("80#circ < #theta_{CM} < 90#circ");
-   hEx_slice->Draw("E1");
-
-   // Pad 9: proyección en Ex para 90° < θ_cm < 100°
-   hexthetaCanvas->cd(9);
-   bin_min = hexvstheta_CM->GetYaxis()->FindBin(90);
-   bin_max = hexvstheta_CM->GetYaxis()->FindBin(100);
-   hEx_slice = hexvstheta_CM->ProjectionX("hEx_90_100", bin_min, bin_max);
-   hEx_slice->GetXaxis()->SetTitle("Excitation Energy (MeV)");
-   hEx_slice->GetYaxis()->SetTitle("Counts");
-
-   hEx_slice->SetTitle("90#circ < #theta_{CM} < 100#circ");
-   hEx_slice->Draw("E1");
-
-   // Pad 10: proyección en Ex para 100° < θ_cm < 110°
-   hexthetaCanvas->cd(10);
-   bin_min = hexvstheta_CM->GetYaxis()->FindBin(100);
-   bin_max = hexvstheta_CM->GetYaxis()->FindBin(110);
-   hEx_slice = hexvstheta_CM->ProjectionX("hEx_100_110", bin_min, bin_max);
-   hEx_slice->GetXaxis()->SetTitle("Excitation Energy (MeV)");
-   hEx_slice->GetYaxis()->SetTitle("Counts");
-
-   hEx_slice->SetTitle("100#circ < #theta_{CM} < 110#circ");
-   hEx_slice->Draw("E1");
-
-   // Pad 11: proyección en Ex para 110° < θ_cm < 120°
-   hexthetaCanvas->cd(11);
-   bin_min = hexvstheta_CM->GetYaxis()->FindBin(110);
-   bin_max = hexvstheta_CM->GetYaxis()->FindBin(120);
-   hEx_slice = hexvstheta_CM->ProjectionX("hEx_110_120", bin_min, bin_max);
-   hEx_slice->GetXaxis()->SetTitle("Excitation Energy (MeV)");
-   hEx_slice->GetYaxis()->SetTitle("Counts");
-
-   hEx_slice->SetTitle("110#circ < #theta_{CM} < 120#circ");
-   hEx_slice->Draw("E1");
-
-   // Pad 12: proyección en Ex para 120° < θ_cm < 130°
-   hexthetaCanvas->cd(12);
-   bin_min = hexvstheta_CM->GetYaxis()->FindBin(120);
-   bin_max = hexvstheta_CM->GetYaxis()->FindBin(130);
-   hEx_slice = hexvstheta_CM->ProjectionX("hEx_120_130", bin_min, bin_max);
-   hEx_slice->GetXaxis()->SetTitle("Excitation Energy (MeV)");
-   hEx_slice->GetYaxis()->SetTitle("Counts");
-
-   hEx_slice->SetTitle("120#circ < #theta_{CM} < 130#circ");
-   hEx_slice->Draw("E1");
+   hEx_slice->Draw("HIST");
 
    //-------------------- PHASE SPACE ----------------------------------------------
 
@@ -810,8 +785,8 @@ void C16_pd_ana_v16_5May()
    // Phase Space
 
    if (hPS_final->GetNbinsX() > 0) {
-      hPS_final->Scale(globalParamsFinals[15]); // globalParamsFinals[15] es el factor de escala ajustado para el fondo
-                                                // de fase espacio
+      hPS_final->Scale(globalParamsFinals[15]); // globalParamsFinals[15] es el factor de escala ajustado para el
+                                                // fondo de fase espacio
    }
    hPS_final->SetLineColor(kGray + 2);
    hPS_final->SetLineWidth(4);
@@ -959,6 +934,39 @@ void C16_pd_ana_v16_5May()
    AngDistrCM->GetXaxis()->SetTitle("Angle (deg)");
    AngDistrCM->GetYaxis()->SetTitle("#frac{d#sigma}{d#Omega} (a.u.)");
 
+   TCanvas *c_dK = new TCanvas("c_dK", "#DeltaK systematics", 1400, 600);
+   c_dK->Divide(2, 1);
+
+   c_dK->cd(1);
+   hdK_vs_thetaLab->Draw("COLZ");
+   TProfile *prof_thetaLab = hdK_vs_thetaLab->ProfileX("prof_thetaLab");
+   prof_thetaLab->SetLineColor(kRed);
+   prof_thetaLab->SetLineWidth(2);
+   prof_thetaLab->SetMarkerColor(kRed);
+   prof_thetaLab->SetMarkerStyle(20);
+   prof_thetaLab->Draw("same");
+   TLine *zero_lab = new TLine(10, 0, 40, 0);
+   zero_lab->SetLineColor(kWhite);
+   zero_lab->SetLineStyle(2);
+   zero_lab->SetLineWidth(2);
+   zero_lab->Draw("same");
+
+   c_dK->cd(2);
+   hdK_vs_thetaCM->Draw("COLZ");
+   TProfile *prof_thetaCM = hdK_vs_thetaCM->ProfileX("prof_thetaCM");
+   prof_thetaCM->SetLineColor(kRed);
+   prof_thetaCM->SetLineWidth(2);
+   prof_thetaCM->SetMarkerColor(kRed);
+   prof_thetaCM->SetMarkerStyle(20);
+   prof_thetaCM->Draw("same");
+   TLine *zero_cm = new TLine(0, 0, 180, 0);
+   zero_cm->SetLineColor(kWhite);
+   zero_cm->SetLineStyle(2);
+   zero_cm->SetLineWidth(2);
+   zero_cm->Draw("same");
+
+   c_dK->Update();
+
    /*TCanvas *kin = new TCanvas( "kin", "kin", 1200, 800);
    KineticEnergy->Sumw2();
    kin->cd();
@@ -1010,15 +1018,17 @@ void C16_pd_ana_v16_5May()
    // Añadimos tabulaciones para que las columnas de error queden claras
    out << "Estado\tEnergia\tErr_E\tSigma/Gamma\tErr_S/G" << endl;
 
-   out << "GS\t"    << fModel->GetParameter(1) << "\t" << fModel->GetParError(1) << "\t" << fModel->GetParameter(2) <<
-   "\t" << fModel->GetParError(2) << endl; out << "1st\t"   << fModel->GetParameter(4) << "\t" << fModel->GetParError(4)
+   out << "GS\t"    << fModel->GetParameter(1) << "\t" << fModel->GetParError(1) << "\t" << fModel->GetParameter(2)
+   <<
+   "\t" << fModel->GetParError(2) << endl; out << "1st\t"   << fModel->GetParameter(4) << "\t" <<
+   fModel->GetParError(4)
    << "\t" << fModel->GetParameter(5) << "\t" << fModel->GetParError(5) << endl; out << "2nd\t"   <<
    fModel->GetParameter(7) << "\t" << fModel->GetParError(7) << "\t" << fModel->GetParameter(8) << "\t" <<
    fModel->GetParError(8) << endl; out << "3rd\t"   << fModel->GetParameter(10) << "\t" << fModel->GetParError(10) <<
    "\t" << fModel->GetParameter(11) << "\t" << fModel->GetParError(11) << endl; out << "4th\t"   <<
    fModel->GetParameter(13) << "\t" << fModel->GetParError(13) << "\t" << fModel->GetParameter(14) << "\t" <<
-   fModel->GetParError(14) << endl; out << "PS_Bkg\t" << fModel->GetParameter(15) << "\t" << fModel->GetParError(15) <<
-   endl;
+   fModel->GetParError(14) << endl; out << "PS_Bkg\t" << fModel->GetParameter(15) << "\t" << fModel->GetParError(15)
+   << endl;
 
    out.close();*/
 }

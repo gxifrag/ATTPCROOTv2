@@ -97,7 +97,7 @@ void PhaseSpace_1n_16Cpd15C_binWidth(int Nbin, double MinLim, double MaxLim, dou
    md = 2.014101 * 931.494;              // proton mass
    mn = 1.008665 * 931.494;              // Neutron mass
    bE = 11.5;                            // Beam energy MeV/A
-   T1 = 16.014701 * bE;                  // Beam kinetic energy middle of target
+   T1 = 16. * bE;                  // Beam kinetic energy middle of target
    p1 = TMath::Sqrt(T1 * (T1 + 2 * m1)); // Beam momentum
 
    double mass_in_MeV[4];
@@ -146,7 +146,10 @@ void PhaseSpace_1n_16Cpd15C_binWidth(int Nbin, double MinLim, double MaxLim, dou
 
    TFile *EfficiencySimFile;
    TTree *out_tree;
+    // --- NUEVAS VARIABLES ---
+
    double ThetaCM_cal, Ex_cal, Weight_sim;
+   double zPos_cal, E_ej_cal;
 
    if (SavingDataFile) {
       EfficiencySimFile = new TFile(OutputFileName_1n, "RECREATE");
@@ -181,10 +184,16 @@ void PhaseSpace_1n_16Cpd15C_binWidth(int Nbin, double MinLim, double MaxLim, dou
       theta_deg = pDeuteron->Theta() * 180. / TMath::Pi(); // lab angle in degrees
       // cout << " theta_deg: " << theta_deg << endl ;
 
+      // Generamos un zPos aleatorio (Asumiendo cámara de 1 metro = de 0.0 a 1.0 m)
+      double z_sim = rGen.Uniform(0.0, 1.0); 
+
+
       Ex_and_ThetaCM_calculation_v2(t3, theta_deg, mass_in_MeV, bE, Ex_ThetaCM);
 
       if (theta_deg >= theta_min && theta_deg < theta_max && t3 > T_min && t3 < T_max && Ex_ThetaCM[1] < thetaCM_max &&
           Ex_ThetaCM[1] > thetaCM_min) {
+
+         if ((z_sim * 100.0 > 2.0) && (z_sim * 100.0 < 60.0)) {
          h_theta_debug1n->Fill(theta_deg);
          h_tD_debug1n->Fill(t3);
 
@@ -193,10 +202,13 @@ void PhaseSpace_1n_16Cpd15C_binWidth(int Nbin, double MinLim, double MaxLim, dou
          h_kn_1n->Fill(theta_deg, t3, weight);
 
          if (SavingDataFile) {
-            ThetaCM_cal = Ex_ThetaCM[1];
-            Ex_cal = Ex_res;
-            Weight_sim = weight;
-            out_tree->Fill();
+                  ThetaCM_cal = Ex_ThetaCM[1];
+                  Ex_cal = Ex_res;
+                  Weight_sim = weight;
+                  zPos_cal = z_sim; // Guardamos zPos
+                  E_ej_cal = t3;    // Guardamos E_ej
+                  out_tree->Fill();
+            }
          }
       }
    }
@@ -362,14 +374,15 @@ void PhaseSpace_2n_16Cpd15C_binWidth(int Nbin, double MinLim, double MaxLim, dou
    }
 }
 
+
 void PhaseSpace_16Cpd15C_test()
 {
    double MinLim, MaxLim;
    int Nbin;
 
-   MinLim = -4.;
-   MaxLim = 14.;
-   Nbin = 180;
+   MinLim = -1.;
+   MaxLim = 9.;
+   Nbin = 80;
 
    // Acceptance and cuts
    // theta_min=0, theta_max=41, T_min=0, T_max=480*2: from LISE++ calculation
@@ -379,15 +392,20 @@ void PhaseSpace_16Cpd15C_test()
    double thetaCM_min = 0.0;
    double thetaCM_max = 180.0;
 
-   double T_min = 0.0;
-   double T_max = 70 * 16; // 960
+   double T_min = 5.;  //5.;
+   double T_max = 15.0; // 960
 
-   double sigma_Ex = 0.200; // This can be modified in the function if the resolution dependes on the Ex energy (or
-                            // directly include the E anf angle resolution if preferred)
+   double sigma_Ex = 0.203342; // This can be modified in the function if the resolution depends on the Ex energy (or
+                            // directly include the E and angle resolution if preferred)
 
    int SavingDataFile = 1;
 
-   TString OutputFileName_1n = "PhaseSpace_16C_pd_1n.root";
+   // Filename now built directly from the cut variables above, so it can never silently
+   // drift out of sync with the cuts actually used (same fix as in C16_pd_histogram.C).
+   TString OutputFileName_1n = Form(
+      "PhaseSpace_16C_pd_1n_cuts_z_2-60cm_theta_%g-%gdeg_ke_%g-%gMeV_sigmaEx_%gMeV_%dbins.root",
+      theta_min, theta_max, T_min, T_max, sigma_Ex, Nbin);
+
    PhaseSpace_1n_16Cpd15C_binWidth(Nbin, MinLim, MaxLim, sigma_Ex, thetaCM_min, thetaCM_max, theta_min, theta_max,
                                    T_min, T_max, SavingDataFile, OutputFileName_1n);
 

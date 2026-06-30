@@ -207,6 +207,22 @@ void simulationCorrelations_Exuniform_check()
    auto *hex_cuts = new TH1F("hex_cuts", "C16(p,d)", 200, -6.0, 10.0);
    TH2F *Ang_Ener_cuts = new TH2F("Ang_Ener_cuts", "Ang_Ener_cuts", 400, 10, 50, 100, 0, 50.0);
 
+   // ===== DIAGNÓSTICO DE TILT =====
+   // Añadir en línea 209, justo después de Ang_Ener_cuts:
+   TH2F *h_dK_vs_theta_corr = new TH2F(
+      "h_dK_vs_theta_corr", "#DeltaK_{corr} vs #theta_{rec};#theta_{rec} (deg);#DeltaK (MeV)", 400, 10, 50, 200, -5, 5);
+
+   TH2F *h_dK_vs_K_corr = new TH2F("h_dK_vs_K_corr", "#DeltaK_{corr} vs E_{ej,corr};E_{ej,corr} (MeV);#DeltaK (MeV)",
+                                   100, 0, 50, 200, -5, 5);
+
+   TH2F *h_tilt = new TH2F("h_tilt", "E_{x} (sin tilt) vs E_{ej};E_{ej} (MeV);E_{x} (MeV)", 60, 0, 25, 200, -3, 10);
+   TProfile *prof_tilt =
+      new TProfile("prof_tilt", "Perfil E_{x} vs E_{ej};E_{ej} (MeV);<E_{x}> (MeV)", 15, 2, 20, -3, 10);
+
+   // En la declaración de histogramas:
+   TProfile *prof_tilt_gs = new TProfile(
+      "prof_tilt_gs", "Perfil E_{x} (sin tilt) vs E_{ej} [GS only];E_{ej} (MeV);<E_{x}> (MeV)", 10, 2, 20, -2, 2);
+
    // ── ELoss CATIMA (igual que en la macro principal) ────────────────────────
    double densityH2 = 3.553e-5; // g/cm³
    AtTools::AtELossCATIMA elossH2(densityH2);
@@ -304,6 +320,13 @@ void simulationCorrelations_Exuniform_check()
           E_ej < 20.0) { // cm y MeV, y un corte en Ex para quedarnos solo con la GS
          hex_cuts->Fill(ex_corr);
          ExvsZpos_cuts->Fill(ex_corr, zPos * 100);
+         // Diagnóstico tilt: usar ex_corr (CATIMA sí, tilt NO)
+         h_tilt->Fill(E_ej, ex_corr);
+         prof_tilt->Fill(E_ej, ex_corr);
+         // Solo eventos cerca del estado fundamental (usando k actual como pre-filtro)
+         if (TMath::Abs(ex_corr) < 0.5) {
+            prof_tilt_gs->Fill(E_ej, ex_corr); // Sin tilt
+         }
          // Ang_Ener_cuts->Fill(theta_lab_corr* TMath::RadToDeg(), E_ej);
       }
    }
@@ -556,4 +579,34 @@ void simulationCorrelations_Exuniform_check()
    linea_cero_K->Draw("same");
 
    c_perfil_corr->Update();
+
+   // ===== CANVAS TILT =====
+   TCanvas *c_tilt = new TCanvas("c_tilt", "Tilt Diagnostic", 1400, 600);
+   c_tilt->Divide(3, 1);
+
+   c_tilt->cd(1);
+   gPad->SetLogz();
+   h_tilt->Draw("colz");
+   prof_tilt->SetLineColor(kRed);
+   prof_tilt->SetLineWidth(2);
+   prof_tilt->SetMarkerColor(kRed);
+   prof_tilt->SetMarkerStyle(20);
+   prof_tilt->Draw("same");
+
+   c_tilt->cd(2);
+   prof_tilt->Draw();
+   TF1 *flin = new TF1("flin", "pol1", 2, 13);
+   prof_tilt->Fit(flin, "R");
+   double slope = flin->GetParameter(1);
+   double slope_err = flin->GetParError(1);
+   cout << "==============================" << endl;
+   cout << "Pendiente d(Ex)/d(Eej) = " << slope << " +/- " << slope_err << " MeV/MeV" << endl;
+   cout << "==============================" << endl;
+
+   c_tilt->cd(3); // Necesita Divide(3,1)
+   prof_tilt_gs->Draw();
+   TF1 *flin_gs = new TF1("flin_gs", "pol1", 2, 13);
+   prof_tilt_gs->Fit(flin_gs, "R");
+   double slope_gs = flin_gs->GetParameter(1);
+   cout << "Pendiente GS: d(Ex_no_tilt)/d(Eej) = " << slope_gs << " MeV/MeV" << endl;
 }

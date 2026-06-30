@@ -44,6 +44,8 @@ kine_2b(Double_t m1, Double_t m2, Double_t m3, Double_t m4, Double_t K_proj, Dou
 // ── Función principal ─────────────────────────────────────────────────────────
 void groundStateSim_check()
 {
+
+   gStyle->SetCanvasPreferGL(kTRUE);
    // ── Masas (MeV/c²) — mismos valores que en la macro principal ────────────
    Double_t m_p = 938.272076;
    Double_t m_d = 1875.612931;
@@ -77,7 +79,7 @@ void groundStateSim_check()
        "/home/georgina/fair_install/ATTPCROOTv2/macro/Kinematics/Decay_kinematics/16C_pd_15C_GS_11_5_26May.txt", kRed},
       {"Maximum Eloss GS (171.874 MeV)",
        "/home/georgina/fair_install/ATTPCROOTv2/macro/Kinematics/Decay_kinematics/16C_pd_15C_GS_171_874MeV.txt",
-       kOrange + 7},
+       kMagenta + 2},
       //{"12.0 AMeV",
       //"/home/georgina/fair_install/ATTPCROOTv2/macro/Kinematics/Decay_kinematics/16C_pd_15C_GS_12_26May.txt",
       // kViolet+2},
@@ -120,7 +122,6 @@ void groundStateSim_check()
       std::cout << " -> " << kf.label << " cargada (" << theta.size() << " puntos)." << std::endl;
    }
 
-   //....................
    // Estructura para guardar la verdad simulada
    struct TruthData {
       double K_real;
@@ -131,7 +132,7 @@ void groundStateSim_check()
    // ==========================================
    // 1. LEER LA SIMULACIÓN Y LLENAR EL MAPA
    // ==========================================
-   std::cout << "Leyendo archivo de simulacion (.root)..." << std::endl;
+   // std::cout << "Leyendo archivo de simulacion (.root)..." << std::endl;
    TFile *file_sim = TFile::Open("output_16Cpd_GS_184MeV.root");
 
    // NECESITAMOS EL NOMBRE DEL ÁRBOL AQUÍ:
@@ -164,28 +165,29 @@ void groundStateSim_check()
       }
    }
    file_sim->Close();
-   std::cout << "Se cargaron " << truthMap.size() << " deuterones desde la simulacion." << std::endl;
+   // std::cout << "Se cargaron " << truthMap.size() << " deuterones desde la simulacion." << std::endl;
    //....................................
-   // Histogramas de Residuos (Correlaciones)
-   auto *h_dK_vs_theta =
-      new TH2F("h_dK_vs_theta", "#Delta K vs #theta_{rec};#theta_{rec} (deg);K_{rec} - K_{real} (MeV)", 100, 5, 70, 100,
-               -20, 20);
+   //  Histogramas de Residuos (Correlaciones)
+   auto *h_dK_vs_theta = new TH2F(
+      "h_dK_vs_theta", "#Delta K vs #theta_{rec};#theta_{rec} (deg);K_{rec} - K_{real} (MeV)", 100, 5, 40, 100, -2, 2);
    auto *h_dK_vs_K =
-      new TH2F("h_dK_vs_K", "#Delta K vs K_{rec};K_{rec} (MeV);K_{rec} - K_{real} (MeV)", 100, 5, 70, 100, -20, 20);
+      new TH2F("h_dK_vs_K", "#Delta K vs K_{rec};K_{rec} (MeV);K_{rec} - K_{real} (MeV)", 100, 5, 25, 100, -2, 2);
    auto *h_dTheta_vs_K =
-      new TH2F("h_dTheta_vs_K", "#Delta#theta vs K_{rec};K_{rec} (MeV);#theta_{rec} - #theta_{real} (deg)", 100, 5, 70,
-               100, -20, 20);
+      new TH2F("h_dTheta_vs_K", "#Delta#theta vs K_{rec};K_{rec} (MeV);#theta_{rec} - #theta_{real} (deg)", 100, 5, 25,
+               100, -2, 2);
    auto *h_dTheta_vs_theta = new TH2F(
       "h_dTheta_vs_theta", "#Delta#theta vs #theta_{rec};#theta_{rec} (deg);#theta_{rec} - #theta_{real} (deg)", 100, 5,
-      70, 100, -20, 20);
+      40, 100, -2, 2);
 
    // ── Histograma 2D: Ex vs Z ───────────────────────────────────────────
-   auto *ExvsZpos = new TH2F("ExvsZpos", "", 100, -6, 6, 200, -5, 100);
-   auto *hex = new TH1F("hex", "C16(p,d)", NumberBins, -7.0, 7.0);
+   auto *ExvsZpos = new TH2F("ExvsZpos", "", 100, -5, 5, 200, -5, 80);
+   auto *hex = new TH1F("hex", "C16(p,d)", NumberBins, -4.0, 4.0);
    TH2F *Ang_Ener = new TH2F("Ang_Ener", "Ang_Ener", 400, 10, 40, 1000, 0, 40.0);
 
-   auto *ExvsZpos_cuts = new TH2F("ExvsZpos_cuts", "", 100, -6, 6, 200, -5, 100);
-   auto *hex_cuts = new TH1F("hex_cuts", "C16(p,d)", 200, -7.0, 7.0);
+   auto *ExvsZpos_cuts = new TH2F("ExvsZpos_cuts", "", 100, -5, 5, 200, -5, 100);
+   auto *hex_thetaCM = new TH2F("hex_thetaCM", "C16(p,d)", 100, 0, 80, 200, -1, 1);
+   auto *hex_thetaLab = new TH2F("hex_thetaLab", "C16(p,d)", 100, 0, 60, 200, -1, 1);
+   auto *hex_cuts = new TH1F("hex_cuts", "C16(p,d)", 200, -0.5, 0.5);
    TH2F *Ang_Ener_cuts = new TH2F("Ang_Ener_cuts", "Ang_Ener_cuts", 400, 10, 40, 1000, 0, 40.0);
 
    // ── ELoss CATIMA (igual que en la macro principal) ────────────────────────
@@ -208,7 +210,7 @@ void groundStateSim_check()
       // chain->Add(("/home/georgina/my_sim/engine_Ex_GS_186_39MeV/InterpSolver/InterpSolverRoot/" +
       // std::string(name)).c_str()); //tree kinematics: error en convertir
    }
-   std::cout << "Total entries (reconstruction): " << chain->GetEntries() << std::endl;
+   // std::cout << "Total entries (reconstruction): " << chain->GetEntries() << std::endl;
 
    Long64_t rec_eventID = 0;
    chain->SetBranchAddress("event", &rec_eventID); // Asegúrate de que "event" es el nombre correcto en tu árbol
@@ -233,12 +235,11 @@ void groundStateSim_check()
       Double_t Ebeam_at_z =
          elossH2.GetEnergy(Ebeam_buff, dist3D * 10.0); // Convertir dist3D a mm para la corrección de energía
 
-      double theta_lab_corr = theta;
-      auto [ex_corr, theta_cm_corr] = kine_2b(m_C16, m_p, m_b, m_B, Ebeam_at_z, theta_lab_corr, E_ej);
+      auto [ex, theta_cm] = kine_2b(m_C16, m_p, m_b, m_B, Ebeam_at_z, theta, E_ej);
 
       // --- FILTRO DE PROTECCIÓN (El reemplazo del cout) ---
       // Si el cálculo cinemático da un error matemático, ignoramos este evento
-      if (TMath::IsNaN(ex_corr) || TMath::IsNaN(E_ej) || TMath::IsNaN(Ebeam_at_z)) {
+      if (TMath::IsNaN(ex) || TMath::IsNaN(E_ej) || TMath::IsNaN(Ebeam_at_z)) {
          continue;
       }
 
@@ -252,7 +253,7 @@ void groundStateSim_check()
 
          // 2. Definimos lo reconstruido
          double K_rec = E_ej;
-         double theta_rec_deg = theta_lab_corr * TMath::RadToDeg();
+         double theta_rec_deg = theta * TMath::RadToDeg();
 
          // 3. Calculamos los residuos (Reconstruido - Real)
          double dK = K_rec - K_real;
@@ -260,29 +261,27 @@ void groundStateSim_check()
 
          // 4. Llenamos los histogramas
          // (Aplicamos el mismo corte Z y Ex que usas para quedarte con el GS limpio)
-         // if (zPos*100 > 2.0 && zPos*100 < 60.0 && E_ej < 20.0) {
-
-         h_dK_vs_theta->Fill(theta_rec_deg, dK);
-         h_dK_vs_K->Fill(K_rec, dK);
-         h_dTheta_vs_K->Fill(K_rec, dTheta);
-         h_dTheta_vs_theta->Fill(theta_rec_deg, dTheta);
-         //}
+         if (zPos * 100 > 2.0 && zPos * 100 < 60.0 && E_ej < 20.0) {
+            h_dK_vs_theta->Fill(theta_rec_deg, dK);
+            h_dK_vs_K->Fill(K_rec, dK);
+            h_dTheta_vs_K->Fill(K_rec, dTheta);
+            h_dTheta_vs_theta->Fill(theta_rec_deg, dTheta);
+         }
       }
       // ------------------------------------
 
-      hex->Fill(ex_corr);
-      ExvsZpos->Fill(ex_corr, zPos * 100);
+      hex->Fill(ex);
+      ExvsZpos->Fill(ex, zPos * 100);
 
-      // if (ex_corr > -2.0 && ex_corr < 0.0) {
-      Ang_Ener->Fill(theta_lab_corr * TMath::RadToDeg(), E_ej); // calibrado
-      //}
-      // Ang_Ener->Fill(theta_lab_corr* TMath::RadToDeg(), E_ej);
+      Ang_Ener->Fill(theta * TMath::RadToDeg(), E_ej); // calibrado
 
       if (zPos * 100 > 2.0 && zPos * 100 < 60.0 &&
           E_ej < 20.0) { // cm y MeV, y un corte en Ex para quedarnos solo con la GS
-         hex_cuts->Fill(ex_corr);
-         ExvsZpos_cuts->Fill(ex_corr, zPos * 100);
-         Ang_Ener_cuts->Fill(theta_lab_corr * TMath::RadToDeg(), E_ej);
+         hex_cuts->Fill(ex);
+         ExvsZpos_cuts->Fill(ex, zPos * 100);
+         Ang_Ener_cuts->Fill(theta * TMath::RadToDeg(), E_ej);
+         hex_thetaCM->Fill(theta_cm, ex);
+         hex_thetaLab->Fill(theta * TMath::RadToDeg(), ex);
       }
    }
 
@@ -301,6 +300,7 @@ void groundStateSim_check()
    hex->Draw("same");
 
    c->Update();
+   c->SaveAs("ExvsZ_GSengine.png");
 
    TCanvas *c_cuts = new TCanvas("c_ZvsEx_GS_cuts", "Z vs Ex with cuts: Ground State", 900, 700);
    c_cuts->Divide(2, 1);
@@ -315,6 +315,21 @@ void groundStateSim_check()
    hex_cuts->SetTitle("Excitation Energy");
    hex_cuts->Draw("same");
    c_cuts->Update();
+   c_cuts->SaveAs("ExvsZ_GS_cutsengine.png");
+
+   TCanvas *c_hex_fit = new TCanvas("c_hex_fit", "Fit Excitation Energy", 900, 700);
+   c_hex_fit->cd();
+   hex_cuts->GetXaxis()->SetTitle("E_{x} (MeV)");
+   hex_cuts->GetYaxis()->SetTitle("Counts");
+   hex_cuts->SetTitle("Excitation Energy with cuts");
+   hex_cuts->Draw();
+
+   TF1 *f_gaus = new TF1("f_gaus", "gaus", -2.0, 2.0);
+   f_gaus->SetParameters(hex_cuts->GetMaximum(), 0, 0.3); // Estima inicial: altura, media, sigma
+   hex_cuts->Fit(f_gaus, "R");
+
+   c_hex_fit->Update();
+   c_hex_fit->SaveAs("hex_cuts_fit_GSengine.png");
 
    TCanvas *c_ang_ener_cuts = new TCanvas("c_ang_ener_cuts", "Angle vs Energy with cuts", 900, 700);
    c_ang_ener_cuts->Divide(2, 1);
@@ -323,6 +338,7 @@ void groundStateSim_check()
    Ang_Ener->GetYaxis()->SetTitle("KE (MeV)");
    Ang_Ener->SetTitle("Theta vs KE");
    Ang_Ener->Draw("colz");
+
    TLegend *leg2 = new TLegend(0.15, 0.65, 0.40, 0.85);
    leg2->SetBorderSize(0);
    leg2->SetFillStyle(0);
@@ -355,9 +371,10 @@ void groundStateSim_check()
    }
    leg3->Draw("same");
    c_ang_ener_cuts->Update();
+   c_ang_ener_cuts->SaveAs("Theta_vs_KE_GS_cutsengine.png");
 
    // ── Canvas para los gráficos de residuos ─────────────────────────────────
-   TCanvas *c_correlaciones = new TCanvas("c_corr", "Analisis de Residuos", 1200, 800);
+   TCanvas *c_correlaciones = new TCanvas("c_corr", "Analisis de Residuos con cuts", 1200, 800);
    c_correlaciones->Divide(2, 2);
 
    c_correlaciones->cd(1);
@@ -373,4 +390,21 @@ void groundStateSim_check()
    h_dTheta_vs_theta->Draw("colz");
 
    c_correlaciones->Update();
+   c_correlaciones->SaveAs("correlaciones_residuos_GSengine.png");
+
+   TCanvas *angulos = new TCanvas("angulos", "Angulos", 900, 700);
+   angulos->Divide(2, 1);
+   angulos->cd(1);
+   hex_thetaCM->GetXaxis()->SetTitle("#theta_{CM} (deg)");
+   hex_thetaCM->GetYaxis()->SetTitle("E_{x} (MeV)");
+   hex_thetaCM->SetTitle("Theta CM vs Ex");
+   hex_thetaCM->Draw("colz");
+
+   angulos->cd(2);
+   hex_thetaLab->GetXaxis()->SetTitle("#theta_{lab} (deg)");
+   hex_thetaLab->GetYaxis()->SetTitle("E_{x} (MeV)");
+   hex_thetaLab->SetTitle("Theta Lab vs Ex");
+   hex_thetaLab->Draw("colz");
+   angulos->Update();
+   angulos->SaveAs("angulos_GSengine.png");
 }

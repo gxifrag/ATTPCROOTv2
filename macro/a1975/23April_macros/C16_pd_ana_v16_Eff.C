@@ -245,11 +245,6 @@ void C16_pd_ana_v16_Eff()
 
    std::vector<TString> filenames;
 
-   // ELoss tables.
-   // AtTools::AtELossTable *elossTableH2 = new AtTools::AtELossTable();
-   // elossTableH2->LoadSrimTable("StoppingPower_SRIM_C16_H2.txt"); //SRIM no me va.
-   // elossTableH2->LoadLiseTable("StoppingPower_C16_H2.txt", 2.0158,3.3084e-5);
-
    double densityH2 = 3.553e-5; // g/cm³
    AtTools::AtELossCATIMA elossH2(densityH2);
    double mass{16.0147};                        // Mass of C16 in u
@@ -356,7 +351,7 @@ void C16_pd_ana_v16_Eff()
 
          // Fill corrected histogram
 
-         if (zPos * 100 > 2.0 && zPos * 100 < 60.0 && E_ej < 14.0) { // cm y MeV (zPos is in meters, E_ej is in MeV)
+         if (zPos * 100 > 2.0 && zPos * 100 < 60.0 && E_ej < 20.0) { // cm y MeV (zPos is in meters, E_ej is in MeV)
             ExCorrvsZpos->Fill(ex_energy_corr_tilt, zPos * 100.0);   // MeV, cm
             hexCorr->Fill(ex_energy_corr_tilt, 1.0 / eff);  // Llenar el histograma con corrección de eficiencia
             hexCorr2->Fill(ex_energy_corr_tilt, 1.0 / eff); // Llenar el histograma con corrección de eficiencia
@@ -364,7 +359,7 @@ void C16_pd_ana_v16_Eff()
             hexCorr->Fill(ex_energy_corr_tilt);*/
          }
 
-         if (zPos * 100 > 2.0 && zPos * 100 < 60.0 && E_ej < 20.0) { // cm y MeV
+         if (zPos * 100 > 2.0 && zPos * 100 < 60.0 && E_ej < 14.0) { // cm y MeV
             hexCorr1->Fill(ex_energy_corr_tilt); // Llenar el histograma con corrección de eficiencia
          }
          // Histograms
@@ -387,7 +382,7 @@ void C16_pd_ana_v16_Eff()
 
          // tEvents->Fill();
       } // events
-   }    // Files
+   } // Files
 
    AngDistrCM->Divide(new TF1("sin", "sin(x * TMath::DegToRad())", 0, 180));
 
